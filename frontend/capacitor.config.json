@@ -1,0 +1,8 @@
+{
+  "appId": "com.conversemaria.app",
+  "appName": "Converse com Maria",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

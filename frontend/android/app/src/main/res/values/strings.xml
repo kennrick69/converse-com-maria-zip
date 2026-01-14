@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Converse com Maria</string>
+    <string name="title_activity_main">Converse com Maria</string>
+    <string name="package_name">com.conversemaria.app</string>
+    <string name="custom_url_scheme">com.conversemaria.app</string>
+</resources>

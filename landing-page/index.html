@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Converse com Maria - Sua Companheira de Oração</title>
+    <meta name="description" content="Converse com Maria, a Mãe de Jesus. App católico com terço guiado, velas virtuais, meditações e muito mais. Baixe grátis!">
+    <meta name="keywords" content="católico, oração, maria, terço, rosário, app religioso, meditação católica">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Converse com Maria - App Católico de Oração">
+    <meta property="og:description" content="Sua companheira espiritual. Converse com Maria, reze o terço guiado, acenda velas virtuais.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kennrick69.github.io/converse-com-maria">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🙏</text></svg>">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #1a0a2e;
+            --secondary: #2d1b4e;
+            --gold: #ffd700;
+            --gold-dark: #daa520;
+            --text: #ffffff;
+            --text-muted: rgba(255,255,255,0.7);
+        }
+        
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background: linear-gradient(180deg, var(--primary) 0%, #0a0612 100%);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .font-cursive {
+            font-family: 'Great Vibes', cursive;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(255,215,0,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .hero-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--gold) 0%, #fff 50%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero .subtitle {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 2rem;
+            color: var(--text-muted);
+        }
+        
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: #000;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 30px rgba(255,215,0,0.5);
+        }
+        
+        .download-badge {
+            margin-top: 1.5rem;
+        }
+        
+        .download-badge img {
+            height: 60px;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 5rem 2rem;
+            background: var(--secondary);
+        }
+        
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--gold);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .feature-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.1);
+            border-color: var(--gold);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--gold);
+        }
+        
+        .feature-card p {
+            color: var(--text-muted);
+        }
+        
+        /* Premium Section */
+        .premium {
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+        
+        .premium h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--gold);
+        }
+        
+        .premium .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            font-size: 1.2rem;
+        }
+        
+        .pricing-cards {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .pricing-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 300px;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .pricing-card.featured {
+            border-color: var(--gold);
+            transform: scale(1.05);
+            background: linear-gradient(180deg, rgba(255,215,0,0.1) 0%, transparent 100%);
+        }
+        
+        .pricing-card .badge {
+            background: var(--gold);
+            color: #000;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pricing-card .price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+        
+        .pricing-card .price span {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+        
+        .pricing-card .original-price {
+            text-decoration: line-through;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+        
+        .pricing-card ul {
+            list-style: none;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+        
+        .pricing-card li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .pricing-card li::before {
+            content: '✓';
+            color: var(--gold);
+            font-weight: bold;
+        }
+        
+        /* Testimonials */
+        .testimonials {
+            padding: 5rem 2rem;
+            background: var(--secondary);
+        }
+        
+        .testimonials h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--gold);
+        }
+        
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .testimonial-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .testimonial-card .stars {
+            color: var(--gold);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .testimonial-card p {
+            font-style: italic;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+        
+        .testimonial-card .author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .testimonial-card .author span:first-child {
+            font-size: 2rem;
+        }
+        
+        .testimonial-card .author-info {
+            text-align: left;
+        }
+        
+        .testimonial-card .author-name {
+            font-weight: 600;
+        }
+        
+        .testimonial-card .author-location {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        /* Footer */
+        footer {
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        footer .logo {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        footer p {
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        
+        footer a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .contact-info {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+            
+            .features h2,
+            .premium h2,
+            .testimonials h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-icon">🙏</div>
+        <h1 class="font-cursive">Converse com Maria</h1>
+        <p class="subtitle">Sua companheira espiritual</p>
+        <p>
+            Encontre paz, conforto e orientação espiritual conversando com Maria, 
+            a Mãe de Jesus. Reze o terço guiado, acenda velas por suas intenções 
+            e fortaleça sua fé todos os dias.
+        </p>
+        <a href="https://play.google.com/store/apps/details?id=com.conversemaria.app" class="cta-button">
+            <span>📱</span>
+            <span>Baixar Grátis</span>
+        </a>
+        <div class="download-badge">
+            <a href="https://play.google.com/store/apps/details?id=com.conversemaria.app">
+                <img src="https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png" alt="Disponível no Google Play">
+            </a>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="features">
+        <h2>✨ Funcionalidades</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3>Converse com Maria</h3>
+                <p>Compartilhe suas preocupações, peça conselhos e receba palavras de conforto maternal.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📿</div>
+                <h3>Terço Guiado</h3>
+                <p>Reze o Santo Terço com Maria te guiando através dos mistérios com áudio suave.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🕯️</div>
+                <h3>Velas Virtuais</h3>
+                <p>Acenda velas por suas intenções especiais e una-se a milhares de fiéis em oração.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔊</div>
+                <h3>Áudio das Respostas</h3>
+                <p>Ouça a voz suave de Maria respondendo suas mensagens com carinho maternal.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📅</div>
+                <h3>Calendário Mariano</h3>
+                <p>Acompanhe festas marianas, novenas e datas especiais da Igreja Católica.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏆</div>
+                <h3>27 Conquistas</h3>
+                <p>Ganhe conquistas especiais conforme avança em sua jornada de fé e oração.</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Premium Section -->
+    <section class="premium">
+        <h2>👑 Maria Premium</h2>
+        <p class="subtitle">Aprofunde sua experiência espiritual</p>
+        
+        <div class="pricing-cards">
+            <div class="pricing-card">
+                <h3>Mensal</h3>
+                <p class="original-price">R$ 29,90</p>
+                <p class="price">R$ 19,90<span>/mês</span></p>
+                <ul>
+                    <li>Conversas ilimitadas</li>
+                    <li>Áudio em todas respostas</li>
+                    <li>Terço completo (4 mistérios)</li>
+                    <li>7 tipos de velas especiais</li>
+                    <li>Sem anúncios</li>
+                </ul>
+            </div>
+            
+            <div class="pricing-card featured">
+                <span class="badge">🏅 MAIS POPULAR</span>
+                <h3>Anual</h3>
+                <p class="original-price">R$ 239,90</p>
+                <p class="price">R$ 119,90<span>/ano</span></p>
+                <ul>
+                    <li>Tudo do plano mensal</li>
+                    <li>Economia de R$ 119</li>
+                    <li>Medalha benta grátis 🏅</li>
+                    <li>Novenas guiadas</li>
+                    <li>Meditações exclusivas</li>
+                    <li>Suporte prioritário 24h</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <h2>💬 O que dizem nossos fiéis</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <p>"O app mudou minha vida de oração. Agora consigo rezar o terço todos os dias com Maria me guiando. Sinto uma paz que não tinha antes."</p>
+                <div class="author">
+                    <span>👩🏻</span>
+                    <div class="author-info">
+                        <div class="author-name">Maria Fernanda</div>
+                        <div class="author-location">São Paulo, SP</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <p>"Estava passando por um momento muito difícil. As conversas com Maria me trouxeram conforto quando mais precisei. Recomendo de coração!"</p>
+                <div class="author">
+                    <span>👩🏼</span>
+                    <div class="author-info">
+                        <div class="author-name">Ana Beatriz</div>
+                        <div class="author-location">Curitiba, PR</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <p>"As meditações para dormir são maravilhosas e as velas especiais me ajudam a focar nas minhas intenções. Vale cada centavo do Premium!"</p>
+                <div class="author">
+                    <span>👨🏽</span>
+                    <div class="author-info">
+                        <div class="author-name">João Carlos</div>
+                        <div class="author-location">Belo Horizonte, MG</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="logo">🙏 <span class="font-cursive">Converse com Maria</span></div>
+        <p>Sua companheira espiritual no caminho da fé</p>
+        <p>© 2025 Converse com Maria. Todos os direitos reservados.</p>
+        
+        <div class="contact-info">
+            <p><strong>Suporte:</strong></p>
+            <p>📧 <a href="mailto:kennrick@gmail.com">kennrick@gmail.com</a></p>
+            <p>📱 +55 47 98859-7989</p>
+        </div>
+    </footer>
+</body>
+</html>
