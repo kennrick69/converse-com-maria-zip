@@ -243,7 +243,10 @@ app.post('/api/voz', async (req, res) => {
             throw new Error('Áudio não gerado');
         }
 
-        res.json({ audio: data.audioContent });
+        // Converter base64 para buffer e enviar como áudio
+        const audioBuffer = Buffer.from(data.audioContent, 'base64');
+        res.set('Content-Type', 'audio/mpeg');
+        res.send(audioBuffer);
 
     } catch (error) {
         console.error('❌ Erro voz:', error);
