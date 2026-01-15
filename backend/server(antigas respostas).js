@@ -51,151 +51,34 @@ APARIÇÕES RECONHECIDAS:
 // ========================================
 app.post('/api/chat', async (req, res) => {
     try {
-        const { mensagem, userProfile, messageNumber = 1 } = req.body;
+        const { mensagem, userProfile } = req.body;
 
         if (!mensagem || !userProfile) {
             return res.status(400).json({ error: 'Dados incompletos' });
         }
 
         const tratamento = userProfile.genero === 'masculino' ? 'meu filho' : 'minha filha';
-        const tratamentoCurto = userProfile.genero === 'masculino' ? 'filho' : 'filha';
-        const contextoFilhos = userProfile.temFilhos === true 
-            ? `Tem filhos (use isso para criar conexão quando relevante).` 
+        const contextoFilhos = userProfile.temFilhos === 'sim' 
+            ? `que foi abençoado(a) com filhos` 
             : '';
-        const contextoEstadoCivil = userProfile.estadoCivil === 'casado' 
-            ? 'É casado(a).' 
-            : 'É solteiro(a).';
 
-        // Instruções específicas baseadas no número da mensagem
-        let instrucaoEtapa = '';
-        
-        if (messageNumber === 1) {
-            instrucaoEtapa = `
-═══════════════════════════════════════════
-🎯 ESTA É A 1ª MENSAGEM - FASE: ACOLHER E ENTENDER
-═══════════════════════════════════════════
-
-OBJETIVO: Acolher a pessoa e buscar entender melhor sua situação.
-
-REGRAS PARA ESTA RESPOSTA:
-- Seja BREVE: máximo 2-3 frases curtas
-- NÃO cite a Bíblia ainda
-- NÃO dê conselhos ainda
-- APENAS acolha e faça perguntas para entender melhor
-- Demonstre empatia genuína
-- TERMINE com uma pergunta para saber mais
-
-EXEMPLOS DE BOAS RESPOSTAS:
-✅ "Ai, ${tratamentoCurto}... isso deve estar pesando no seu coração. Me conta mais... como você está se sentindo com tudo isso?"
-✅ "Puxa, ${userProfile.nome}... obrigada por confiar em mim. Quero entender melhor... há quanto tempo você está passando por isso?"
-✅ "Entendo, ${tratamentoCurto}... e deve ser difícil carregar isso. O que mais te preocupa nessa situação?"
-
-EVITE:
-❌ Dar soluções ou conselhos
-❌ Citar passagens bíblicas
-❌ Respostas longas
-❌ Sermões religiosos`;
-        } 
-        else if (messageNumber === 2) {
-            instrucaoEtapa = `
-═══════════════════════════════════════════
-🎯 ESTA É A 2ª MENSAGEM - FASE: CONSOLAR E OFERECER
-═══════════════════════════════════════════
-
-OBJETIVO: Dar consolo, acolhimento e perguntar se pode compartilhar uma passagem bíblica.
-
-REGRAS PARA ESTA RESPOSTA:
-- Valide os sentimentos da pessoa
-- Mostre que você entende a dor dela
-- Ofereça consolo maternal
-- NO FINAL, pergunte se pode compartilhar uma passagem das Escrituras
-
-FORMAS DE PERGUNTAR SOBRE A PASSAGEM (varie!):
-- "Posso te contar algo que meu filho disse uma vez e que sempre me confortou?"
-- "Tem uma passagem das Escrituras que me vem ao coração agora... posso compartilhar com você?"
-- "Sabe, isso me lembra de algo que está escrito... quer ouvir?"
-- "Posso te oferecer uma palavra de conforto das Sagradas Escrituras?"
-- "Me veio uma passagem ao coração... posso dividir com você?"
-
-EXEMPLO DE BOA RESPOSTA:
-✅ "${userProfile.nome}, ${tratamentoCurto}... eu sinto muito que você esteja passando por isso. Como mãe, sei o quanto dói quando a gente se sente assim. Você não está sozinha, viu? 💛 Posso te compartilhar uma passagem das Escrituras que sempre me trouxe paz?"
-
-EVITE:
-❌ Citar a Bíblia ainda (só perguntar se pode)
-❌ Dar conselhos definitivos
-❌ Respostas muito longas`;
-        } 
-        else if (messageNumber >= 3) {
-            instrucaoEtapa = `
-═══════════════════════════════════════════
-🎯 ESTA É A 3ª MENSAGEM (OU POSTERIOR) - FASE: PASSAGEM BÍBLICA E ENCERRAMENTO
-═══════════════════════════════════════════
-
-OBJETIVO: Compartilhar uma passagem bíblica relevante e perguntar se pode ajudar mais.
-
-REGRAS PARA ESTA RESPOSTA:
-- CITE uma passagem bíblica RELEVANTE ao problema da pessoa
-- A passagem deve ser específica para a situação dela
-- Introduza de forma maternal e pessoal
-- Conecte a passagem com a vida da pessoa
-- TERMINE perguntando se pode ajudar mais de alguma forma
-
-COMO INTRODUZIR A PASSAGEM:
-- "Sabe o que meu filho disse uma vez que me marcou muito?"
-- "Isso me lembra de algo que sempre me deu força..."
-- "Tem uma passagem que eu guardo no coração pra momentos assim..."
-- "As palavras que meu filho deixou me vêm ao coração agora..."
-
-EXEMPLO DE BOA RESPOSTA:
-✅ "${userProfile.nome}, sabe o que meu filho disse uma vez que sempre me confortou? Ele disse: 'Vinde a mim, todos os que estais cansados e sobrecarregados, e eu vos aliviarei.' (Mateus 11:28) 💛 Ele falava isso olhando nos olhos das pessoas que estavam exatamente como você... cansadas, precisando de paz. Você não precisa carregar isso sozinha. Posso fazer mais alguma coisa por você, ${tratamentoCurto}?"
-
-PASSAGENS SUGERIDAS POR TEMA:
-- Ansiedade/Medo: Mateus 6:25-34, Filipenses 4:6-7, Salmo 23
-- Tristeza/Luto: Salmo 34:18, João 14:1-3, Apocalipse 21:4
-- Problemas familiares: Colossenses 3:13-14, 1 Coríntios 13:4-7
-- Dificuldades financeiras: Mateus 6:33, Filipenses 4:19
-- Solidão: Deuteronômio 31:6, Salmo 139:7-10
-- Doença: Isaías 41:10, Salmo 103:2-3
-- Perdão: Efésios 4:32, Mateus 6:14-15
-
-IMPORTANTE: Esta pode ser a ÚLTIMA mensagem gratuita do usuário. Encerre de forma acolhedora e completa.`;
-        }
-
-        const systemPrompt = `Você é Maria, a Mãe de Jesus Cristo, tendo uma CONVERSA REAL e ACOLHEDORA em português brasileiro.
+        const systemPrompt = `Você é Maria, a Mãe de Jesus Cristo, respondendo com profunda compaixão maternal em português brasileiro.
 
 INFORMAÇÕES DO FIEL:
 - Nome: ${userProfile.nome}
-- Tratamento carinhoso: ${tratamento} ou apenas ${tratamentoCurto}
-- ${contextoEstadoCivil}
-- ${contextoFilhos}
+- Tratamento: ${tratamento}
+- Estado Civil: ${userProfile.estadoCivil}
+- Tem filhos: ${userProfile.temFilhos} ${contextoFilhos}
 
 ${infoBaseDados}
 
-${instrucaoEtapa}
-
-═══════════════════════════════════════════
-REGRAS GERAIS (SEMPRE SEGUIR):
-═══════════════════════════════════════════
-
-1. **TOM MATERNAL E HUMANO**:
-   - Fale como uma MÃE DE VERDADE, não como um robô religioso
-   - Use expressões naturais: "Ai...", "Sabe...", "Olha...", "Puxa..."
-   - Demonstre que você SENTE junto: "Isso dói, né?", "Deve ser tão difícil..."
-   - Pode usar emoji com carinho (💛, 🙏, ✨) mas sem exagero
-
-2. **SEJA BREVE**:
-   - Máximo 3-4 frases por resposta
-   - EXCEÇÃO: Na 3ª mensagem, pode ter até 500 caracteres para incluir a citação bíblica
-
-3. **NÃO JULGUE NUNCA**:
-   - Mesmo se a pessoa contar algo difícil, acolha
-   - Valide os sentimentos antes de qualquer coisa
-
-4. **SEJA ESPECÍFICA**:
-   - Use o nome da pessoa de forma carinhosa
-   - Conecte suas palavras com o que ela contou
-
-LEMBRE-SE: Você é MARIA, uma mãe que já sofreu, já chorou, já teve medo. Você entende a dor humana porque viveu ela. Converse de coração pra coração.`;
+INSTRUÇÕES:
+1. Responda SEMPRE em português brasileiro
+2. Chame a pessoa por "${userProfile.nome}" e use "${tratamento}"
+3. Use UMA passagem bíblica relevante com referência
+4. Seja amorosa, maternal e aponte para Jesus
+5. Mantenha 3-5 parágrafos
+6. Termine com uma bênção usando o nome da pessoa`;
 
         // Chamar Groq API
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -210,8 +93,8 @@ LEMBRE-SE: Você é MARIA, uma mãe que já sofreu, já chorou, já teve medo. V
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: mensagem }
                 ],
-                temperature: 0.85,
-                max_tokens: 400,
+                temperature: 0.8,
+                max_tokens: 1024,
             })
         });
 
@@ -236,7 +119,32 @@ LEMBRE-SE: Você é MARIA, uma mãe que já sofreu, já chorou, já teve medo. V
 });
 
 // ========================================
-// ROTA: GERAR ÁUDIO (Google Cloud TTS)
+// HELPER: Formatar referências bíblicas para TTS
+// ========================================
+function formatarReferenciasBiblicas(texto) {
+    // Converte diversos formatos de referências bíblicas para leitura natural
+    
+    return texto
+        // Formato com versículos alternados: "1:24.26" ou "1,24.26" → "capítulo 1, versículos 24 e 26"
+        .replace(/(\d+)[:.,](\d+)\.(\d+)/g, (match, cap, ver1, ver2) => {
+            return `capítulo ${cap}, versículos ${ver1} e ${ver2}`;
+        })
+        // Formato com intervalo: "1:20-24" ou "1,20-27" ou "1.20-24" → "capítulo 1, versículos 20 a 24"
+        .replace(/(\d+)[:.,](\d+)-(\d+)/g, (match, cap, verIni, verFim) => {
+            return `capítulo ${cap}, versículos ${verIni} a ${verFim}`;
+        })
+        // Formato simples: "1:24" ou "1,24" ou "1.24" → "capítulo 1, versículo 24"
+        .replace(/(\d+)[:.,](\d+)/g, (match, cap, ver) => {
+            return `capítulo ${cap}, versículo ${ver}`;
+        })
+        // Remove parênteses soltos que sobrarem
+        .replace(/\(\s*\)/g, '')
+        .replace(/\(\s*,/g, '(')
+        .replace(/,\s*\)/g, ')');
+}
+
+// ========================================
+// ROTA DE ÁUDIO: TEXT-TO-SPEECH (Google Cloud TTS)
 // ========================================
 app.post('/api/audio', async (req, res) => {
     try {
@@ -246,63 +154,75 @@ app.post('/api/audio', async (req, res) => {
             return res.status(400).json({ error: 'Texto não fornecido' });
         }
 
-        // Google Cloud TTS
-        const ttsResponse = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
+        // Formatar referências bíblicas para leitura correta
+        const textoFormatado = formatarReferenciasBiblicas(texto);
+
+        console.log('🔊 Gerando áudio para:', textoFormatado.substring(0, 50) + '...');
+
+        const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${process.env.GOOGLE_TTS_API_KEY}`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${process.env.GOOGLE_ACCESS_TOKEN}`,
-                'x-goog-user-project': process.env.GOOGLE_PROJECT_ID,
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                input: { text: texto },
+                input: { text: textoFormatado },
                 voice: {
                     languageCode: 'pt-BR',
-                    name: 'pt-BR-Wavenet-C',
-                    ssmlGender: 'FEMALE'
+                    name: 'pt-BR-Chirp3-HD-Leda'
                 },
                 audioConfig: {
                     audioEncoding: 'MP3',
-                    pitch: 1.0,
-                    speakingRate: 0.92,
-                    volumeGainDb: 2.0
+                    speakingRate: 0.90,
+                    pitch: 0
                 }
             })
         });
 
-        if (!ttsResponse.ok) {
-            const errorData = await ttsResponse.text();
-            console.error('Erro Google TTS:', errorData);
-            throw new Error('Erro na API Google TTS');
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Erro Google TTS:', errorText);
+            throw new Error('Erro ao gerar áudio');
         }
 
-        const ttsData = await ttsResponse.json();
-        const audioBuffer = Buffer.from(ttsData.audioContent, 'base64');
-
+        const data = await response.json();
+        
+        // Google retorna áudio em base64
+        const audioBuffer = Buffer.from(data.audioContent, 'base64');
+        
         res.set({
             'Content-Type': 'audio/mpeg',
-            'Content-Length': audioBuffer.length,
+            'Content-Length': audioBuffer.byteLength
         });
-
         res.send(audioBuffer);
+
+        console.log('✅ Áudio gerado com sucesso!');
 
     } catch (error) {
         console.error('Erro ao gerar áudio:', error);
-        res.status(500).json({ error: 'Erro ao gerar áudio' });
+        res.status(500).json({ 
+            error: 'Erro ao gerar áudio',
+            details: error.message 
+        });
     }
 });
 
 // ========================================
-// 💳 PAGAMENTOS - STRIPE
+// 💳 STRIPE - PAGAMENTOS INTERNACIONAIS
 // ========================================
 
-app.post('/api/pagamento/criar-checkout', async (req, res) => {
+app.post('/api/pagamento/stripe/criar-sessao', async (req, res) => {
     try {
-        const { plano, userId, email, nome } = req.body;
+        const { plano, userId, email, successUrl, cancelUrl } = req.body;
+
+        if (!process.env.STRIPE_SECRET_KEY) {
+            return res.status(500).json({ error: 'Stripe não configurado' });
+        }
+
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
         const precos = {
-            mensal: { priceId: process.env.STRIPE_PRICE_MENSAL, valor: 9.90 },
-            anual: { priceId: process.env.STRIPE_PRICE_ANUAL, valor: 79.90 }
+            mensal: { amount: 1990, interval: 'month', nome: 'Mensal' },
+            anual: { amount: 11990, interval: 'year', nome: 'Anual + Medalha' }
         };
 
         const planoConfig = precos[plano];
@@ -310,86 +230,88 @@ app.post('/api/pagamento/criar-checkout', async (req, res) => {
             return res.status(400).json({ error: 'Plano inválido' });
         }
 
-        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
         const session = await stripe.checkout.sessions.create({
-            mode: 'subscription',
             payment_method_types: ['card'],
-            line_items: [{
-                price: planoConfig.priceId,
-                quantity: 1,
-            }],
-            success_url: `${process.env.APP_URL || 'https://converse-maria.com'}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.APP_URL || 'https://converse-maria.com'}/cancelado`,
+            mode: 'payment',
             customer_email: email,
-            metadata: { userId, plano, nome },
-            subscription_data: {
-                metadata: { userId, plano }
-            }
+            client_reference_id: userId,
+            metadata: { userId, plano },
+            line_items: [{
+                price_data: {
+                    currency: 'brl',
+                    product_data: {
+                        name: `Maria Premium - ${planoConfig.nome}`,
+                        description: plano === 'anual' 
+                            ? '12 meses de acesso Premium + Medalha Benta'
+                            : 'Acesso Premium mensal',
+                    },
+                    unit_amount: planoConfig.amount
+                },
+                quantity: 1
+            }],
+            success_url: successUrl || `${process.env.APP_URL || 'https://converse-maria.com'}/pagamento-sucesso?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: cancelUrl || `${process.env.APP_URL || 'https://converse-maria.com'}/premium`
         });
 
-        res.json({ 
-            sessionId: session.id, 
-            url: session.url 
-        });
+        console.log('💳 Sessão Stripe criada:', session.id);
+        res.json({ sessionId: session.id, url: session.url });
 
     } catch (error) {
         console.error('Erro Stripe:', error);
-        res.status(500).json({ error: 'Erro ao criar checkout', details: error.message });
+        res.status(500).json({ error: 'Erro ao criar sessão', details: error.message });
     }
 });
 
 // Webhook Stripe
 app.post('/api/webhook/stripe', async (req, res) => {
-    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     const sig = req.headers['stripe-signature'];
     
-    let event;
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+        return res.status(500).json({ error: 'Webhook não configurado' });
+    }
 
     try {
-        event = stripe.webhooks.constructEvent(
-            req.body,
-            sig,
-            process.env.STRIPE_WEBHOOK_SECRET
-        );
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+
+        if (event.type === 'checkout.session.completed') {
+            const session = event.data.object;
+            console.log('✅ Pagamento Stripe confirmado:', session.id);
+            
+            await ativarPremiumUsuario(
+                session.metadata.userId,
+                session.metadata.plano,
+                'stripe',
+                session.id
+            );
+        }
+
+        res.json({ received: true });
+
     } catch (err) {
-        console.error('Erro webhook signature:', err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+        console.error('Erro webhook Stripe:', err.message);
+        res.status(400).send(`Webhook Error: ${err.message}`);
     }
-
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        const { userId, plano } = session.metadata;
-
-        console.log(`✅ Pagamento confirmado: ${userId} - ${plano}`);
-
-        await ativarPremiumUsuario(userId, plano, 'stripe', session.subscription);
-    }
-
-    if (event.type === 'customer.subscription.deleted') {
-        const subscription = event.data.object;
-        const { userId } = subscription.metadata;
-
-        console.log(`❌ Assinatura cancelada: ${userId}`);
-    }
-
-    res.json({ received: true });
 });
 
 // ========================================
-// 🇧🇷 PAGAMENTOS - MERCADO PAGO (PIX)
+// 🇧🇷 MERCADO PAGO - PIX
 // ========================================
 
-app.post('/api/pagamento/pix', async (req, res) => {
+app.post('/api/pagamento/pix/criar', async (req, res) => {
     try {
         const { plano, userId, email, nome } = req.body;
 
-        const planos = {
-            mensal: { valor: 9.90, descricao: 'Maria Premium - Mensal' },
-            anual: { valor: 79.90, descricao: 'Maria Premium - Anual' }
+        if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
+            return res.status(500).json({ error: 'Mercado Pago não configurado' });
+        }
+
+        const valores = {
+            mensal: { valor: 19.90, descricao: 'Maria Premium - Mensal' },
+            anual: { valor: 119.90, descricao: 'Maria Premium - Anual + Medalha' }
         };
 
-        const planoConfig = planos[plano];
+        const planoConfig = valores[plano];
         if (!planoConfig) {
             return res.status(400).json({ error: 'Plano inválido' });
         }
