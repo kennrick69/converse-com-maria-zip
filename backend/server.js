@@ -212,13 +212,12 @@ app.post('/api/voz', async (req, res) => {
             input: { text: textoLimitado },
             voice: {
                 languageCode: 'pt-BR',
-                name: 'pt-BR-Wavenet-C',
-                ssmlGender: 'FEMALE'
+                name: 'pt-BR-Chirp3-HD-Leda'
             },
             audioConfig: {
                 audioEncoding: 'MP3',
-                speakingRate: 0.92,
-                pitch: 1.0
+                speakingRate: 0.90,
+                pitch: 0
             }
         };
 

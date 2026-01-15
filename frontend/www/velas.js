@@ -482,8 +482,110 @@ const SantuarioVelas = {
 
     // Selecionar vela
     selecionarVela(tipoKey) {
+        const tipo = this.tiposVelas[tipoKey];
+        
+        // Verificar se é vela premium e usuário não é premium
+        if (tipo.premium && !this.verificarPremium()) {
+            this.fecharEscolhaVela();
+            this.mostrarPopupPremium(tipo);
+            return;
+        }
+        
         this.fecharEscolhaVela();
         this.abrirFormularioIntencao(tipoKey);
+    },
+    
+    // Verificar se usuário é premium
+    verificarPremium() {
+        // Verificar via TelaPremium
+        if (window.TelaPremium && typeof TelaPremium.isPremium === 'function') {
+            return TelaPremium.isPremium();
+        }
+        
+        // Fallback: verificar localStorage diretamente
+        const premium = localStorage.getItem('mariaPremium');
+        if (!premium) return false;
+        
+        try {
+            const dados = JSON.parse(premium);
+            return dados.ativo === true;
+        } catch (e) {
+            return false;
+        }
+    },
+    
+    // Mostrar popup para virar premium
+    mostrarPopupPremium(tipoVela) {
+        const modal = document.createElement('div');
+        modal.id = 'popup-premium-vela';
+        modal.className = 'fixed inset-0 z-[70] flex items-center justify-center p-4';
+        modal.style.background = 'rgba(0,0,0,0.95)';
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        
+        modal.innerHTML = `
+            <div class="bg-gradient-to-br from-gray-900 via-purple-900/50 to-gray-900 rounded-3xl w-full max-w-sm p-6 text-center animate-scale-in border border-yellow-500/30">
+                <!-- Vela preview -->
+                <div class="flex justify-center mb-4">
+                    <div class="vela-container" style="--cor-vela: ${tipoVela.cor}; --cor-vela-dark: ${this.escurecerCor(tipoVela.cor)}; --cor-chama: ${tipoVela.corChama};">
+                        <div class="chama-container">
+                            <div class="chama-glow"></div>
+                            <div class="chama"></div>
+                            <div class="chama-inner"></div>
+                        </div>
+                        <div class="vela-corpo" style="width: 26px; height: ${tipoVela.altura * 0.6}px;">
+                            <div class="vela-pavio"></div>
+                        </div>
+                        <div class="vela-reflexo"></div>
+                    </div>
+                </div>
+                
+                <!-- Cadeado -->
+                <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-full flex items-center justify-center border border-yellow-500/30">
+                    <span class="text-3xl">🔒</span>
+                </div>
+                
+                <h3 class="text-white text-xl font-bold mb-2">${tipoVela.nome}</h3>
+                <p class="text-yellow-400 font-semibold mb-3">✨ Vela Exclusiva Premium ✨</p>
+                
+                <p class="text-white/70 text-sm mb-6">
+                    Esta vela especial está disponível apenas para assinantes Premium. 
+                    Acenda velas por até <strong class="text-yellow-400">${tipoVela.duracao}</strong> e tenha suas intenções elevadas a Nossa Senhora!
+                </p>
+                
+                <!-- Benefícios rápidos -->
+                <div class="bg-white/5 rounded-xl p-4 mb-6 text-left">
+                    <p class="text-white/60 text-xs mb-2">Com o Premium você também ganha:</p>
+                    <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
+                        <span>💬</span> Conversas ilimitadas com Maria
+                    </div>
+                    <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
+                        <span>📿</span> Terço guiado completo
+                    </div>
+                    <div class="flex items-center gap-2 text-white/80 text-sm">
+                        <span>🚫</span> Sem anúncios
+                    </div>
+                </div>
+                
+                <!-- Botões -->
+                <button onclick="document.getElementById('popup-premium-vela').remove(); if(window.TelaPremium) TelaPremium.abrir('vela_premium');" class="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl shadow-lg hover:from-yellow-400 hover:to-orange-400 transition-all mb-3 flex items-center justify-center gap-2">
+                    <span>👑</span> Quero ser Premium <span>👑</span>
+                </button>
+                
+                <button onclick="document.getElementById('popup-premium-vela').remove(); SantuarioVelas.abrirEscolhaVela();" class="w-full py-3 bg-white/10 text-white/70 rounded-xl font-semibold hover:bg-white/20 transition-all text-sm">
+                    Usar vela grátis por enquanto
+                </button>
+            </div>
+            
+            <style>
+                @keyframes scale-in {
+                    from { transform: scale(0.9); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                }
+                .animate-scale-in { animation: scale-in 0.3s ease-out; }
+            </style>
+        `;
+        
+        document.body.appendChild(modal);
     },
 
     // Abrir formulário de intenção

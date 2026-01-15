@@ -1,11 +1,11 @@
 // ========================================
 // 🔒 SISTEMA DE LIMITE DE MENSAGENS
-// Monetização Freemium
+// Monetização Freemium - 3 mensagens gratuitas
 // ========================================
 
 const SistemaMensagens = {
     // Configurações
-    LIMITE_DIARIO_GRATIS: 5,
+    LIMITE_DIARIO_GRATIS: 3,
     
     // Carregar dados do dia
     carregarDados() {
@@ -15,17 +15,24 @@ const SistemaMensagens = {
         if (salvo) {
             const dados = JSON.parse(salvo);
             if (dados.data !== hoje) {
-                return { data: hoje, contagem: 0 };
+                // Novo dia, resetar contagem
+                return { data: hoje, contagem: 0, mensagensEnviadas: 0 };
             }
             return dados;
         }
         
-        return { data: hoje, contagem: 0 };
+        return { data: hoje, contagem: 0, mensagensEnviadas: 0 };
     },
 
     // Salvar dados
     salvarDados(dados) {
         localStorage.setItem('mariaMensagensDia', JSON.stringify(dados));
+    },
+
+    // Obter número da mensagem atual (1, 2, 3...)
+    getNumeroMensagemAtual() {
+        const dados = this.carregarDados();
+        return dados.mensagensEnviadas + 1;
     },
 
     // Verificar se pode enviar
@@ -41,6 +48,7 @@ const SistemaMensagens = {
         
         const dados = this.carregarDados();
         dados.contagem++;
+        dados.mensagensEnviadas++;
         this.salvarDados(dados);
         this.atualizarContador();
         
@@ -48,7 +56,7 @@ const SistemaMensagens = {
         this.mostrarLembreteSuave(restantes);
         
         if (dados.contagem >= this.LIMITE_DIARIO_GRATIS) {
-            setTimeout(() => this.mostrarAvisoLimite(), 1000);
+            setTimeout(() => this.mostrarAvisoLimite(), 1500);
         }
         
         return true;
@@ -83,7 +91,7 @@ const SistemaMensagens = {
                 contador.innerHTML = '💬 <span class="text-green-400">∞</span>';
                 contador.title = 'Premium - Mensagens ilimitadas';
             } else {
-                const corClasse = restantes <= 2 ? 'text-red-400' : restantes <= 3 ? 'text-yellow-400' : 'text-white';
+                const corClasse = restantes === 0 ? 'text-red-400' : restantes === 1 ? 'text-yellow-400' : 'text-white';
                 contador.innerHTML = `💬 <span class="${corClasse}">${restantes}</span>/${this.LIMITE_DIARIO_GRATIS}`;
                 contador.title = `${restantes} mensagens restantes hoje`;
             }
@@ -100,7 +108,7 @@ const SistemaMensagens = {
         modal.innerHTML = `
             <div class="bg-gradient-to-br from-gray-900 to-purple-900/80 rounded-3xl w-full max-w-md p-6 text-center animate-scale-in">
                 <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-full flex items-center justify-center">
-                    <span class="text-5xl">😢</span>
+                    <span class="text-5xl">🙏</span>
                 </div>
                 
                 <h2 class="text-white text-2xl font-bold mb-2">Suas mensagens acabaram</h2>
@@ -112,26 +120,28 @@ const SistemaMensagens = {
                 </div>
                 
                 <div class="space-y-3">
-                    <button onclick="document.getElementById('modal-limite').remove(); if(window.TelaPremium) TelaPremium.abrir('💬 Desbloqueie mensagens ilimitadas!');" 
+                    <button onclick="document.getElementById('modal-limite').remove(); if(window.TelaPremium) TelaPremium.abrir('💬 Continue sua conversa com Maria!');" 
                             class="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl hover:from-yellow-400 hover:to-orange-400 transition-all flex items-center justify-center gap-2">
                         <span>👑</span>
-                        <span>Desbloquear Premium</span>
+                        <span>Continuar com Premium</span>
                     </button>
                     
-                    <div class="text-white/40 text-sm">ou continue sua jornada:</div>
+                    <p class="text-white/50 text-sm">Com Premium, converse sem limites!</p>
+                    
+                    <div class="text-white/40 text-sm mt-4">Enquanto isso, explore:</div>
                     
                     <div class="grid grid-cols-3 gap-2">
-                        <button onclick="document.getElementById('modal-limite').remove(); if(window.TercoGuiado) TercoGuiado.abrir();" 
+                        <button onclick="document.getElementById('modal-limite').remove(); if(window.abrirTerco) abrirTerco();" 
                                 class="py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all flex flex-col items-center gap-1">
                             <span class="text-xl">📿</span>
                             <span class="text-[10px]">Terço</span>
                         </button>
-                        <button onclick="document.getElementById('modal-limite').remove(); if(window.SantuarioVelas) SantuarioVelas.abrir();" 
+                        <button onclick="document.getElementById('modal-limite').remove(); if(window.abrirSantuarioVelas) abrirSantuarioVelas();" 
                                 class="py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all flex flex-col items-center gap-1">
                             <span class="text-xl">🕯️</span>
                             <span class="text-[10px]">Velas</span>
                         </button>
-                        <button onclick="document.getElementById('modal-limite').remove(); if(window.MuralIntencoes) MuralIntencoes.abrir();" 
+                        <button onclick="document.getElementById('modal-limite').remove(); if(window.abrirMuralIntencoes) abrirMuralIntencoes();" 
                                 class="py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all flex flex-col items-center gap-1">
                             <span class="text-xl">🙏</span>
                             <span class="text-[10px]">Mural</span>
@@ -189,9 +199,9 @@ const SistemaMensagens = {
 
     // Mostrar lembrete suave
     mostrarLembreteSuave(restantes) {
-        if (restantes === 3) {
+        if (restantes === 2) {
             setTimeout(() => {
-                if (window.showToast) showToast('💬 Você tem 3 mensagens restantes hoje');
+                if (window.showToast) showToast('💬 Você tem 2 mensagens restantes hoje');
             }, 1500);
         } else if (restantes === 1) {
             setTimeout(() => {
