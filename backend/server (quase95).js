@@ -6,23 +6,9 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// ========================================
-// 📧 CONFIGURAÇÃO SMTP (HOSTINGER)
-// ========================================
-const transporter = nodemailer.createTransport({
-    host: 'smtp.hostinger.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-    }
-});
 
 // Middleware para webhook Stripe (precisa de raw body)
 app.use('/api/webhook/stripe', express.raw({ type: 'application/json' }));
@@ -543,59 +529,6 @@ app.get('/api/status', (req, res) => {
 });
 
 // ========================================
-// 🚩 DENÚNCIA DE CONTEÚDO
-// ========================================
-app.post('/api/denunciar', async (req, res) => {
-    try {
-        const { tipo, conteudo, autor, motivo, denunciante } = req.body;
-
-        if (!tipo || !conteudo) {
-            return res.status(400).json({ error: 'Dados incompletos' });
-        }
-
-        const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-
-        const emailHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #7c3aed;">🚩 Nova Denúncia - Converse com Maria</h2>
-                <hr style="border: 1px solid #e5e7eb;">
-                
-                <p><strong>📅 Data/Hora:</strong> ${dataHora}</p>
-                <p><strong>📍 Tipo:</strong> ${tipo === 'mural' ? 'Mural de Intenções' : 'Santuário de Velas'}</p>
-                <p><strong>👤 Autor do conteúdo:</strong> ${autor || 'Não identificado'}</p>
-                
-                <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                    <p><strong>📝 Conteúdo denunciado:</strong></p>
-                    <p style="font-style: italic;">"${conteudo}"</p>
-                </div>
-                
-                <p><strong>⚠️ Motivo:</strong> ${motivo || 'Não especificado'}</p>
-                <p><strong>🔔 Denunciante:</strong> ${denunciante || 'Anônimo'}</p>
-                
-                <hr style="border: 1px solid #e5e7eb;">
-                <p style="color: #6b7280; font-size: 12px;">
-                    Este email foi enviado automaticamente pelo sistema de moderação do app Converse com Maria.
-                </p>
-            </div>
-        `;
-
-        await transporter.sendMail({
-            from: '"Converse com Maria" <contato@conversecommaria.com.br>',
-            to: 'contato@conversecommaria.com.br',
-            subject: `🚩 Denúncia: ${tipo === 'mural' ? 'Mural' : 'Vela'} - ${dataHora}`,
-            html: emailHtml
-        });
-
-        console.log('🚩 Denúncia enviada:', { tipo, autor, dataHora });
-        res.json({ success: true, message: 'Denúncia enviada com sucesso' });
-
-    } catch (error) {
-        console.error('Erro ao enviar denúncia:', error);
-        res.status(500).json({ error: 'Erro ao processar denúncia' });
-    }
-});
-
-// ========================================
 // INICIAR
 // ========================================
 app.listen(PORT, () => {
@@ -608,6 +541,5 @@ app.listen(PORT, () => {
     console.log(`✅ Voz: Google Cloud TTS`);
     console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? '✓' : '✗'}`);
     console.log(`🇧🇷 Mercado Pago: ${process.env.MERCADOPAGO_ACCESS_TOKEN ? '✓' : '✗'}`);
-    console.log(`📧 SMTP: ${process.env.SMTP_USER ? '✓' : '✗'}`);
     console.log('========================================');
 });
