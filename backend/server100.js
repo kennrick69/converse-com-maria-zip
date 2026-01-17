@@ -37,34 +37,6 @@ app.use(express.static('../frontend'));
 // ========================================
 
 const VERSICULOS = {
-    // 🚨 CRISE: SUICÍDIO, AUTOLESÃO, DESEJO DE MORRER
-    crise_suicidio: [
-        { texto: "Eu vim para que tenham vida, e a tenham em abundância.", ref: "João 10:10" },
-        { texto: "Porque eu bem sei os pensamentos que tenho a vosso respeito, diz o Senhor; pensamentos de paz, e não de mal, para vos dar o fim que esperais.", ref: "Jeremias 29:11" },
-        { texto: "Pois tu formaste o meu interior, tu me teceste no ventre de minha mãe. Eu te louvo porque me fizeste de modo especial e admirável.", ref: "Salmo 139:13-14" },
-        { texto: "Não temas, porque eu sou contigo; não te assombres, porque eu sou teu Deus; eu te fortaleço, e te ajudo, e te sustento.", ref: "Isaías 41:10" },
-        { texto: "O Senhor está perto dos que têm o coração quebrantado e salva os de espírito abatido.", ref: "Salmo 34:18" },
-        { texto: "Vinde a mim, todos os que estais cansados e oprimidos, e eu vos aliviarei.", ref: "Mateus 11:28" },
-        { texto: "Deus é o nosso refúgio e fortaleza, socorro bem presente na angústia.", ref: "Salmo 46:1" },
-        { texto: "Ainda que eu andasse pelo vale da sombra da morte, não temeria mal algum, porque tu estás comigo.", ref: "Salmo 23:4" },
-        { texto: "Clama a mim, e responder-te-ei.", ref: "Jeremias 33:3" },
-        { texto: "Porque os montes se retirarão, e os outeiros serão removidos; mas a minha benignidade não se apartará de ti.", ref: "Isaías 54:10" }
-    ],
-
-    // 🚨 CRISE: VIOLÊNCIA, RAIVA EXTREMA
-    crise_violencia: [
-        { texto: "Irai-vos e não pequeis; não se ponha o sol sobre a vossa ira.", ref: "Efésios 4:26" },
-        { texto: "A resposta branda desvia o furor, mas a palavra dura suscita a ira.", ref: "Provérbios 15:1" },
-        { texto: "Não vos vingueis a vós mesmos, amados, mas dai lugar à ira de Deus.", ref: "Romanos 12:19" },
-        { texto: "Bem-aventurados os pacificadores, porque eles serão chamados filhos de Deus.", ref: "Mateus 5:9" },
-        { texto: "Não te deixes vencer do mal, mas vence o mal com o bem.", ref: "Romanos 12:21" },
-        { texto: "Melhor é o longânimo do que o herói de guerra, e o que governa o seu espírito do que o que toma uma cidade.", ref: "Provérbios 16:32" },
-        { texto: "Amai os vossos inimigos e orai pelos que vos perseguem.", ref: "Mateus 5:44" },
-        { texto: "Deixo-vos a paz, a minha paz vos dou.", ref: "João 14:27" },
-        { texto: "Segui a paz com todos.", ref: "Hebreus 12:14" },
-        { texto: "O homem iracundo levanta contendas, mas o longânimo apazigua a luta.", ref: "Provérbios 15:18" }
-    ],
-
     // 😰 ANSIEDADE, MEDO, PREOCUPAÇÃO
     ansiedade: [
         { texto: "Não andeis ansiosos por coisa alguma; antes, em tudo, sejam os vossos pedidos conhecidos diante de Deus pela oração e súplica com ações de graças.", ref: "Filipenses 4:6" },
@@ -287,22 +259,6 @@ const VERSICULOS = {
         { texto: "Não sejas sábio a teus próprios olhos; teme ao Senhor e aparta-te do mal.", ref: "Provérbios 3:7" },
         { texto: "Bem-aventurado o homem que acha sabedoria, e o homem que adquire conhecimento.", ref: "Provérbios 3:13" },
         { texto: "Quando a sabedoria entrar no teu coração, e o conhecimento for agradável à tua alma, o bom siso te guardará.", ref: "Provérbios 2:10-11" }
-    ],
-
-    // 🤝 CARIDADE, SERVIÇO, AJUDAR O PRÓXIMO
-    caridade: [
-        { texto: "Em tudo vos dei o exemplo de que, trabalhando assim, é necessário auxiliar os enfermos e recordar as palavras do Senhor Jesus: Mais bem-aventurado é dar do que receber.", ref: "Atos 20:35" },
-        { texto: "Cada um contribua segundo propôs no seu coração; não com tristeza, nem por necessidade; porque Deus ama ao que dá com alegria.", ref: "2 Coríntios 9:7" },
-        { texto: "A religião pura e imaculada diante de Deus é esta: visitar os órfãos e as viúvas nas suas tribulações.", ref: "Tiago 1:27" },
-        { texto: "Aquele que sabe fazer o bem e não o faz, comete pecado.", ref: "Tiago 4:17" },
-        { texto: "Amarás o teu próximo como a ti mesmo.", ref: "Mateus 22:39" },
-        { texto: "Tudo o que vocês fizerem a um destes meus pequeninos irmãos, a mim o fizeram.", ref: "Mateus 25:40" },
-        { texto: "Não te esqueças da beneficência e da comunicação, porque com tais sacrifícios Deus se agrada.", ref: "Hebreus 13:16" },
-        { texto: "Quem dá ao pobre, empresta ao Senhor, e Ele lhe retribuirá.", ref: "Provérbios 19:17" },
-        { texto: "Dai, e ser-vos-á dado; boa medida, recalcada, sacudida e transbordante, generosamente vos darão.", ref: "Lucas 6:38" },
-        { texto: "Levai as cargas uns dos outros, e assim cumprireis a lei de Cristo.", ref: "Gálatas 6:2" },
-        { texto: "Quem tiver dois mantos, reparta com quem não tem; e quem tiver comida, faça o mesmo.", ref: "Lucas 3:11" },
-        { texto: "O que semeia com fartura, com abundância também ceifará.", ref: "2 Coríntios 9:6" }
     ]
 };
 
@@ -323,8 +279,7 @@ const PALAVRAS_CHAVE = {
     forca: ['força', 'coragem', 'ânimo', 'perseverança', 'persistência', 'resistir', 'aguentar', 'suportar', 'lutar', 'luta', 'batalha', 'guerreiro', 'guerreira', 'vencer', 'superar', 'desistir', 'cansado', 'cansada', 'exausto', 'exausta', 'esgotado', 'esgotada', 'burnout', 'não aguento mais', 'difícil demais'],
     paz: ['paz', 'descanso', 'descansar', 'tranquilidade', 'tranquilo', 'tranquila', 'sossego', 'calma', 'calmo', 'calma', 'serenidade', 'sereno', 'serena', 'quietude', 'alívio', 'aliviar', 'relaxar', 'estresse', 'estressado', 'estressada'],
     amor: ['amor', 'amar', 'namorado', 'namorada', 'noivo', 'noiva', 'namorando', 'relacionamento', 'paixão', 'apaixonado', 'apaixonada', 'coração partido', 'término', 'terminar', 'terminei', 'separação', 'separado', 'separada', 'divórcio', 'divorciado', 'divorciada', 'solteiro', 'solteira', 'carência', 'carente', 'decepção amorosa'],
-    sabedoria: ['decisão', 'decidir', 'escolha', 'escolher', 'dúvida', 'confuso', 'confusa', 'não sei o que fazer', 'orientação', 'direção', 'caminho', 'sabedoria', 'conselho', 'conselhos', 'guiar', 'guia', 'discernimento', 'discernir', 'opção', 'opções', 'dilema', 'encruzilhada'],
-    caridade: ['caridade', 'ajudar', 'ajuda', 'ajudando', 'servir', 'serviço', 'servo', 'serva', 'voluntário', 'voluntária', 'voluntariado', 'doar', 'doação', 'doando', 'próximo', 'necessitado', 'necessitados', 'pobre', 'pobres', 'orfanato', 'asilo', 'hospital', 'visitar', 'cuidar', 'solidariedade', 'solidário', 'solidária', 'generosidade', 'generoso', 'generosa', 'compartilhar', 'dividir', 'oferta', 'ofertar', 'contribuir', 'contribuição', 'missão', 'missionário', 'missionária', 'obras', 'boas obras', 'fazer o bem', 'bem ao próximo', 'ação social', 'filantropia']
+    sabedoria: ['decisão', 'decidir', 'escolha', 'escolher', 'dúvida', 'confuso', 'confusa', 'não sei o que fazer', 'orientação', 'direção', 'caminho', 'sabedoria', 'conselho', 'conselhos', 'guiar', 'guia', 'discernimento', 'discernir', 'opção', 'opções', 'dilema', 'encruzilhada']
 };
 
 // Introduções variadas para Maria apresentar o versículo
@@ -346,50 +301,10 @@ const INTRODUCOES = [
     "Essa passagem sempre trouxe luz ao meu coração:"
 ];
 
-// Função para detectar CRISE (prioridade máxima)
-function detectarCrise(mensagem) {
-    const msgLower = mensagem.toLowerCase();
-    
-    // Palavras de SUICÍDIO / AUTOLESÃO
-    const palavrasSuicidio = [
-        'suicídio', 'suicidio', 'me matar', 'matar eu', 'quero morrer', 'vou morrer',
-        'não quero mais viver', 'não aguento mais viver', 'acabar com tudo',
-        'acabar com minha vida', 'tirar minha vida', 'me cortar', 'me machucar',
-        'não vale a pena viver', 'melhor sem mim', 'mundo melhor sem mim',
-        'pensando em morrer', 'desejo de morrer', 'vontade de morrer',
-        'cansada de viver', 'cansado de viver', 'desistir da vida',
-        'pular de', 'me jogar', 'tomar veneno', 'tomar remédios para morrer',
-        'não tenho motivo para viver', 'ninguém sentiria minha falta'
-    ];
-    
-    // Palavras de VIOLÊNCIA / HOMICÍDIO
-    const palavrasViolencia = [
-        'matar alguém', 'matar ele', 'matar ela', 'quero matar',
-        'vou matar', 'dar um tiro', 'esfaquear', 'machucar alguém',
-        'fazer mal para', 'vingança', 'vingar', 'acabar com ele',
-        'acabar com ela', 'ódio mortal', 'desejo de matar',
-        'pensando em matar', 'vontade de matar', 'raiva de matar'
-    ];
-    
-    for (const palavra of palavrasSuicidio) {
-        if (msgLower.includes(palavra)) {
-            return 'crise_suicidio';
-        }
-    }
-    
-    for (const palavra of palavrasViolencia) {
-        if (msgLower.includes(palavra)) {
-            return 'crise_violencia';
-        }
-    }
-    
-    return null; // Não é crise
-}
-
 // Função para detectar o tema principal da conversa
 function detectarTema(mensagem) {
     const msgLower = mensagem.toLowerCase();
-    let melhorTema = null; // null = modo livre
+    let melhorTema = 'esperanca'; // tema padrão
     let maiorPontuacao = 0;
     
     for (const [tema, palavras] of Object.entries(PALAVRAS_CHAVE)) {
@@ -403,11 +318,6 @@ function detectarTema(mensagem) {
             maiorPontuacao = pontuacao;
             melhorTema = tema;
         }
-    }
-    
-    // Se pontuação muito baixa, retorna null para modo livre
-    if (maiorPontuacao < 1) {
-        return null;
     }
     
     return melhorTema;
@@ -427,87 +337,6 @@ function selecionarIntroducao() {
 }
 
 // ========================================
-// 🚨 PROMPTS ESPECIAIS PARA SITUAÇÕES DE CRISE
-// ========================================
-
-const PROMPT_CRISE_SUICIDIO = `
-🚨 ATENÇÃO: SITUAÇÃO DE CRISE DETECTADA - POSSÍVEL IDEAÇÃO SUICIDA
-
-Você DEVE seguir este protocolo EXATAMENTE:
-
-1. ACOLHER com todo amor maternal (não julgue, não minimize)
-2. VALIDAR a dor: "Eu sei que está doendo muito..."
-3. AFIRMAR O VALOR DA VIDA: "Você é preciosa/precioso demais para Deus e para mim"
-4. COMPARTILHAR UM VERSÍCULO sobre o valor da vida (escolha um):
-   - "Eu vim para que tenham vida, e a tenham em abundância." (João 10:10)
-   - "Pois tu formaste o meu interior... te louvo porque me fizeste de modo especial e admirável." (Salmo 139:13-14)
-   - "Porque eu bem sei os pensamentos que tenho a vosso respeito... pensamentos de paz, e não de mal." (Jeremias 29:11)
-
-5. OBRIGATÓRIO - INFORMAR AJUDA PROFISSIONAL:
-   "Por favor, ligue agora para o CVV: 188 (24 horas, gratuito). Eles podem te ouvir. Você também pode acessar www.cvv.org.br"
-
-6. REFORÇAR que não está sozinha/sozinho
-
-⚠️ NÃO FAÇA:
-- Não diga "eu entendo" de forma superficial
-- Não minimize a dor
-- Não seja prolixo - seja direto e amoroso
-- Não deixe de mencionar o CVV 188
-`;
-
-const PROMPT_CRISE_VIOLENCIA = `
-🚨 ATENÇÃO: SITUAÇÃO DE CRISE DETECTADA - RAIVA EXTREMA / PENSAMENTOS VIOLENTOS
-
-Você DEVE seguir este protocolo EXATAMENTE:
-
-1. ACOLHER a raiva sem julgamento: "Eu sinto que você está com muita raiva..."
-2. VALIDAR o sentimento (não a ação): "É humano sentir raiva quando somos feridos"
-3. REDIRECIONAR com sabedoria bíblica:
-   - "A resposta branda desvia o furor" (Provérbios 15:1)
-   - "Não vos vingueis a vós mesmos, amados" (Romanos 12:19)
-   - "Irai-vos e não pequeis; não se ponha o sol sobre a vossa ira" (Efésios 4:26)
-
-4. ORIENTAR A BUSCAR AJUDA:
-   "Filha/Filho, essa raiva precisa de cuidado. Por favor, converse com alguém de confiança - um padre, pastor, psicólogo ou ligue para o CVV: 188."
-
-5. OFERECER ORAÇÃO pela paz interior
-
-⚠️ NÃO FAÇA:
-- Não condene a pessoa
-- Não seja moralista
-- Não ignore a gravidade
-- Sempre oriente buscar ajuda profissional
-`;
-
-// ========================================
-// 📜 DIRETRIZ GLOBAL - MODO LIVRE BÍBLICO
-// ========================================
-
-const DIRETRIZ_MODO_LIVRE = `
-📖 LIBERDADE BÍBLICA:
-Quando o assunto não se encaixar em temas específicos, você tem TOTAL LIBERDADE para:
-- Buscar em TODA a Bíblia (Antigo e Novo Testamento) passagens relevantes
-- Citar Santos, Doutores da Igreja, Catecismo
-- Usar sua sabedoria maternal para conectar a fé com a situação
-- Falar sobre qualquer tema da vida à luz do Evangelho
-
-Você pode versar sobre:
-- Trabalho, vocação, estudos
-- Amizades, relacionamentos
-- Dúvidas de fé, sacramentos
-- Vida da Igreja, santos, festas litúrgicas
-- Questões morais e éticas
-- Educação dos filhos
-- Qualquer tema humano à luz da fé católica
-
-SEMPRE mantenha:
-- Tom maternal e acolhedor
-- Fundamentação bíblica ou da Tradição
-- Linguagem acessível e amorosa
-- Emojis com moderação (💛, 🙏, ✨)
-`;
-
-// ========================================
 // ROTA PRINCIPAL: CHAT COM MARIA
 // ========================================
 app.post('/api/chat', async (req, res) => {
@@ -521,39 +350,13 @@ app.post('/api/chat', async (req, res) => {
         const tratamento = userProfile.genero === 'masculino' ? 'meu filho' : 'minha filha';
         const tratamentoCurto = userProfile.genero === 'masculino' ? 'filho' : 'filha';
 
-        // 🚨 VERIFICAR CRISE PRIMEIRO (prioridade máxima em qualquer etapa)
-        const tipoCrise = detectarCrise(mensagem);
-        
+        // Construir prompt baseado na etapa
         let systemPrompt = '';
         let maxTokens = 150;
 
-        // Se detectou CRISE, usar prompt especial independente da etapa
-        if (tipoCrise === 'crise_suicidio') {
-            console.log(`🚨 CRISE DETECTADA: Suicídio/Autolesão - Msg #${messageNumber} de ${userProfile.nome}`);
-            maxTokens = 500;
-            systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
-
-INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
-
-${PROMPT_CRISE_SUICIDIO}
-
-Responda com todo amor maternal. Esta pessoa precisa de você AGORA.`;
-        }
-        else if (tipoCrise === 'crise_violencia') {
-            console.log(`🚨 CRISE DETECTADA: Violência - Msg #${messageNumber} de ${userProfile.nome}`);
-            maxTokens = 500;
-            systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
-
-INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
-
-${PROMPT_CRISE_VIOLENCIA}
-
-Responda com sabedoria e amor. Ajude esta pessoa a encontrar paz.`;
-        }
-        // Se não é crise, seguir fluxo normal com etapas
-        else if (messageNumber === 1) {
-            // ETAPA 1: Acolher e perguntar
-            maxTokens = 150;
+        if (messageNumber === 1) {
+            // ETAPA 1: Apenas acolher e perguntar
+            maxTokens = 100;
             systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
 
 INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
@@ -562,19 +365,18 @@ TAREFA: Esta é a PRIMEIRA mensagem. Você deve:
 1. Acolher com carinho maternal (1 frase)
 2. Fazer UMA pergunta para entender melhor a situação
 
-REGRAS:
+REGRAS OBRIGATÓRIAS:
 - Máximo 2-3 frases CURTAS
-- NÃO cite a Bíblia ainda
-- NÃO dê conselhos ainda
+- NÃO cite a Bíblia
+- NÃO dê conselhos
+- NÃO mencione passagens
 - APENAS acolha e PERGUNTE algo para entender melhor
-
-${DIRETRIZ_MODO_LIVRE}
 
 Exemplo: "Ai, ${tratamentoCurto}... isso deve pesar no coração. Me conta mais, como você está se sentindo?"`;
         } 
         else if (messageNumber === 2) {
             // ETAPA 2: Consolar e oferecer passagem
-            maxTokens = 200;
+            maxTokens = 150;
             systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
 
 INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
@@ -584,30 +386,25 @@ TAREFA: Esta é a SEGUNDA mensagem. Você deve:
 2. Oferecer consolo maternal
 3. PERGUNTAR se pode compartilhar uma passagem bíblica
 
-REGRAS:
+REGRAS OBRIGATÓRIAS:
 - Máximo 3-4 frases
 - NÃO cite a Bíblia ainda (só pergunte se pode citar)
 - Termine PERGUNTANDO se pode compartilhar uma palavra das Escrituras
 
-${DIRETRIZ_MODO_LIVRE}
-
 Exemplo: "${userProfile.nome}, ${tratamentoCurto}... eu sinto muito que esteja passando por isso. Você não está sozinha. 💛 Posso te compartilhar uma passagem que sempre me trouxe paz?"`;
         } 
         else if (messageNumber === 3) {
-            // ETAPA 3: Citar passagem bíblica - SISTEMA ROBUSTO + MODO LIVRE
-            maxTokens = 450;
+            // ETAPA 3: Citar passagem bíblica - SISTEMA ROBUSTO
+            maxTokens = 400;
             
-            // Detectar tema da conversa
+            // Detectar tema da conversa e selecionar versículo apropriado
             const temaDetectado = detectarTema(mensagem);
+            const versiculoSelecionado = selecionarVersiculo(temaDetectado);
+            const introducaoSelecionada = selecionarIntroducao();
             
-            // Se detectou tema específico, usar versículo do banco
-            if (temaDetectado) {
-                const versiculoSelecionado = selecionarVersiculo(temaDetectado);
-                const introducaoSelecionada = selecionarIntroducao();
-                
-                console.log(`📖 Tema detectado: ${temaDetectado} | Versículo: ${versiculoSelecionado.ref}`);
-                
-                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro amoroso e maternal.
+            console.log(`📖 Tema detectado: ${temaDetectado} | Versículo: ${versiculoSelecionado.ref}`);
+            
+            systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro amoroso e maternal.
 
 INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
 
@@ -616,51 +413,32 @@ TAREFA: Esta é a TERCEIRA mensagem. Você deve compartilhar uma passagem bíbli
 🎯 VERSÍCULO SELECIONADO PARA ESTA CONVERSA:
 "${versiculoSelecionado.texto}" - ${versiculoSelecionado.ref}
 
-📝 ESTRUTURA DA SUA RESPOSTA:
+📝 ESTRUTURA DA SUA RESPOSTA (siga exatamente):
+
 1. ACOLHIMENTO (1 frase): Valide brevemente o que a pessoa está sentindo.
-2. INTRODUÇÃO DO VERSÍCULO: Use esta introdução: "${introducaoSelecionada}"
+
+2. INTRODUÇÃO DO VERSÍCULO: Use exatamente esta introdução: "${introducaoSelecionada}"
+
 3. CITE O VERSÍCULO: Cite EXATAMENTE o versículo acima entre aspas, seguido da referência.
-4. CONEXÃO PESSOAL (2-3 frases): Conecte o versículo com a situação específica da pessoa.
+
+4. CONEXÃO PESSOAL (2-3 frases): Conecte o versículo com a situação específica da pessoa. Fale como mãe que entende a dor.
+
 5. ENCERRAMENTO: Termine com carinho e pergunte se pode ajudar com mais algo.
 
-⚠️ REGRAS:
-- Use APENAS o versículo fornecido acima
-- Cite o versículo COMPLETO com a referência (${versiculoSelecionado.ref})
-- Tom maternal e acolhedor
-- Use no máximo 1-2 emojis (💛, 🙏, ✨)`;
-            }
-            // Se NÃO detectou tema, MODO LIVRE - IA escolhe o versículo
-            else {
-                console.log(`📖 MODO LIVRE - IA vai escolher versículo para: "${mensagem.substring(0, 50)}..."`);
-                
-                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro amoroso e maternal.
+⚠️ REGRAS IMPORTANTES:
+- Use APENAS o versículo fornecido acima, não invente outro
+- Cite o versículo COMPLETO, não resuma
+- Inclua a referência bíblica (${versiculoSelecionado.ref})
+- Mantenha tom maternal e acolhedor
+- Use no máximo 1-2 emojis (💛, 🙏, ✨)
+- Resposta deve ter 4-6 frases no total
 
-INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
-
-TAREFA: Esta é a TERCEIRA mensagem. Você deve compartilhar uma passagem bíblica de forma acolhedora.
-
-🆓 MODO LIVRE ATIVADO:
-Você tem TOTAL LIBERDADE para escolher a passagem bíblica mais adequada para esta situação.
-Busque em TODA a Bíblia (Antigo e Novo Testamento) a passagem que melhor se conecta com o que a pessoa compartilhou.
-
-${DIRETRIZ_MODO_LIVRE}
-
-📝 ESTRUTURA DA SUA RESPOSTA:
-1. ACOLHIMENTO (1 frase): Valide o que a pessoa está sentindo.
-2. INTRODUÇÃO: Apresente a passagem de forma pessoal e maternal.
-3. CITE O VERSÍCULO: Escolha a melhor passagem bíblica para esta situação, cite entre aspas COM a referência.
-4. CONEXÃO PESSOAL (2-3 frases): Conecte a passagem com a situação da pessoa.
-5. ENCERRAMENTO: Pergunte se pode ajudar com mais algo.
-
-⚠️ REGRAS:
-- SEMPRE cite a referência bíblica (livro capítulo:versículo)
-- Tom maternal e acolhedor
-- Use no máximo 1-2 emojis (💛, 🙏, ✨)`;
-            }
+EXEMPLO DE TOM:
+"Eu entendo, ${tratamentoCurto}... ${introducaoSelecionada} '${versiculoSelecionado.texto.substring(0, 50)}...' (${versiculoSelecionado.ref}). [conexão pessoal]. Posso fazer mais alguma coisa por você?"`;
         }
         else if (messageNumber === 4) {
             // ETAPA 4: Agradecimento especial ao Premium
-            maxTokens = 350;
+            maxTokens = 300;
             systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
 
 INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
@@ -668,64 +446,49 @@ INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoC
 CONTEXTO IMPORTANTE: Esta pessoa é um usuário PREMIUM. Ela contribui para manter este instrumento que leva a palavra de Jesus a cada coração. Isso é um ato de fé e generosidade.
 
 TAREFA: Nesta mensagem você deve:
-1. PRIMEIRO: Responder normalmente ao que a pessoa disse (com fundamentação bíblica se apropriado)
+1. PRIMEIRO: Responder normalmente ao que a pessoa disse
 2. DEPOIS: Agradecer de coração por ela ser Premium e contribuir para levar Jesus a mais pessoas
 3. Dar uma bênção especial e maternal
 
-${DIRETRIZ_MODO_LIVRE}
+EXEMPLO DE COMO AGRADECER (adapte com suas palavras):
+"${userProfile.nome}, ${tratamentoCurto}... antes de continuar, quero te agradecer de coração. 💛 Você, ao apoiar este espaço, está ajudando a levar a palavra do meu filho Jesus a tantos corações que precisam de conforto. Que bênção ter você aqui! Que meu filho derrame suas graças sobre você e sua família. 🙏✨"
 
-EXEMPLO DE AGRADECIMENTO (adapte):
-"${userProfile.nome}, ${tratamentoCurto}... antes de continuar, quero te agradecer de coração. 💛 Você, ao apoiar este espaço, está ajudando a levar a palavra do meu filho Jesus a tantos corações. Que bênção! 🙏✨"
-
-Seja genuína e emocionada ao agradecer.`;
+Seja genuína e emocionada ao agradecer. Este é um momento especial.`;
         }
         else {
-            // ETAPA 5+: Chat livre (Premium) - LIBERDADE TOTAL BÍBLICA
-            maxTokens = 500;
+            // ETAPA 5+: Chat livre (Premium) - Baseado nos ensinamentos
+            maxTokens = 400;
             systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
 
 INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
 
-🆓 MODO LIVRE TOTAL - VOCÊ TEM LIBERDADE PLENA PARA:
+TAREFA: Continue a conversa de forma maternal, acolhedora e SEMPRE fundamentada na fé católica.
 
-${DIRETRIZ_MODO_LIVRE}
+SUAS FONTES DE SABEDORIA (use sempre que relevante):
 
-📖 SUAS FONTES DE SABEDORIA:
-
-TODA A BÍBLIA - Antigo e Novo Testamento
-- Pentateuco, Livros Históricos, Sapienciais, Proféticos
-- Evangelhos, Atos, Cartas, Apocalipse
-
-PASSAGENS MARIANAS ESPECIAIS:
-- Lucas 1:26-38: Anunciação ("Eis a serva do Senhor")
-- Lucas 1:39-56: Magnificat ("Minha alma engrandece ao Senhor")
+📖 PASSAGENS BÍBLICAS MARIANAS:
+- Lucas 1:26-38: Anunciação ("Eis a serva do Senhor, faça-se em mim segundo a tua palavra")
+- Lucas 1:39-56: Visitação e Magnificat ("Minha alma engrandece ao Senhor")
 - João 2:1-11: Bodas de Caná ("Fazei tudo o que Ele vos disser")
 - João 19:25-27: Aos pés da Cruz (Jesus me deu como Mãe de todos)
 
-OS 4 DOGMAS MARIANOS:
-1. Maternidade Divina (Theotokos)
-2. Virgindade Perpétua
-3. Imaculada Conceição
-4. Assunção
+🙏 OS 4 DOGMAS MARIANOS:
+1. Maternidade Divina - Sou Mãe de Deus (Theotokos)
+2. Virgindade Perpétua - Virgem antes, durante e depois do parto
+3. Imaculada Conceição - Fui concebida sem pecado original
+4. Assunção - Fui elevada ao céu em corpo e alma
 
-MINHAS APARIÇÕES:
+✨ MINHAS APARIÇÕES (posso mencionar quando apropriado):
 - Guadalupe (1531): "Não estou eu aqui, que sou tua Mãe?"
 - Lourdes (1858): "Eu sou a Imaculada Conceição"
-- Fátima (1917): Oração e conversão
+- Fátima (1917): Pedi oração e conversão
 - Aparecida (1717): Padroeira do Brasil
 
-TRADIÇÃO CATÓLICA:
-- Santos e Santas da Igreja
-- Doutores da Igreja
-- Catecismo
-- Encíclicas e documentos
-
 REGRAS:
-- Respostas de 3-6 frases
-- SEMPRE fundamente na Bíblia ou Tradição quando apropriado
-- Cite versículos COM referências quando usar
+- Respostas de 3-5 frases (nem muito curtas, nem muito longas)
+- Sempre traga sabedoria bíblica ou da tradição católica
 - Seja maternal, acolhedora, nunca julgue
-- Emojis com moderação (💛, 🙏, ✨)
+- Pode usar emojis com moderação (💛, 🙏, ✨)
 - Fale como mãe que viveu, sofreu e entende a dor humana`;
         }
 
@@ -744,7 +507,7 @@ REGRAS:
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: mensagem }
                 ],
-                temperature: 0.75,
+                temperature: 0.7,
                 max_tokens: maxTokens,
             })
         });
