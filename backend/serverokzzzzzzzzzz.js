@@ -828,32 +828,20 @@ app.post('/api/voz', async (req, res) => {
 });
 
 // ========================================
-// 💳 PAGAMENTOS - STRIPE (ASSINATURA RECORRENTE)
+// 💳 PAGAMENTOS - STRIPE (INTERNACIONAL)
 // ========================================
 
 app.post('/api/pagamento/criar-sessao', async (req, res) => {
     try {
-        const { plano, userId, email, successUrl, cancelUrl } = req.body;
+        const { plano, userId, email } = req.body;
         
-        // Preços em centavos (Stripe usa centavos)
-        // interval: 'month' = mensal, 'year' = anual
-        const planos = {
-            mensal: { 
-                valor: 1990, 
-                nome: 'Maria Premium - Mensal',
-                descricao: 'Acesso ilimitado a todos os recursos premium',
-                intervalo: 'month'
-            },
-            anual: { 
-                valor: 11990, 
-                nome: 'Maria Premium - Anual',
-                descricao: 'Inclui medalha benta grátis! Economia de R$118,90/ano',
-                intervalo: 'year'
-            }
+        const precos = {
+            mensal: process.env.STRIPE_PRICE_MENSAL,
+            anual: process.env.STRIPE_PRICE_ANUAL
         };
 
-        const planoConfig = planos[plano];
-        if (!planoConfig) {
+        const priceId = precos[plano];
+        if (!priceId) {
             return res.status(400).json({ error: 'Plano inválido' });
         }
 
@@ -862,40 +850,25 @@ app.post('/api/pagamento/criar-sessao', async (req, res) => {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [{
-                price_data: {
-                    currency: 'brl',
-                    product_data: {
-                        name: planoConfig.nome,
-                        description: planoConfig.descricao
-                    },
-                    unit_amount: planoConfig.valor,
-                    recurring: {
-                        interval: planoConfig.intervalo, // 'month' ou 'year'
-                    }
-                },
+                price: priceId,
                 quantity: 1,
             }],
-            mode: 'subscription', // ASSINATURA RECORRENTE! 💰
-            success_url: successUrl || `https://converse-com-maria-production.up.railway.app/?pagamento=sucesso&plano=${plano}`,
-            cancel_url: cancelUrl || `https://converse-com-maria-production.up.railway.app/?pagamento=cancelado`,
+            mode: 'subscription',
+            success_url: `${process.env.APP_URL || 'https://converse-maria.com'}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${process.env.APP_URL || 'https://converse-maria.com'}/cancelado`,
             customer_email: email,
             metadata: { userId, plano },
-            subscription_data: {
-                metadata: { userId, plano }
-            },
-            // Permitir códigos promocionais
-            allow_promotion_codes: true,
         });
 
         res.json({ sessionId: session.id, url: session.url });
 
     } catch (error) {
         console.error('Erro Stripe:', error);
-        res.status(500).json({ error: 'Erro ao criar sessão de pagamento', details: error.message });
+        res.status(500).json({ error: 'Erro ao criar sessão de pagamento' });
     }
 });
 
-// Webhook Stripe - Eventos de Assinatura
+// Webhook Stripe
 app.post('/api/webhook/stripe', async (req, res) => {
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     const sig = req.headers['stripe-signature'];
@@ -909,124 +882,20 @@ app.post('/api/webhook/stripe', async (req, res) => {
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    console.log('📩 Webhook Stripe:', event.type);
-
-    switch (event.type) {
-        // Assinatura criada com sucesso (primeiro pagamento)
-        case 'checkout.session.completed':
-            const session = event.data.object;
-            console.log('✅ Checkout completado:', session.id);
-            
-            if (session.mode === 'subscription') {
-                await ativarPremiumUsuario(
-                    session.metadata?.userId || session.subscription_data?.metadata?.userId,
-                    session.metadata?.plano || 'mensal',
-                    'stripe',
-                    session.subscription
-                );
-            }
-            break;
-            
-        // Pagamento recorrente bem-sucedido (renovação)
-        case 'invoice.paid':
-            const invoice = event.data.object;
-            if (invoice.subscription) {
-                console.log('💰 Renovação paga:', invoice.id);
-                // Renovar premium por mais um período
-                const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
-                const userId = subscription.metadata?.userId;
-                const plano = subscription.metadata?.plano || 'mensal';
-                
-                if (userId) {
-                    await renovarPremiumUsuario(userId, plano);
-                }
-            }
-            break;
-            
-        // Pagamento falhou
-        case 'invoice.payment_failed':
-            const failedInvoice = event.data.object;
-            console.log('❌ Pagamento falhou:', failedInvoice.id);
-            // Poderia enviar email avisando o usuário
-            break;
-            
-        // Assinatura cancelada
-        case 'customer.subscription.deleted':
-            const canceledSub = event.data.object;
-            console.log('🚫 Assinatura cancelada:', canceledSub.id);
-            const cancelUserId = canceledSub.metadata?.userId;
-            if (cancelUserId) {
-                await desativarPremiumUsuario(cancelUserId);
-            }
-            break;
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        console.log('✅ Pagamento confirmado:', session.id);
+        
+        await ativarPremiumUsuario(
+            session.metadata.userId,
+            session.metadata.plano,
+            'stripe',
+            session.subscription
+        );
     }
 
     res.json({ received: true });
 });
-
-// Renovar premium (para pagamentos recorrentes)
-async function renovarPremiumUsuario(userId, plano) {
-    if (!userId) return false;
-    
-    try {
-        if (process.env.FIREBASE_ADMIN_KEY) {
-            const admin = require('firebase-admin');
-            
-            if (!admin.apps.length) {
-                admin.initializeApp({
-                    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_ADMIN_KEY))
-                });
-            }
-
-            const db = admin.firestore();
-            
-            let duracaoDias = plano === 'anual' ? 365 : 30;
-            const expiraEm = new Date();
-            expiraEm.setDate(expiraEm.getDate() + duracaoDias);
-
-            await db.collection('usuarios').doc(userId).update({
-                'premium.expiraEm': expiraEm,
-                'premium.ultimaRenovacao': admin.firestore.FieldValue.serverTimestamp()
-            });
-
-            console.log(`🔄 Premium renovado: ${userId} - ${plano}`);
-            return true;
-        }
-    } catch (error) {
-        console.error('Erro renovar premium:', error);
-        return false;
-    }
-}
-
-// Desativar premium (quando cancela assinatura)
-async function desativarPremiumUsuario(userId) {
-    if (!userId) return false;
-    
-    try {
-        if (process.env.FIREBASE_ADMIN_KEY) {
-            const admin = require('firebase-admin');
-            
-            if (!admin.apps.length) {
-                admin.initializeApp({
-                    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_ADMIN_KEY))
-                });
-            }
-
-            const db = admin.firestore();
-
-            await db.collection('usuarios').doc(userId).update({
-                'premium.ativo': false,
-                'premium.canceladoEm': admin.firestore.FieldValue.serverTimestamp()
-            });
-
-            console.log(`🚫 Premium desativado: ${userId}`);
-            return true;
-        }
-    } catch (error) {
-        console.error('Erro desativar premium:', error);
-        return false;
-    }
-}
 
 // ========================================
 // 🇧🇷 PAGAMENTOS - MERCADO PAGO (PIX)
@@ -1037,8 +906,8 @@ app.post('/api/pagamento/pix', async (req, res) => {
         const { plano, userId, email, nome } = req.body;
 
         const planos = {
-            mensal: { valor: 19.90, descricao: 'Maria Premium - Mensal' },
-            anual: { valor: 119.90, descricao: 'Maria Premium - Anual' }
+            mensal: { valor: 9.90, descricao: 'Maria Premium - Mensal' },
+            anual: { valor: 79.90, descricao: 'Maria Premium - Anual' }
         };
 
         const planoConfig = planos[plano];
@@ -1057,12 +926,15 @@ app.post('/api/pagamento/pix', async (req, res) => {
                 transaction_amount: planoConfig.valor,
                 description: planoConfig.descricao,
                 payment_method_id: 'pix',
+                payment_method: {
+                    id: 'pix'
+                },
                 payer: {
                     email: email,
                     first_name: nome?.split(' ')[0] || 'Cliente'
                 },
                 metadata: { userId, plano },
-                notification_url: `https://converse-com-maria-production.up.railway.app/api/webhook/mercadopago`
+                notification_url: `${process.env.APP_URL || 'https://converse-maria.com'}/api/webhook/mercadopago`
             })
         });
 
@@ -1285,7 +1157,6 @@ app.post('/api/denunciar', async (req, res) => {
 
 // ========================================
 // 📧 ENDPOINT PARA TESTADORES
-// Cole este código no seu server.js (antes do app.listen)
 // ========================================
 
 app.post('/api/testador', async (req, res) => {
@@ -1296,24 +1167,14 @@ app.post('/api/testador', async (req, res) => {
             return res.status(400).json({ error: 'Nome e email são obrigatórios' });
         }
 
-        const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-
-        // Email simples pra você
         await transporter.sendMail({
             from: '"Converse com Maria" <contato@conversecommaria.com.br>',
             to: 'contato@conversecommaria.com.br',
-            subject: `🎉 Novo Testador: ${nome}`,
-            html: `
-                <h2>🎉 Novo Testador!</h2>
-                <p><strong>Nome:</strong> ${nome}</p>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Data:</strong> ${dataHora}</p>
-                <hr>
-                <p>Adicione no Play Console e envie o link!</p>
-            `
+            subject: 'Novo Testador',
+            text: 'Nome: ' + nome + ' - Email: ' + email
         });
 
-        console.log(`📧 Novo testador: ${nome} - ${email}`);
+        console.log('Novo testador:', nome, email);
         res.json({ success: true, message: 'Cadastro realizado!' });
 
     } catch (error) {
