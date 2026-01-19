@@ -1167,32 +1167,14 @@ app.post('/api/testador', async (req, res) => {
             return res.status(400).json({ error: 'Nome e email são obrigatórios' });
         }
 
-        const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-
-        const emailHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #27ae60;">🎉 Novo Testador - Converse com Maria</h2>
-                <hr style="border: 1px solid #e5e7eb;">
-                
-                <p><strong>📅 Data/Hora:</strong> ${dataHora}</p>
-                <p><strong>👤 Nome:</strong> ${nome}</p>
-                <p><strong>📧 Email:</strong> ${email}</p>
-                
-                <hr style="border: 1px solid #e5e7eb;">
-                <p style="color: #6b7280; font-size: 12px;">
-                    Adicione este email no Play Console e envie o link de teste.
-                </p>
-            </div>
-        `;
-
         await transporter.sendMail({
             from: '"Converse com Maria" <contato@conversecommaria.com.br>',
             to: 'contato@conversecommaria.com.br',
-            subject: `🎉 Novo Testador: ${nome} - ${dataHora}`,
-            html: emailHtml
+            subject: 'Novo Testador',
+            text: 'Nome: ' + nome + ' - Email: ' + email
         });
 
-        console.log('🎉 Novo testador:', { nome, email, dataHora });
+        console.log('Novo testador:', nome, email);
         res.json({ success: true, message: 'Cadastro realizado!' });
 
     } catch (error) {
