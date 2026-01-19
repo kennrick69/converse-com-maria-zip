@@ -1156,6 +1156,151 @@ app.post('/api/denunciar', async (req, res) => {
 });
 
 // ========================================
+// 📧 ENDPOINT PARA TESTADORES
+// Cole este código no seu server.js (antes do app.listen)
+// ========================================
+
+app.post('/api/testador', async (req, res) => {
+    try {
+        const { nome, email } = req.body;
+
+        if (!nome || !email) {
+            return res.status(400).json({ error: 'Nome e email são obrigatórios' });
+        }
+
+        const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+        // ========================================
+        // 1️⃣ EMAIL PARA VOCÊ (notificação)
+        // ========================================
+        const emailParaVoce = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 24px;">🎉 Novo Testador!</h1>
+                </div>
+                
+                <div style="background: #f5f1e8; padding: 30px; border-radius: 0 0 12px 12px;">
+                    <p style="font-size: 16px; color: #2c3e50; margin-bottom: 20px;">
+                        Uma nova pessoa quer testar o app <strong>Converse com Maria</strong>!
+                    </p>
+                    
+                    <div style="background: #ffffff; padding: 20px; border-radius: 8px; border-left: 4px solid #d4a853;">
+                        <p style="margin: 0 0 10px 0;"><strong>👤 Nome:</strong> ${nome}</p>
+                        <p style="margin: 0 0 10px 0;"><strong>📧 Email:</strong> ${email}</p>
+                        <p style="margin: 0;"><strong>📅 Data:</strong> ${dataHora}</p>
+                    </div>
+                    
+                    <div style="margin-top: 25px; padding: 20px; background: #27ae60; border-radius: 8px;">
+                        <h3 style="color: #ffffff; margin: 0 0 15px 0;">📋 O que fazer agora:</h3>
+                        <ol style="color: #ffffff; margin: 0; padding-left: 20px; line-height: 1.8;">
+                            <li>Acesse o <a href="https://play.google.com/console" style="color: #d4a853;">Google Play Console</a></li>
+                            <li>Vá em Teste fechado → Testadores</li>
+                            <li>Adicione o email: <strong>${email}</strong></li>
+                            <li>Copie o link de teste</li>
+                            <li>Responda o email abaixo para o testador</li>
+                        </ol>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #ffffff; border-radius: 8px; border: 1px dashed #d4a853;">
+                        <p style="margin: 0 0 10px 0; font-weight: bold; color: #2c3e50;">📝 Modelo de resposta:</p>
+                        <p style="margin: 0; color: #5d6d7e; font-style: italic;">
+                            "Olá ${nome}! 🙏<br><br>
+                            Obrigado por querer testar o Converse com Maria!<br><br>
+                            Aqui está o link para baixar o app:<br>
+                            👉 [COLE O LINK AQUI]<br><br>
+                            Qualquer dúvida, é só me chamar!<br><br>
+                            Deus abençoe,<br>
+                            José Ricardo"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        await transporter.sendMail({
+            from: '"Converse com Maria" <contato@conversecommaria.com.br>',
+            to: 'contato@conversecommaria.com.br',
+            subject: `🎉 Novo Testador: ${nome} - ${email}`,
+            html: emailParaVoce
+        });
+
+        // ========================================
+        // 2️⃣ EMAIL PARA O TESTADOR (confirmação)
+        // ========================================
+        const emailParaTestador = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+                    <h1 style="color: #ffffff; margin: 0; font-family: Georgia, serif; font-size: 28px;">Converse com Maria</h1>
+                    <p style="color: #d4a853; margin: 10px 0 0 0; font-size: 14px;">UM ESPAÇO DE ORAÇÃO E PAZ</p>
+                </div>
+                
+                <div style="background: #f5f1e8; padding: 30px; border-radius: 0 0 12px 12px;">
+                    <p style="font-size: 18px; color: #2c3e50; margin-bottom: 20px;">
+                        Olá, <strong>${nome}</strong>! 🙏
+                    </p>
+                    
+                    <p style="font-size: 16px; color: #5d6d7e; line-height: 1.6; margin-bottom: 20px;">
+                        Que alegria ter você como testador do app <strong>Converse com Maria</strong>!
+                    </p>
+                    
+                    <p style="font-size: 16px; color: #5d6d7e; line-height: 1.6; margin-bottom: 25px;">
+                        Recebi seu cadastro e em breve vou te enviar o link para baixar o app. 
+                        Pode demorar algumas horas, pois preciso adicionar seu email manualmente no sistema do Google.
+                    </p>
+                    
+                    <div style="background: #ffffff; padding: 20px; border-radius: 8px; border-left: 4px solid #d4a853;">
+                        <h3 style="color: #2c3e50; margin: 0 0 15px 0;">📋 Enquanto isso, saiba o que você vai encontrar:</h3>
+                        <ul style="color: #5d6d7e; margin: 0; padding-left: 20px; line-height: 1.8;">
+                            <li>💙 Conversa acolhedora com Nossa Senhora</li>
+                            <li>📿 Santo Terço guiado com áudio</li>
+                            <li>🕯️ Santuário de velas virtuais</li>
+                            <li>🙏 Mural de intenções de oração</li>
+                            <li>🎵 Músicas relaxantes para oração</li>
+                        </ul>
+                    </div>
+                    
+                    <p style="font-size: 16px; color: #5d6d7e; line-height: 1.6; margin-top: 25px;">
+                        Fique de olho na sua caixa de entrada (e no spam também, por precaução)!
+                    </p>
+                    
+                    <p style="font-size: 16px; color: #2c3e50; margin-top: 25px;">
+                        Que Nossa Senhora te abençoe! 💙
+                    </p>
+                    
+                    <p style="font-size: 16px; color: #2c3e50; margin-top: 20px;">
+                        <strong>José Ricardo</strong><br>
+                        <span style="color: #5d6d7e;">Desenvolvedor do Converse com Maria</span><br>
+                        <span style="color: #5d6d7e;">Jaraguá do Sul/SC</span>
+                    </p>
+                </div>
+                
+                <div style="text-align: center; padding: 20px; color: #7f8c8d; font-size: 12px;">
+                    <p style="margin: 0;">
+                        Este email foi enviado porque você se cadastrou em conversecommaria.com.br<br>
+                        Em caso de dúvidas: contato@conversecommaria.com.br
+                    </p>
+                </div>
+            </div>
+        `;
+
+        await transporter.sendMail({
+            from: '"Converse com Maria" <contato@conversecommaria.com.br>',
+            to: email,
+            subject: '🙏 Obrigado por querer testar o Converse com Maria!',
+            html: emailParaTestador
+        });
+
+        console.log(`📧 Novo testador: ${nome} - ${email}`);
+        res.json({ success: true, message: 'Cadastro realizado com sucesso!' });
+
+    } catch (error) {
+        console.error('Erro ao cadastrar testador:', error);
+        res.status(500).json({ error: 'Erro ao processar cadastro' });
+    }
+});
+
+
+// ========================================
 // INICIAR
 // ========================================
 app.listen(PORT, () => {
