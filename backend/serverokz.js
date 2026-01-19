@@ -1157,6 +1157,7 @@ app.post('/api/denunciar', async (req, res) => {
 
 // ========================================
 // 📧 ENDPOINT PARA TESTADORES
+// Cole este código no seu server.js (antes do app.listen)
 // ========================================
 
 app.post('/api/testador', async (req, res) => {
@@ -1169,11 +1170,19 @@ app.post('/api/testador', async (req, res) => {
 
         const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
+        // Email simples pra você
         await transporter.sendMail({
             from: '"Converse com Maria" <contato@conversecommaria.com.br>',
-            to: 'kennrick@gmail.com',
-            subject: `Novo Testador: ${nome}`,
-            text: `Nome: ${nome}\nEmail: ${email}\nData: ${dataHora}`
+            to: 'contato@conversecommaria.com.br',
+            subject: `🎉 Novo Testador: ${nome}`,
+            html: `
+                <h2>🎉 Novo Testador!</h2>
+                <p><strong>Nome:</strong> ${nome}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Data:</strong> ${dataHora}</p>
+                <hr>
+                <p>Adicione no Play Console e envie o link!</p>
+            `
         });
 
         console.log(`📧 Novo testador: ${nome} - ${email}`);
