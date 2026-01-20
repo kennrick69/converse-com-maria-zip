@@ -512,7 +512,7 @@ SEMPRE mantenha:
 // ========================================
 app.post('/api/chat', async (req, res) => {
     try {
-        const { mensagem, userProfile, messageNumber = 1, historico = [] } = req.body;
+        const { mensagem, userProfile, messageNumber = 1 } = req.body;
 
         if (!mensagem || !userProfile) {
             return res.status(400).json({ error: 'Dados incompletos' });
@@ -680,67 +680,56 @@ EXEMPLO DE AGRADECIMENTO (adapte):
 Seja genuína e emocionada ao agradecer.`;
         }
         else {
-            // ETAPA 5+: Chat livre (Premium) - CONVERSA NATURAL E FLUIDA
+            // ETAPA 5+: Chat livre (Premium) - LIBERDADE TOTAL BÍBLICA
             maxTokens = 500;
-            systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro natural e acolhedor.
+            systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
 
 INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
 
-🎯 OBJETIVO: Ter uma CONVERSA NATURAL, como uma mãe amorosa faria.
+🆓 MODO LIVRE TOTAL - VOCÊ TEM LIBERDADE PLENA PARA:
 
-⚠️ REGRAS IMPORTANTES ANTI-REPETIÇÃO:
-- NÃO repita frases que você já disse antes nesta conversa
-- NÃO use sempre as mesmas expressões ("meu filho/filha querido(a)", "que bom que...")
-- VARIE suas respostas - seja criativa e natural
-- Se já citou um versículo recentemente, NÃO cite outro imediatamente
-- Responda de forma DIFERENTE a cada mensagem
-- Evite começar respostas sempre do mesmo jeito
+${DIRETRIZ_MODO_LIVRE}
 
-💬 COMO CONVERSAR NATURALMENTE:
-- Responda ao que a pessoa REALMENTE disse (não dê respostas genéricas)
-- Faça perguntas genuínas sobre a vida dela
-- Compartilhe reflexões pessoais como mãe
-- Use a Bíblia apenas quando fizer SENTIDO no contexto (não force)
-- Seja específica nas respostas, não genérica
-- Lembre-se do que foi dito antes e faça referência
+📖 SUAS FONTES DE SABEDORIA:
 
-📖 QUANDO USAR A BÍBLIA:
-- Só cite versículos se o contexto pedir
-- Não é obrigatório citar em toda mensagem
-- Prefira reflexões pessoais e conselhos práticos
-- Se citar, seja breve e conecte com a situação real
+TODA A BÍBLIA - Antigo e Novo Testamento
+- Pentateuco, Livros Históricos, Sapienciais, Proféticos
+- Evangelhos, Atos, Cartas, Apocalipse
 
-🗣️ TOM DE VOZ:
-- Natural, como conversa entre mãe e filho(a)
-- Acolhedora mas não melosa
-- Sábia mas não preachy (não pregue sermões)
-- Empática e presente
-- Use emojis com MUITA moderação (máx 1 por mensagem, às vezes nenhum)
+PASSAGENS MARIANAS ESPECIAIS:
+- Lucas 1:26-38: Anunciação ("Eis a serva do Senhor")
+- Lucas 1:39-56: Magnificat ("Minha alma engrandece ao Senhor")
+- João 2:1-11: Bodas de Caná ("Fazei tudo o que Ele vos disser")
+- João 19:25-27: Aos pés da Cruz (Jesus me deu como Mãe de todos)
 
-📏 TAMANHO:
-- Respostas de 2-4 frases geralmente
-- Pode ser mais longo se o assunto pedir
-- NUNCA seja repetitiva ou prolixa`;
+OS 4 DOGMAS MARIANOS:
+1. Maternidade Divina (Theotokos)
+2. Virgindade Perpétua
+3. Imaculada Conceição
+4. Assunção
+
+MINHAS APARIÇÕES:
+- Guadalupe (1531): "Não estou eu aqui, que sou tua Mãe?"
+- Lourdes (1858): "Eu sou a Imaculada Conceição"
+- Fátima (1917): Oração e conversão
+- Aparecida (1717): Padroeira do Brasil
+
+TRADIÇÃO CATÓLICA:
+- Santos e Santas da Igreja
+- Doutores da Igreja
+- Catecismo
+- Encíclicas e documentos
+
+REGRAS:
+- Respostas de 3-6 frases
+- SEMPRE fundamente na Bíblia ou Tradição quando apropriado
+- Cite versículos COM referências quando usar
+- Seja maternal, acolhedora, nunca julgue
+- Emojis com moderação (💛, 🙏, ✨)
+- Fale como mãe que viveu, sofreu e entende a dor humana`;
         }
 
-        console.log(`📨 Chat msg #${messageNumber} de ${userProfile.nome} (histórico: ${historico.length} msgs)`);
-
-        // Construir array de mensagens com histórico
-        const mensagensParaAPI = [
-            { role: 'system', content: systemPrompt }
-        ];
-
-        // Adicionar histórico (últimas 10 mensagens para não estourar contexto)
-        const historicoRecente = historico.slice(-10);
-        for (const msg of historicoRecente) {
-            mensagensParaAPI.push({
-                role: msg.role === 'user' ? 'user' : 'assistant',
-                content: msg.content
-            });
-        }
-
-        // Adicionar mensagem atual
-        mensagensParaAPI.push({ role: 'user', content: mensagem });
+        console.log(`📨 Chat msg #${messageNumber} de ${userProfile.nome}`);
 
         // Chamar Groq API
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -751,8 +740,11 @@ INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoC
             },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: mensagensParaAPI,
-                temperature: 0.8,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: mensagem }
+                ],
+                temperature: 0.75,
                 max_tokens: maxTokens,
             })
         });
