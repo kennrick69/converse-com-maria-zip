@@ -18,8 +18,8 @@ const rateLimitStore = new Map();
 
 // Configurações de limite
 const RATE_LIMITS = {
-    chat: { windowMs: 60000, maxRequests: 20 },      // 20 msgs por minuto
-    chatPremium: { windowMs: 60000, maxRequests: 40 }, // 40 msgs por minuto (premium)
+    chat: { windowMs: 60000, maxRequests: 10 },      // 10 msgs por minuto
+    chatPremium: { windowMs: 60000, maxRequests: 10 }, // 10 msgs por minuto
     tts: { windowMs: 60000, maxRequests: 30 },        // 30 áudios por minuto
     general: { windowMs: 60000, maxRequests: 100 }    // 100 requests por minuto (geral)
 };
