@@ -12,80 +12,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ========================================
-// 🛡️ RATE LIMITING - PROTEÇÃO CONTRA ABUSO
-// ========================================
-const rateLimitStore = new Map();
-
-// Configurações de limite
-const RATE_LIMITS = {
-    chat: { windowMs: 60000, maxRequests: 20 },      // 20 msgs por minuto
-    chatPremium: { windowMs: 60000, maxRequests: 40 }, // 40 msgs por minuto (premium)
-    tts: { windowMs: 60000, maxRequests: 30 },        // 30 áudios por minuto
-    general: { windowMs: 60000, maxRequests: 100 }    // 100 requests por minuto (geral)
-};
-
-// Limpar registros antigos a cada 5 minutos
-setInterval(() => {
-    const now = Date.now();
-    for (const [key, data] of rateLimitStore.entries()) {
-        if (now - data.windowStart > 300000) { // 5 minutos
-            rateLimitStore.delete(key);
-        }
-    }
-}, 300000);
-
-// Função de rate limiting
-function checkRateLimit(identifier, type = 'general') {
-    const config = RATE_LIMITS[type] || RATE_LIMITS.general;
-    const key = `${type}:${identifier}`;
-    const now = Date.now();
-    
-    let record = rateLimitStore.get(key);
-    
-    if (!record || now - record.windowStart > config.windowMs) {
-        // Nova janela
-        record = { windowStart: now, count: 1 };
-        rateLimitStore.set(key, record);
-        return { allowed: true, remaining: config.maxRequests - 1 };
-    }
-    
-    record.count++;
-    
-    if (record.count > config.maxRequests) {
-        const resetIn = Math.ceil((record.windowStart + config.windowMs - now) / 1000);
-        return { allowed: false, remaining: 0, resetIn };
-    }
-    
-    return { allowed: true, remaining: config.maxRequests - record.count };
-}
-
-// Middleware de rate limiting
-function rateLimitMiddleware(type = 'general') {
-    return (req, res, next) => {
-        // Identificador: IP + userId (se tiver)
-        const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || 'unknown';
-        const userId = req.body?.userId || req.query?.userId || '';
-        const identifier = `${ip}:${userId}`;
-        
-        const result = checkRateLimit(identifier, type);
-        
-        // Headers informativos
-        res.setHeader('X-RateLimit-Remaining', result.remaining);
-        
-        if (!result.allowed) {
-            console.log(`⚠️ Rate limit excedido: ${identifier} (${type})`);
-            return res.status(429).json({
-                error: 'Muitas requisições. Aguarde um momento.',
-                resetIn: result.resetIn,
-                tipo: 'rate_limit'
-            });
-        }
-        
-        next();
-    };
-}
-
-// ========================================
 // 📧 CONFIGURAÇÃO SMTP (HOSTINGER)
 // ========================================
 const transporter = nodemailer.createTransport({
@@ -586,23 +512,7 @@ SEMPRE mantenha:
 // ========================================
 app.post('/api/chat', async (req, res) => {
     try {
-        const { mensagem, userProfile, messageNumber = 1, historico = [], isPremium = false } = req.body;
-
-        // 🛡️ RATE LIMITING
-        const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || 'unknown';
-        const userId = userProfile?.nome || '';
-        const identifier = `${ip}:${userId}`;
-        const limitType = isPremium ? 'chatPremium' : 'chat';
-        
-        const rateCheck = checkRateLimit(identifier, limitType);
-        if (!rateCheck.allowed) {
-            console.log(`⚠️ Rate limit excedido: ${identifier}`);
-            return res.status(429).json({
-                error: 'Você está enviando mensagens muito rápido. Aguarde um momento e tente novamente.',
-                resetIn: rateCheck.resetIn,
-                tipo: 'rate_limit'
-            });
-        }
+        const { mensagem, userProfile, messageNumber = 1, historico = [] } = req.body;
 
         if (!mensagem || !userProfile) {
             return res.status(400).json({ error: 'Dados incompletos' });
@@ -840,18 +750,6 @@ INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoC
 // ========================================
 app.post('/api/voz', async (req, res) => {
     try {
-        // 🛡️ RATE LIMITING
-        const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || 'unknown';
-        const rateCheck = checkRateLimit(ip, 'tts');
-        if (!rateCheck.allowed) {
-            console.log(`⚠️ Rate limit TTS excedido: ${ip}`);
-            return res.status(429).json({
-                error: 'Muitas solicitações de áudio. Aguarde um momento.',
-                resetIn: rateCheck.resetIn,
-                tipo: 'rate_limit'
-            });
-        }
-
         const { texto } = req.body;
 
         if (!texto) {
@@ -1398,44 +1296,6 @@ app.post('/api/testador', async (req, res) => {
     } catch (error) {
         console.error('Erro ao cadastrar testador:', error);
         res.status(500).json({ error: 'Erro ao processar cadastro' });
-    }
-});
-
-
-// ========================================
-// LEADS - CAPTURA DE CONTATOS DO SITE
-// ========================================
-app.post('/api/lead', async (req, res) => {
-    try {
-        const { nome, email, whatsapp, genero, estadoCivil, filhos, origem } = req.body;
-
-        if (!nome || !email) {
-            return res.status(400).json({ error: 'Nome e email são obrigatórios' });
-        }
-
-        console.log(`📧 Novo lead: ${nome} - ${email} - ${whatsapp}`);
-
-        // Salvar no Firestore
-        if (adminDb) {
-            await adminDb.collection('leads').add({
-                nome,
-                email,
-                whatsapp: whatsapp || '',
-                genero: genero || '',
-                estadoCivil: estadoCivil || '',
-                filhos: filhos || '',
-                origem: origem || 'site',
-                criadoEm: new Date().toISOString(),
-                contatado: false
-            });
-            console.log(`✅ Lead salvo no Firestore`);
-        }
-
-        res.json({ success: true, message: 'Lead salvo com sucesso' });
-
-    } catch (error) {
-        console.error('❌ Erro ao salvar lead:', error);
-        res.status(500).json({ error: 'Erro ao salvar lead' });
     }
 });
 
