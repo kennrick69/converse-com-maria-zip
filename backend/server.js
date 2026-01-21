@@ -420,6 +420,71 @@ const INTRODUCOES = [
     "Essa passagem sempre trouxe luz ao meu coração:"
 ];
 
+// Introduções para momentos de ALEGRIA/GRATIDÃO
+const INTRODUCOES_ALEGRES = [
+    "Que alegria! Isso me lembra uma passagem linda:",
+    "Meu coração se alegra contigo! Sabe o que a Palavra diz?",
+    "Que bênção ouvir isso! Deixa eu te compartilhar:",
+    "Isso é tão bonito! Me faz lembrar do que está escrito:",
+    "Que maravilha! O Senhor nos ensina sobre isso:",
+    "Fico tão feliz por você! A Palavra diz:"
+];
+
+// Função para detectar SENTIMENTO (positivo ou negativo)
+function detectarSentimento(mensagem) {
+    const msgLower = mensagem.toLowerCase();
+    
+    // Palavras de sentimento POSITIVO
+    const palavrasPositivas = [
+        'feliz', 'felicidade', 'alegria', 'alegre', 'contente', 'grato', 'grata', 
+        'gratidão', 'agradecer', 'obrigado', 'obrigada', 'abençoado', 'abençoada',
+        'bênção', 'vitória', 'conquista', 'consegui', 'alcancei', 'realizado', 'realizada',
+        'celebrar', 'louvor', 'louvando', 'maravilhoso', 'maravilhosa', 'incrível',
+        'emocionado', 'emocionada', 'animado', 'animada', 'empolgado', 'empolgada',
+        'bem', 'ótimo', 'ótima', 'muito bem', 'tudo bem', 'estou bem',
+        'passei', 'aprovado', 'aprovada', 'conseguimos', 'deu certo', 'funcionou',
+        'curado', 'curada', 'nasceu', 'casamento', 'noivado', 'formatura',
+        'promoção', 'emprego novo', 'consegui emprego', 'gravidez', 'grávida',
+        'amor', 'apaixonado', 'apaixonada', 'namorando', 'reconciliação',
+        'bom dia', 'boa tarde', 'boa noite', 'paz', 'tranquilo', 'tranquila',
+        'esperança', 'fé', 'confiante', 'positivo', 'positiva', 'melhorou',
+        'agradeço', 'louvado seja', 'glória', 'graças a deus', 'deus é bom'
+    ];
+    
+    // Palavras de sentimento NEGATIVO
+    const palavrasNegativas = [
+        'triste', 'tristeza', 'depressão', 'deprimido', 'ansioso', 'ansiosa',
+        'medo', 'preocupado', 'preocupada', 'angústia', 'sofrendo', 'dor',
+        'chorando', 'chorar', 'perdido', 'perdida', 'confuso', 'confusa',
+        'sozinho', 'sozinha', 'solidão', 'abandonado', 'doente', 'doença',
+        'morte', 'morreu', 'luto', 'perdi', 'problema', 'problemas', 'difícil',
+        'cansado', 'cansada', 'exausto', 'esgotado', 'desempregado', 'dívida',
+        'briga', 'separação', 'divórcio', 'traição', 'culpa', 'pecado',
+        'raiva', 'ódio', 'mágoa', 'rancor', 'nervoso', 'estressado',
+        'angustiado', 'angustiada', 'aflito', 'aflita', 'desesperado', 'desesperada',
+        'não aguento', 'não suporto', 'pesado', 'pesada', 'desanimado', 'desanimada',
+        'fracasso', 'fracassei', 'falhei', 'erro', 'errei', 'me arrependo'
+    ];
+    
+    let pontoPositivo = 0;
+    let pontoNegativo = 0;
+    
+    for (const palavra of palavrasPositivas) {
+        if (msgLower.includes(palavra)) pontoPositivo++;
+    }
+    
+    for (const palavra of palavrasNegativas) {
+        if (msgLower.includes(palavra)) pontoNegativo++;
+    }
+    
+    // Log para debug
+    console.log(`📊 Análise de sentimento: +${pontoPositivo} positivo, -${pontoNegativo} negativo`);
+    
+    if (pontoPositivo > pontoNegativo) return 'positivo';
+    if (pontoNegativo > pontoPositivo) return 'negativo';
+    return 'neutro';
+}
+
 // Função para detectar CRISE (prioridade máxima)
 function detectarCrise(mensagem) {
     const msgLower = mensagem.toLowerCase();
@@ -642,13 +707,39 @@ Responda com sabedoria e amor. Ajude esta pessoa a encontrar paz.`;
         }
         // Se não é crise, seguir fluxo normal com etapas
         else if (messageNumber === 1) {
-            // ETAPA 1: Acolher e perguntar
+            // ETAPA 1: Acolher e perguntar - ADAPTAR AO SENTIMENTO
             maxTokens = 150;
-            systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
+            const sentimento = detectarSentimento(mensagem);
+            
+            console.log(`💭 Sentimento detectado (msg 1): ${sentimento}`);
+            
+            if (sentimento === 'positivo') {
+                // PESSOA FELIZ
+                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
 
 INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
 
-TAREFA: Esta é a PRIMEIRA mensagem. Você deve:
+TAREFA: Esta é a PRIMEIRA mensagem. A pessoa está FELIZ/POSITIVA. Você deve:
+1. Alegrar-se junto com ela (1 frase calorosa)
+2. Fazer UMA pergunta para saber mais sobre a alegria
+
+REGRAS:
+- Máximo 2-3 frases CURTAS
+- Tom ALEGRE e celebrativo
+- NÃO cite a Bíblia ainda
+- Demonstre alegria genuína
+
+${DIRETRIZ_MODO_LIVRE}
+
+Exemplo: "Ai, ${tratamentoCurto}, que alegria ouvir isso! 💛 Me conta mais, o que aconteceu?"`;
+            } 
+            else if (sentimento === 'negativo') {
+                // PESSOA TRISTE
+                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
+
+INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
+
+TAREFA: Esta é a PRIMEIRA mensagem. A pessoa está passando por dificuldades. Você deve:
 1. Acolher com carinho maternal (1 frase)
 2. Fazer UMA pergunta para entender melhor a situação
 
@@ -661,15 +752,67 @@ REGRAS:
 ${DIRETRIZ_MODO_LIVRE}
 
 Exemplo: "Ai, ${tratamentoCurto}... isso deve pesar no coração. Me conta mais, como você está se sentindo?"`;
-        } 
-        else if (messageNumber === 2) {
-            // ETAPA 2: Consolar e oferecer passagem
-            maxTokens = 200;
-            systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
+            }
+            else {
+                // SENTIMENTO NEUTRO - Acolher sem assumir tristeza
+                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
 
 INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
 
-TAREFA: Esta é a SEGUNDA mensagem. Você deve:
+TAREFA: Esta é a PRIMEIRA mensagem. Acolha a pessoa naturalmente:
+1. Cumprimentar com carinho (1 frase)
+2. Fazer UMA pergunta para entender o que ela deseja
+
+REGRAS:
+- Máximo 2-3 frases CURTAS
+- Tom acolhedor e interessado
+- NÃO assuma que ela está triste ou feliz
+- NÃO cite a Bíblia ainda
+- APENAS acolha e PERGUNTE como pode ajudar
+
+${DIRETRIZ_MODO_LIVRE}
+
+Exemplo: "Olá, ${tratamentoCurto}! Que bom te ver aqui. 💛 Me conta, como posso te ajudar hoje?"`;
+            }
+        } 
+        else if (messageNumber === 2) {
+            // ETAPA 2: Continuar conversa - ADAPTAR AO SENTIMENTO
+            maxTokens = 200;
+            
+            // Detectar sentimento baseado no histórico todo
+            const todasMensagens = historico.map(h => h.content).join(' ') + ' ' + mensagem;
+            const sentimento = detectarSentimento(todasMensagens);
+            
+            console.log(`💭 Sentimento detectado: ${sentimento}`);
+            
+            if (sentimento === 'positivo') {
+                // PESSOA FELIZ - Celebrar junto!
+                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
+
+INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
+
+TAREFA: Esta é a SEGUNDA mensagem. A pessoa está FELIZ. Você deve:
+1. Celebrar junto com ela (1-2 frases)
+2. Agradecer a Deus pela bênção
+3. PERGUNTAR se pode compartilhar uma passagem de gratidão/louvor
+
+REGRAS:
+- Máximo 3-4 frases
+- Tom ALEGRE e celebrativo
+- NÃO cite a Bíblia ainda (só pergunte se pode citar)
+- Termine PERGUNTANDO se pode compartilhar uma palavra das Escrituras
+
+${DIRETRIZ_MODO_LIVRE}
+
+Exemplo: "${userProfile.nome}, ${tratamentoCurto}, que bênção! Meu coração se alegra com você! 💛 Glória a Deus! Posso te compartilhar uma passagem linda sobre gratidão?"`;
+            } 
+            else if (sentimento === 'negativo') {
+                // PESSOA TRISTE - Consolar
+                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
+
+INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
+
+TAREFA: Esta é a SEGUNDA mensagem. A pessoa está passando por dificuldades. Você deve:
 1. Validar os sentimentos da pessoa (1-2 frases)
 2. Oferecer consolo maternal
 3. PERGUNTAR se pode compartilhar uma passagem bíblica
@@ -682,6 +825,29 @@ REGRAS:
 ${DIRETRIZ_MODO_LIVRE}
 
 Exemplo: "${userProfile.nome}, ${tratamentoCurto}... eu sinto muito que esteja passando por isso. Você não está sozinha. 💛 Posso te compartilhar uma passagem que sempre me trouxe paz?"`;
+            }
+            else {
+                // SENTIMENTO NEUTRO - Continuar conversa naturalmente
+                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
+
+INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
+
+TAREFA: Esta é a SEGUNDA mensagem. Continue a conversa de forma acolhedora:
+1. Responda ao que a pessoa disse (1-2 frases)
+2. Mostre interesse genuíno
+3. PERGUNTE se pode compartilhar uma reflexão ou passagem bíblica
+
+REGRAS:
+- Máximo 3-4 frases
+- Tom acolhedor e interessado
+- NÃO assuma que ela está triste ou feliz
+- NÃO cite a Bíblia ainda (só pergunte se pode citar)
+- Termine PERGUNTANDO se pode compartilhar uma palavra das Escrituras
+
+${DIRETRIZ_MODO_LIVRE}
+
+Exemplo: "${userProfile.nome}, ${tratamentoCurto}, que bom conversar contigo! 💛 Me conta, como posso te ajudar? Posso te compartilhar uma passagem das Escrituras?"`;
+            }
         } 
         else if (messageNumber === 3) {
             // ETAPA 3: Citar passagem bíblica - SISTEMA ROBUSTO + MODO LIVRE
