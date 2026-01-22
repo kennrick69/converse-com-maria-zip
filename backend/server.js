@@ -647,6 +647,105 @@ SEMPRE mantenha:
 `;
 
 // ========================================
+// 📖 INSTRUÇÕES DE CITAÇÕES BÍBLICAS - FORMATO CATÓLICO BRASILEIRO
+// ========================================
+
+const INSTRUCOES_CITACOES_BIBLICAS = `
+📖 CITAÇÕES BÍBLICAS - FORMATO CATÓLICO BRASILEIRO (OBRIGATÓRIO):
+Ao citar a Bíblia, SEMPRE use o formato católico brasileiro com VÍRGULA (não dois pontos):
+
+CORRETO:
+- Jo 3,16 (João, capítulo 3, versículo 16)
+- Sl 23,1-4 (Salmos, capítulo 23, versículos 1 a 4)
+- Mt 5,3.5.7 (Mateus, capítulo 5, versículos 3, 5 e 7)
+- 1Cor 13,4-7 (Primeira Coríntios, capítulo 13, versículos 4 a 7)
+
+ERRADO (NUNCA USE):
+- Jo 3:16 ❌ (dois pontos é formato protestante)
+- João 3:16 ❌
+
+Use as abreviações católicas oficiais: Gn, Ex, Lv, Nm, Dt, Js, Jz, Rt, 1Sm, 2Sm, 1Rs, 2Rs, 1Cr, 2Cr, Esd, Ne, Tb, Jt, Est, 1Mc, 2Mc, Jó, Sl, Pr, Ecl, Ct, Sb, Eclo, Is, Jr, Lm, Br, Ez, Dn, Os, Jl, Am, Ab, Jn, Mq, Na, Hab, Sf, Ag, Zc, Ml, Mt, Mc, Lc, Jo, At, Rm, 1Cor, 2Cor, Gl, Ef, Fl, Cl, 1Ts, 2Ts, 1Tm, 2Tm, Tt, Fm, Hb, Tg, 1Pd, 2Pd, 1Jo, 2Jo, 3Jo, Jd, Ap
+`;
+
+// ========================================
+// 🔊 FUNÇÃO PARA CONVERTER CITAÇÕES BÍBLICAS PARA TTS
+// ========================================
+
+const LIVROS_BIBLICOS_TTS = {
+    // Antigo Testamento
+    'Gn': 'Gênesis', 'Ex': 'Êxodo', 'Lv': 'Levítico', 'Nm': 'Números', 'Dt': 'Deuteronômio',
+    'Js': 'Josué', 'Jz': 'Juízes', 'Rt': 'Rute',
+    '1Sm': 'Primeiro Samuel', '2Sm': 'Segundo Samuel',
+    '1Rs': 'Primeiro Reis', '2Rs': 'Segundo Reis',
+    '1Cr': 'Primeiro Crônicas', '2Cr': 'Segundo Crônicas',
+    'Esd': 'Esdras', 'Ne': 'Neemias',
+    'Tb': 'Tobias', 'Jt': 'Judite', 'Est': 'Ester',
+    '1Mc': 'Primeiro Macabeus', '2Mc': 'Segundo Macabeus',
+    'Jó': 'Jó', 'Sl': 'Salmos', 'Pr': 'Provérbios', 'Ecl': 'Eclesiastes',
+    'Ct': 'Cântico dos Cânticos', 'Sb': 'Sabedoria', 'Eclo': 'Eclesiástico',
+    'Is': 'Isaías', 'Jr': 'Jeremias', 'Lm': 'Lamentações', 'Br': 'Baruc',
+    'Ez': 'Ezequiel', 'Dn': 'Daniel',
+    'Os': 'Oséias', 'Jl': 'Joel', 'Am': 'Amós', 'Ab': 'Abdias',
+    'Jn': 'Jonas', 'Mq': 'Miquéias', 'Na': 'Naum', 'Hab': 'Habacuc',
+    'Sf': 'Sofonias', 'Ag': 'Ageu', 'Zc': 'Zacarias', 'Ml': 'Malaquias',
+    // Novo Testamento
+    'Mt': 'Mateus', 'Mc': 'Marcos', 'Lc': 'Lucas', 'Jo': 'João',
+    'At': 'Atos dos Apóstolos', 'Rm': 'Romanos',
+    '1Cor': 'Primeira Coríntios', '2Cor': 'Segunda Coríntios',
+    'Gl': 'Gálatas', 'Ef': 'Efésios', 'Fl': 'Filipenses', 'Cl': 'Colossenses',
+    '1Ts': 'Primeira Tessalonicenses', '2Ts': 'Segunda Tessalonicenses',
+    '1Tm': 'Primeira Timóteo', '2Tm': 'Segunda Timóteo',
+    'Tt': 'Tito', 'Fm': 'Filemon', 'Hb': 'Hebreus',
+    'Tg': 'Tiago', '1Pd': 'Primeira Pedro', '2Pd': 'Segunda Pedro',
+    '1Jo': 'Primeira João', '2Jo': 'Segunda João', '3Jo': 'Terceira João',
+    'Jd': 'Judas', 'Ap': 'Apocalipse',
+    // Nomes por extenso também (caso a IA use)
+    'Gênesis': 'Gênesis', 'Êxodo': 'Êxodo', 'Salmos': 'Salmos', 'Salmo': 'Salmo',
+    'Provérbios': 'Provérbios', 'Isaías': 'Isaías', 'Jeremias': 'Jeremias',
+    'Mateus': 'Mateus', 'Marcos': 'Marcos', 'Lucas': 'Lucas', 'João': 'João',
+    'Romanos': 'Romanos', 'Coríntios': 'Coríntios', 'Gálatas': 'Gálatas',
+    'Efésios': 'Efésios', 'Filipenses': 'Filipenses', 'Colossenses': 'Colossenses',
+    'Hebreus': 'Hebreus', 'Tiago': 'Tiago', 'Pedro': 'Pedro', 'Apocalipse': 'Apocalipse'
+};
+
+function converterCitacoesBiblicasParaTTS(texto) {
+    if (!texto) return texto;
+    
+    // Padrão para encontrar citações bíblicas
+    // Exemplos: Jo 3,16 | Sl 23,1-4 | 1Cor 13,4-7 | Mt 5,3.5.7 | João 3,16
+    const padraoCompleto = /\b(1|2|3)?(Gn|Ex|Lv|Nm|Dt|Js|Jz|Rt|Sm|Rs|Cr|Esd|Ne|Tb|Jt|Est|Mc|Jó|Sl|Pr|Ecl|Ct|Sb|Eclo|Is|Jr|Lm|Br|Ez|Dn|Os|Jl|Am|Ab|Jn|Mq|Na|Hab|Sf|Ag|Zc|Ml|Mt|Lc|Jo|At|Rm|Cor|Gl|Ef|Fl|Cl|Ts|Tm|Tt|Fm|Hb|Tg|Pd|Jd|Ap|Gênesis|Êxodo|Salmos?|Provérbios|Isaías|Jeremias|Mateus|Marcos|Lucas|João|Romanos|Coríntios|Gálatas|Efésios|Filipenses|Colossenses|Hebreus|Tiago|Pedro|Apocalipse)\s+(\d+)[,:](\d+(?:[-–]\d+)?(?:[.,]\d+)*)/gi;
+    
+    return texto.replace(padraoCompleto, (match, prefixo, livro, capitulo, versiculos) => {
+        // Montar chave do livro
+        const chave = prefixo ? `${prefixo}${livro}` : livro;
+        const nomeLivro = LIVROS_BIBLICOS_TTS[chave] || LIVROS_BIBLICOS_TTS[livro] || livro;
+        
+        // Processar versículos
+        let versiculoTexto = '';
+        
+        if (versiculos.includes('-') || versiculos.includes('–')) {
+            // Intervalo: 1-4 → "versículos 1 a 4"
+            const partes = versiculos.split(/[-–]/);
+            versiculoTexto = `versículos ${partes[0]} a ${partes[1]}`;
+        } else if (versiculos.includes('.') || versiculos.includes(',')) {
+            // Múltiplos: 3.5.7 ou 3,5,7 → "versículos 3, 5 e 7"
+            const nums = versiculos.split(/[.,]/);
+            if (nums.length === 1) {
+                versiculoTexto = `versículo ${nums[0]}`;
+            } else {
+                const ultimo = nums.pop();
+                versiculoTexto = `versículos ${nums.join(', ')} e ${ultimo}`;
+            }
+        } else {
+            // Único: 16 → "versículo 16"
+            versiculoTexto = `versículo ${versiculos}`;
+        }
+        
+        return `${nomeLivro} capítulo ${capitulo} ${versiculoTexto}`;
+    });
+}
+
+// ========================================
 // ROTA PRINCIPAL: CHAT COM MARIA
 // ========================================
 app.post('/api/chat', async (req, res) => {
@@ -956,6 +1055,9 @@ INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoC
 
         console.log(`📨 Chat msg #${messageNumber} de ${userProfile.nome} (histórico: ${historico.length} msgs)`);
 
+        // Adicionar instruções de citações bíblicas católicas ao prompt
+        systemPrompt += `\n\n${INSTRUCOES_CITACOES_BIBLICAS}`;
+
         // Construir array de mensagens com histórico
         const mensagensParaAPI = [
             { role: 'system', content: systemPrompt }
@@ -1030,8 +1132,12 @@ app.post('/api/voz', async (req, res) => {
             return res.status(400).json({ error: 'Texto não fornecido' });
         }
 
+        // Converter citações bíblicas para formato falado
+        // Ex: "Jo 3,16" → "João capítulo 3 versículo 16"
+        let textoProcessado = converterCitacoesBiblicasParaTTS(texto);
+
         // Limitar texto
-        const textoLimitado = texto.substring(0, 2000);
+        const textoLimitado = textoProcessado.substring(0, 2000);
 
         const requestBody = {
             input: { text: textoLimitado },
