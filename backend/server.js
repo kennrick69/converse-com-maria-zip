@@ -779,7 +779,7 @@ function removerEmojis(texto) {
 // ========================================
 app.post('/api/chat', async (req, res) => {
     try {
-        const { mensagem, userProfile, messageNumber = 1, historico = [], isPremium = false } = req.body;
+        const { mensagem, userProfile, messageNumber = 1, historico = [], isPremium = false, memoriaAnterior = null } = req.body;
 
         // 🛡️ RATE LIMITING
         const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || 'unknown';
@@ -803,6 +803,12 @@ app.post('/api/chat', async (req, res) => {
 
         const tratamento = userProfile.genero === 'masculino' ? 'meu filho' : 'minha filha';
         const tratamentoCurto = userProfile.genero === 'masculino' ? 'filho' : 'filha';
+
+        // 🧠 VERIFICAR SE TEM MEMÓRIA DE CONVERSA ANTERIOR
+        const temMemoria = memoriaAnterior && memoriaAnterior.tema;
+        if (temMemoria) {
+            console.log(`🧠 Memória ativada: "${memoriaAnterior.tema}" para ${userProfile.nome}`);
+        }
 
         // 🚨 VERIFICAR CRISE PRIMEIRO (prioridade máxima em qualquer etapa)
         const tipoCrise = detectarCrise(mensagem);
@@ -832,6 +838,40 @@ INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoC
 ${PROMPT_CRISE_VIOLENCIA}
 
 Responda com sabedoria e amor. Ajude esta pessoa a encontrar paz.`;
+        }
+        // 🧠 SE TEM MEMÓRIA E É PRIMEIRA MENSAGEM - RETOMAR CONVERSA ANTERIOR
+        else if (temMemoria && messageNumber === 1) {
+            maxTokens = 200;
+            const diasPassados = memoriaAnterior.diasPassados || 0;
+            const tempoTexto = diasPassados === 0 ? 'hoje mais cedo' : 
+                              diasPassados === 1 ? 'ontem' : 
+                              `há ${diasPassados} dias`;
+            
+            systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro maternal.
+
+INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
+
+🧠 MEMÓRIA ATIVADA - RETOMANDO CONVERSA ANTERIOR:
+- Quando: ${tempoTexto}
+- Tema: ${memoriaAnterior.tema || 'Conversa anterior'}
+- Como estava: ${memoriaAnterior.sentimento || 'não identificado'}
+- O que compartilhou: ${memoriaAnterior.resumo || 'Algo importante'}
+${memoriaAnterior.pedidoOracao ? `- Pedido de oração: ${memoriaAnterior.pedidoOracao}` : ''}
+
+TAREFA: O usuário ESCOLHEU voltar a este assunto. Você deve:
+1. Mostrar que lembra da conversa anterior (1 frase carinhosa)
+2. Perguntar como a situação evoluiu desde então
+
+REGRAS:
+- NÃO repita os 4 passos iniciais (ela já se apresentou antes)
+- NÃO pergunte o nome de novo
+- VÁ DIRETO ao assunto que ela quer continuar
+- Demonstre interesse genuíno pelo que aconteceu depois
+- Máximo 2-3 frases
+
+Exemplo: "${tratamentoCurto} querida, que bom te ver de novo! 💛 Fiquei pensando em você desde nossa conversa sobre [tema]. Como as coisas estão agora?"
+
+${DIRETRIZ_MODO_LIVRE}`;
         }
         // Se não é crise, seguir fluxo normal com etapas
         else if (messageNumber === 1) {
@@ -1135,6 +1175,95 @@ INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoC
     } catch (error) {
         console.error('❌ Erro chat:', error);
         res.status(500).json({ error: 'Erro ao processar mensagem', details: error.message });
+    }
+});
+
+// ========================================
+// 🧠 GERAR RESUMO DA CONVERSA (MEMÓRIA)
+// ========================================
+app.post('/api/gerar-resumo', async (req, res) => {
+    try {
+        const { historico, userProfile } = req.body;
+        
+        if (!historico || historico.length < 2) {
+            return res.status(400).json({ error: 'Histórico insuficiente para gerar resumo' });
+        }
+        
+        // Preparar conversa para análise
+        const conversaTexto = historico.map(msg => {
+            const papel = msg.role === 'user' ? 'Usuário' : 'Maria';
+            return `${papel}: ${msg.content}`;
+        }).join('\n');
+        
+        const promptResumo = `Analise esta conversa e extraia as informações principais em formato JSON.
+
+CONVERSA:
+${conversaTexto}
+
+TAREFA: Extraia um resumo da conversa em JSON com os seguintes campos:
+- tema: string (tema principal da conversa, máx 50 caracteres)
+- sentimento: string (como a pessoa estava se sentindo: triste, ansioso, feliz, grato, preocupado, etc)
+- resumo: string (resumo breve do que foi compartilhado, máx 150 caracteres, em terceira pessoa)
+- pedidoOracao: string ou null (se a pessoa pediu oração por algo específico, qual foi)
+- precisaAcompanhamento: boolean (se é algo que merece acompanhamento futuro)
+
+IMPORTANTE: 
+- Retorne APENAS o JSON, sem markdown, sem explicações
+- Seja conciso e objetivo
+- O resumo deve ser em terceira pessoa ("Usuário contou que...")
+
+Exemplo de resposta:
+{"tema":"Problemas no trabalho","sentimento":"ansioso","resumo":"Usuário contou que está com medo de perder o emprego e pediu orações","pedidoOracao":"Manter o emprego","precisaAcompanhamento":true}`;
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    { role: 'system', content: 'Você é um assistente que analisa conversas e extrai resumos em JSON. Retorne APENAS JSON válido, sem markdown.' },
+                    { role: 'user', content: promptResumo }
+                ],
+                temperature: 0.3,
+                max_tokens: 300,
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao chamar Groq');
+        }
+
+        const data = await response.json();
+        let resumoTexto = data.choices[0]?.message?.content || '';
+        
+        // Limpar markdown se houver
+        resumoTexto = resumoTexto.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        
+        // Parse JSON
+        let resumo;
+        try {
+            resumo = JSON.parse(resumoTexto);
+        } catch (parseError) {
+            console.error('Erro ao parsear resumo:', resumoTexto);
+            // Fallback: criar resumo básico
+            resumo = {
+                tema: 'Conversa com Maria',
+                sentimento: 'neutro',
+                resumo: 'Usuário conversou com Maria sobre suas preocupações',
+                pedidoOracao: null,
+                precisaAcompanhamento: true
+            };
+        }
+        
+        console.log('✅ Resumo gerado:', resumo.tema);
+        res.json({ resumo });
+
+    } catch (error) {
+        console.error('❌ Erro ao gerar resumo:', error);
+        res.status(500).json({ error: 'Erro ao gerar resumo', details: error.message });
     }
 });
 
