@@ -746,6 +746,35 @@ function converterCitacoesBiblicasParaTTS(texto) {
 }
 
 // ========================================
+// 🔇 FUNÇÃO PARA REMOVER EMOJIS DO TTS
+// ========================================
+
+function removerEmojis(texto) {
+    if (!texto) return texto;
+    
+    // Regex para remover emojis (cobre a maioria dos emojis Unicode)
+    return texto
+        // Emojis e símbolos pictográficos
+        .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Emoticons
+        .replace(/[\u{1F300}-\u{1F5FF}]/gu, '') // Símbolos e pictogramas
+        .replace(/[\u{1F680}-\u{1F6FF}]/gu, '') // Transporte e mapas
+        .replace(/[\u{1F700}-\u{1F77F}]/gu, '') // Símbolos alquímicos
+        .replace(/[\u{1F780}-\u{1F7FF}]/gu, '') // Formas geométricas extendidas
+        .replace(/[\u{1F800}-\u{1F8FF}]/gu, '') // Setas suplementares
+        .replace(/[\u{1F900}-\u{1F9FF}]/gu, '') // Símbolos suplementares
+        .replace(/[\u{1FA00}-\u{1FA6F}]/gu, '') // Símbolos de xadrez
+        .replace(/[\u{1FA70}-\u{1FAFF}]/gu, '') // Símbolos e pictogramas extendidos
+        .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Símbolos diversos
+        .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Dingbats
+        .replace(/[\u{FE00}-\u{FE0F}]/gu, '')   // Seletores de variação
+        .replace(/[\u{1F000}-\u{1F02F}]/gu, '') // Mahjong
+        .replace(/[\u{1F0A0}-\u{1F0FF}]/gu, '') // Cartas de baralho
+        // Limpar espaços extras deixados pela remoção
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+}
+
+// ========================================
 // ROTA PRINCIPAL: CHAT COM MARIA
 // ========================================
 app.post('/api/chat', async (req, res) => {
@@ -1135,6 +1164,9 @@ app.post('/api/voz', async (req, res) => {
         // Converter citações bíblicas para formato falado
         // Ex: "Jo 3,16" → "João capítulo 3 versículo 16"
         let textoProcessado = converterCitacoesBiblicasParaTTS(texto);
+        
+        // Remover emojis (para não ler "coração amarelo", "mãos em oração", etc.)
+        textoProcessado = removerEmojis(textoProcessado);
 
         // Limitar texto
         const textoLimitado = textoProcessado.substring(0, 2000);
