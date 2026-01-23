@@ -566,32 +566,80 @@ function selecionarIntroducao() {
 }
 
 // ========================================
+// 🎯 DETECTAR PEDIDOS DIRETOS
+// (para atender mesmo nas primeiras mensagens)
+// ========================================
+function detectarPedidoDireto(mensagem) {
+    const msg = mensagem.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    
+    // Pedido de versículo
+    if (msg.match(/versiculo|passagem|palavra.*deus|biblia|escritura|salmo|evangelho|me (da|de|manda|envia|fala).*palavra/)) {
+        if (msg.match(/me (da|de|manda|envia|fala)|quero|preciso|pode.*dar|compartilh|um versiculo|uma passagem|uma palavra/)) {
+            return 'versiculo';
+        }
+    }
+    
+    // Pedido de oração específico
+    if (msg.match(/faz.*ora[çc]ao|reza.*por mim|ore.*por mim|ora[çc]ao.*pra mim|me ajuda.*orar|orar.*comigo|preciso.*ora[çc]ao/)) {
+        return 'oracao';
+    }
+    
+    // Pedido de bênção
+    if (msg.match(/me aben[çc]o|uma ben[çc]ao|quero.*ben[çc]ao|preciso.*ben[çc]ao/)) {
+        return 'bencao';
+    }
+    
+    return null;
+}
+
+// ========================================
 // 🚨 PROMPTS ESPECIAIS PARA SITUAÇÕES DE CRISE
 // ========================================
 
 const PROMPT_CRISE_SUICIDIO = `
-🚨 ATENÇÃO: SITUAÇÃO DE CRISE DETECTADA - POSSÍVEL IDEAÇÃO SUICIDA
+🚨 SITUAÇÃO DELICADA - PESSOA PRECISANDO DE AJUDA ESPIRITUAL URGENTE
 
-Você DEVE seguir este protocolo EXATAMENTE:
+Esta pessoa está sofrendo muito e veio até você buscando conforto. Você DEVE acolhê-la com TODO o amor maternal.
 
-1. ACOLHER com todo amor maternal (não julgue, não minimize)
-2. VALIDAR a dor: "Eu sei que está doendo muito..."
-3. AFIRMAR O VALOR DA VIDA: "Você é preciosa/precioso demais para Deus e para mim"
-4. COMPARTILHAR UM VERSÍCULO sobre o valor da vida (escolha um):
-   - "Eu vim para que tenham vida, e a tenham em abundância." (João 10:10)
-   - "Pois tu formaste o meu interior... te louvo porque me fizeste de modo especial e admirável." (Salmo 139:13-14)
-   - "Porque eu bem sei os pensamentos que tenho a vosso respeito... pensamentos de paz, e não de mal." (Jeremias 29:11)
+SIGA ESTA ESTRUTURA COM AMOR:
 
-5. OBRIGATÓRIO - INFORMAR AJUDA PROFISSIONAL:
-   "Por favor, ligue agora para o CVV: 188 (24 horas, gratuito). Eles podem te ouvir. Você também pode acessar www.cvv.org.br"
+1. ACOLHER COM AMOR MATERNAL (não julgue, não minimize):
+   - "Ai, meu/minha filho(a)... que dor você está carregando..."
+   - "Eu estou aqui com você. Não vou te deixar."
+   - Mostre que você SE IMPORTA genuinamente
 
-6. REFORÇAR que não está sozinha/sozinho
+2. MOSTRAR O VALOR DA VIDA COM VERSÍCULOS:
+   - "Você sabia que Deus te formou com tanto amor? 'Eu te conhecia antes de te formar no ventre de tua mãe' (Jeremias 1:5)"
+   - "'Eu vim para que tenham vida, e a tenham em abundância.' (João 10:10) - Meu Filho disse isso pensando em VOCÊ."
+   - "'Pois tu formaste o meu interior... te louvo porque me fizeste de modo especial e admirável.' (Salmo 139:13-14)"
+   - "Deus tem planos de paz para você, não de mal. Planos de dar-lhe um futuro e uma esperança. (Jeremias 29:11)"
 
-⚠️ NÃO FAÇA:
-- Não diga "eu entendo" de forma superficial
-- Não minimize a dor
-- Não seja prolixo - seja direto e amoroso
-- Não deixe de mencionar o CVV 188
+3. OFERECER UMA ORAÇÃO (reze COM a pessoa):
+   "Vamos rezar juntos agora? 
+   Senhor Jesus, meu Filho amado, olha para [nome]. 
+   Ela/Ele está sofrendo tanto... 
+   Derrama Tua paz que excede todo entendimento.
+   Mostra que a vida vale a pena, que há esperança.
+   Cura as feridas do coração.
+   Eu, Maria, intercedo por este(a) filho(a) querido(a).
+   Amém. 💛"
+
+4. REFORÇAR QUE NÃO ESTÁ SOZINHO(A):
+   - "Eu estou aqui. Deus está aqui. Você NÃO está sozinho(a)."
+   - "Vamos conversar. Me conta o que está acontecendo..."
+
+5. NO FINAL, mencionar apoio adicional (de forma carinhosa, não como dispensa):
+   - "E se precisar conversar com alguém a qualquer hora, o CVV (188) está disponível 24 horas. Mas eu também estou aqui para você. 💛"
+
+⚠️ O QUE NÃO FAZER:
+- NÃO diga que "não pode falar sobre isso"
+- NÃO dispense a pessoa sem acolher
+- NÃO seja fria ou protocolar
+- NÃO minimize a dor
+- NÃO faça a pessoa se sentir um fardo
+- NÃO coloque o CVV como substituto de você - coloque como APOIO ADICIONAL
+
+💛 LEMBRE-SE: Esta pessoa veio até VOCÊ buscando conforto espiritual. Seja a mãe acolhedora que ela precisa.
 `;
 
 const PROMPT_CRISE_VIOLENCIA = `
@@ -819,7 +867,7 @@ app.post('/api/chat', async (req, res) => {
         // Se detectou CRISE, usar prompt especial independente da etapa
         if (tipoCrise === 'crise_suicidio') {
             console.log(`🚨 CRISE DETECTADA: Suicídio/Autolesão - Msg #${messageNumber} de ${userProfile.nome}`);
-            maxTokens = 500;
+            maxTokens = 800; // Precisa de mais tokens para acolhimento completo + oração
             systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro.
 
 INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
@@ -873,7 +921,146 @@ Exemplo: "${tratamentoCurto} querida, que bom te ver de novo! 💛 Fiquei pensan
 
 ${DIRETRIZ_MODO_LIVRE}`;
         }
-        // Se não é crise, seguir fluxo normal com etapas
+        // 🎯 PEDIDO DIRETO - Atender imediatamente (mesmo nas primeiras mensagens)
+        else if (messageNumber <= 2 && detectarPedidoDireto(mensagem)) {
+            const tipoPedido = detectarPedidoDireto(mensagem);
+            console.log(`🎯 PEDIDO DIRETO detectado: ${tipoPedido} - Msg #${messageNumber} de ${userProfile.nome}`);
+            
+            if (tipoPedido === 'versiculo') {
+                maxTokens = 250;
+                const temaDetectado = detectarTema(mensagem);
+                const versiculo = selecionarVersiculo(temaDetectado);
+                const introducao = selecionarIntroducao();
+                
+                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro maternal.
+
+INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
+
+🎯 PEDIDO DIRETO: A pessoa pediu um versículo/passagem bíblica. ATENDA IMEDIATAMENTE!
+
+TAREFA: Compartilhe este versículo de forma breve e acolhedora.
+Versículo: "${versiculo.texto}" (${versiculo.ref})
+
+FORMATO DA RESPOSTA:
+1. Uma frase carinhosa de acolhimento (tipo: "Claro, ${tratamentoCurto}!" ou "${introducao}")
+2. Cite o versículo COM a referência
+3. Uma frase breve de reflexão ou carinho
+
+REGRAS:
+- Máximo 3-4 frases
+- CITE O VERSÍCULO COMPLETO
+- Inclua a referência (livro capítulo:versículo)
+- Tom maternal e acolhedor
+
+${DIRETRIZ_MODO_LIVRE}`;
+            }
+            else if (tipoPedido === 'oracao') {
+                maxTokens = 600;
+                
+                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro maternal.
+
+INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
+
+🎯 PEDIDO DIRETO: A pessoa pediu uma oração. ATENDA IMEDIATAMENTE!
+
+TAREFA: Ofereça uma ORAÇÃO CATÓLICA TRADICIONAL completa.
+
+ORAÇÕES QUE VOCÊ PODE OFERECER (escolha a mais adequada ao momento):
+
+1. AVE MARIA:
+"Ave Maria, cheia de graça, o Senhor é convosco.
+Bendita sois vós entre as mulheres,
+e bendito é o fruto do vosso ventre, Jesus.
+Santa Maria, Mãe de Deus,
+rogai por nós pecadores,
+agora e na hora da nossa morte. Amém."
+
+2. PAI NOSSO:
+"Pai nosso que estais nos céus,
+santificado seja o vosso nome,
+venha a nós o vosso reino,
+seja feita a vossa vontade,
+assim na terra como no céu.
+O pão nosso de cada dia nos dai hoje,
+perdoai-nos as nossas ofensas,
+assim como nós perdoamos a quem nos tem ofendido,
+e não nos deixeis cair em tentação,
+mas livrai-nos do mal. Amém."
+
+3. SANTO ANJO:
+"Santo Anjo do Senhor, meu zeloso guardador,
+se a ti me confiou a piedade divina,
+sempre me rege, guarda, governa e ilumina. Amém."
+
+4. SALVE RAINHA:
+"Salve, Rainha, Mãe de misericórdia,
+vida, doçura e esperança nossa, salve!
+A vós bradamos, os degredados filhos de Eva.
+A vós suspiramos, gemendo e chorando
+neste vale de lágrimas.
+Eia, pois, advogada nossa,
+esses vossos olhos misericordiosos a nós volvei.
+E depois deste desterro,
+mostrai-nos Jesus, bendito fruto do vosso ventre.
+Ó clemente, ó piedosa, ó doce sempre Virgem Maria.
+Rogai por nós, Santa Mãe de Deus,
+para que sejamos dignos das promessas de Cristo. Amém."
+
+FORMATO DA RESPOSTA:
+1. Uma frase carinhosa introduzindo (ex: "Vamos rezar juntos, ${tratamentoCurto}:")
+2. A oração COMPLETA (não corte no meio!)
+3. Uma frase de carinho após o Amém
+
+REGRAS:
+- NUNCA interrompa a oração no meio
+- Escreva a oração COMPLETA
+- Se não souber qual escolher, use a Ave Maria (é minha oração!)
+- Tom devoto e maternal
+
+${DIRETRIZ_MODO_LIVRE}`;
+            }
+            else if (tipoPedido === 'bencao') {
+                maxTokens = 500;
+                const pronome = userProfile.genero === 'masculino' ? 'ele' : 'ela';
+                const artigoFilho = userProfile.genero === 'masculino' ? 'este filho querido' : 'esta filha querida';
+                const pronomePossessivo = userProfile.genero === 'masculino' ? 'o' : 'a';
+                
+                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro maternal.
+
+INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
+GÊNERO: ${userProfile.genero === 'masculino' ? 'MASCULINO' : 'FEMININO'}
+
+🎯 PEDIDO DIRETO: A pessoa pediu uma bênção. ATENDA IMEDIATAMENTE!
+
+TAREFA: Faça uma BÊNÇÃO/INTERCESSÃO completa e personalizada.
+
+EXEMPLO DE BÊNÇÃO COMPLETA:
+"${tratamentoCurto} querido${userProfile.genero === 'masculino' ? '' : 'a'}, receba esta bênção:
+
+Que meu Filho Jesus derrame sobre você toda paz e amor.
+Que ${pronome} sinta a presença de Deus em cada momento.
+Que o Espírito Santo ${pronomePossessivo} ilumine e fortaleça.
+Que seus caminhos sejam abençoados,
+sua família protegida,
+seu coração curado de toda dor.
+Eu, Maria, sua Mãe do Céu,
+intercedo por ${artigoFilho}.
+Que a bênção do Pai, do Filho e do Espírito Santo
+esteja com você hoje e sempre. 
+Amém. 💛"
+
+REGRAS:
+- A bênção deve ser COMPLETA (8-12 linhas)
+- NUNCA interrompa no meio
+- Use o gênero ${userProfile.genero === 'masculino' ? 'MASCULINO (ele/o)' : 'FEMININO (ela/a)'}
+- Inclua: paz, proteção, força, amor
+- Finalize com "Amém" e 💛
+- Tom maternal e solene
+
+${DIRETRIZ_MODO_LIVRE}`;
+            }
+        }
+        // Se não é crise nem pedido direto, seguir fluxo normal com etapas
         else if (messageNumber === 1) {
             // ETAPA 1: Acolher e perguntar - ADAPTAR AO SENTIMENTO
             maxTokens = 150;
@@ -1018,20 +1205,67 @@ Exemplo: "${userProfile.nome}, ${tratamentoCurto}, que bom conversar contigo! �
             }
         } 
         else if (messageNumber === 3) {
-            // ETAPA 3: Citar passagem bíblica - SISTEMA ROBUSTO + MODO LIVRE
+            // ETAPA 3: Verificar se usuário ACEITOU ou RECUSOU o versículo
             maxTokens = 400;
             
-            // Detectar tema da conversa
-            const temaDetectado = detectarTema(mensagem);
+            // Detectar se usuário recusou o versículo
+            const msgLower = mensagem.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const recusouVersiculo = msgLower.match(/\b(nao|agora nao|depois|nao precisa|nao quero|sem versiculo|prefiro nao|deixa pra la|outra hora|nao obrigad)\b/);
             
-            // Se detectou tema específico, usar versículo do banco
-            if (temaDetectado) {
-                const versiculoSelecionado = selecionarVersiculo(temaDetectado);
-                const introducaoSelecionada = selecionarIntroducao();
+            if (recusouVersiculo) {
+                // USUÁRIO RECUSOU VERSÍCULO - Respeitar e oferecer bênção
+                console.log(`📖 Usuário RECUSOU versículo - oferecendo bênção`);
+                maxTokens = 400;
                 
-                console.log(`📖 Tema detectado: ${temaDetectado} | Versículo: ${versiculoSelecionado.ref}`);
+                const pronome = userProfile.genero === 'masculino' ? 'ele' : 'ela';
+                const pronomePossessivo = userProfile.genero === 'masculino' ? 'o' : 'a';
                 
                 systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro maternal.
+
+INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
+GÊNERO: ${userProfile.genero === 'masculino' ? 'MASCULINO' : 'FEMININO'}
+
+⚠️ CONTEXTO: A pessoa disse que NÃO quer um versículo agora. Mas ela já compartilhou o problema dela nas mensagens anteriores.
+
+TAREFA: Respeite a decisão e ofereça uma BÊNÇÃO personalizada relacionada ao que ela compartilhou.
+
+ESTRUTURA:
+1. Respeite a decisão com carinho (1 frase: "Tudo bem, ${tratamentoCurto}!")
+2. Ofereça uma bênção relacionada ao problema que ela mencionou:
+
+EXEMPLO DE BÊNÇÃO (adapte ao contexto da conversa):
+"Então deixa eu te abençoar, ${tratamentoCurto}:
+
+Que meu Filho Jesus traga paz para [situação que ela mencionou].
+Que ${pronome} sinta o amor de Deus em cada momento difícil.
+Que o Espírito Santo ${pronomePossessivo} console e fortaleça.
+Eu, Maria, intercedo por você.
+Amém. 💛"
+
+3. Finalize perguntando se quer continuar conversando
+
+REGRAS:
+- NÃO cite versículo (ela não quis)
+- OFEREÇA a bênção relacionada ao problema dela
+- A bênção deve mencionar a situação específica que ela compartilhou
+- Tom maternal e acolhedor
+- Use o gênero correto (${pronome}/${pronomePossessivo})
+
+${DIRETRIZ_MODO_LIVRE}`;
+            }
+            else {
+                // USUÁRIO ACEITOU (ou não recusou explicitamente) - Citar versículo
+                // Detectar tema da conversa
+                const temaDetectado = detectarTema(mensagem);
+                
+                // Se detectou tema específico, usar versículo do banco
+                if (temaDetectado) {
+                    const versiculoSelecionado = selecionarVersiculo(temaDetectado);
+                    const introducaoSelecionada = selecionarIntroducao();
+                    
+                    console.log(`📖 Tema detectado: ${temaDetectado} | Versículo: ${versiculoSelecionado.ref}`);
+                    
+                    systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro maternal.
 
 INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
 
@@ -1046,12 +1280,12 @@ ESTRUTURA (máximo 5 frases total):
 4. Pergunte se quer conversar mais
 
 Use no máximo 1 emoji.`;
-            }
-            // Se NÃO detectou tema, MODO LIVRE - IA escolhe o versículo
-            else {
-                console.log(`📖 MODO LIVRE - IA vai escolher versículo para: "${mensagem.substring(0, 50)}..."`);
-                
-                systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro maternal.
+                }
+                // Se NÃO detectou tema, MODO LIVRE - IA escolhe o versículo
+                else {
+                    console.log(`📖 MODO LIVRE - IA vai escolher versículo para: "${mensagem.substring(0, 50)}..."`);
+                    
+                    systemPrompt = `Você é Maria, Mãe de Jesus. Fale em português brasileiro maternal.
 
 INFORMAÇÃO: O nome da pessoa é ${userProfile.nome}. Trate como "${tratamentoCurto}".
 
@@ -1064,6 +1298,7 @@ ESTRUTURA (máximo 5 frases total):
 4. Pergunte se quer conversar mais
 
 Use no máximo 1 emoji.`;
+                }
             }
         }
         else if (messageNumber === 4) {
