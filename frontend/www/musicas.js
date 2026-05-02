@@ -14,38 +14,69 @@ const SistemaMusicasFundo = {
             descricao: 'Sem música',
             icone: '🔇',
             url: null,
-            categoria: 'silencio'
+            categoria: 'silencio',
+            autor: null
         },
         {
             id: 'ave_maria_instrumental',
             nome: 'Ave Maria (Instrumental)',
             descricao: 'Melodia suave',
             icone: '🎻',
-            // URL local (coloque o arquivo em www/audio/)
             url: 'audio/ave_maria.mp3',
-            // URL de fallback online (domínio público)
             urlFallback: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-            categoria: 'sacra'
+            categoria: 'sacra',
+            autor: 'thenonvisibles',
+            autorUrl: 'https://pixabay.com/users/thenonvisibles-44907842/',
+            licencaCompleta: `PIXABAY LICENSE CERTIFICATE
+==============================================
+
+Audio File Title: Ave Maria (Instrumental)
+Audio File URL: https://pixabay.com/music/religious-theme-ave-maria-instrumental-224083/
+Audio File ID: 224083
+
+Licensor's Username:
+https://pixabay.com/users/thenonvisibles-44907842/
+
+This document confirms the download of an audio file pursuant to the Content License as defined in the Pixabay Terms of Service available at https://pixabay.com/service/terms/
+
+Pixabay, a Canva Germany GmbH brand
+Pappelallee 78/79, 10437 Berlin, Germany`
         },
         {
             id: 'sinos_de_fatima',
             nome: 'Sinos de Fátima',
             descricao: 'Gravação real do som dos sinos na Catedral de Fátima em Portugal',
             icone: '🎻',
-            // URL local (coloque o arquivo em www/audio/)
             url: 'audio/sinos_fatima.mp3',
-            // URL de fallback online (domínio público)
             urlFallback: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-            categoria: 'sacra'
+            categoria: 'sacra',
+            autor: 'Antônio Garrido',
+            autorUrl: 'https://www.instagram.com/ajtgarrido/'
         },
         {
             id: 'canto_gregoriano',
-            nome: 'Pai Nosso em Latim',
-            descricao: 'Monges em oração',
+            nome: 'Pai Nosso Gregoriano',
+            descricao: 'Canto Gregoriano em Espanhol',
             icone: '⛪',
             url: 'audio/canto_gregoriano.mp3',
             urlFallback: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-            categoria: 'sacra'
+            categoria: 'sacra',
+            autor: 'nickpanek',
+            autorUrl: 'https://pixabay.com/users/nickpanek-38266323/',
+            licencaCompleta: `PIXABAY LICENSE CERTIFICATE
+==============================================
+
+Audio File Title: Spanish Our Father Gregorian Chant
+Audio File URL: https://pixabay.com/music/choir-spanish-our-father-gregorian-chant-228748/
+Audio File ID: 228748
+
+Licensor's Username:
+https://pixabay.com/users/nickpanek-38266323/
+
+This document confirms the download of an audio file pursuant to the Content License as defined in the Pixabay Terms of Service available at https://pixabay.com/service/terms/
+
+Pixabay, a Canva Germany GmbH brand
+Pappelallee 78/79, 10437 Berlin, Germany`
         },
         {
             id: 'piano_meditacao',
@@ -54,7 +85,9 @@ const SistemaMusicasFundo = {
             icone: '🎹',
             url: 'audio/piano_meditacao.mp3',
             urlFallback: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-            categoria: 'instrumental'
+            categoria: 'instrumental',
+            autor: 'antonio jade',
+            autorUrl: 'https://pixabay.com/users/fasttech123-47311951/'
         },
         {
             id: 'natureza_passaros',
@@ -63,7 +96,9 @@ const SistemaMusicasFundo = {
             icone: '🐦',
             url: 'audio/passaros.mp3',
             urlFallback: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
-            categoria: 'natureza'
+            categoria: 'natureza',
+            autor: 'Shiden Beats Music',
+            autorUrl: 'https://pixabay.com/users/shidenbeatsmusic-25676252/'
         },
         {
             id: 'natureza_chuva',
@@ -72,7 +107,9 @@ const SistemaMusicasFundo = {
             icone: '🌧️',
             url: 'audio/chuva.mp3',
             urlFallback: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
-            categoria: 'natureza'
+            categoria: 'natureza',
+            autor: 'LAURENT BUCZEK',
+            autorUrl: 'https://pixabay.com/users/lorenzobuczek-16982400/'
         },
         {
             id: 'sinos_igreja',
@@ -81,7 +118,9 @@ const SistemaMusicasFundo = {
             icone: '🔔',
             url: 'audio/sinos.mp3',
             urlFallback: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
-            categoria: 'instrumental'
+            categoria: 'instrumental',
+            autor: 'music_for_video',
+            autorUrl: 'https://pixabay.com/users/music_for_video-22579021/'
         },
         {
             id: 'harpa_celestial',
@@ -90,7 +129,9 @@ const SistemaMusicasFundo = {
             icone: '🪕',
             url: 'audio/harpa.mp3',
             urlFallback: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
-            categoria: 'instrumental'
+            categoria: 'instrumental',
+            autor: 'MountainDweller',
+            autorUrl: 'https://pixabay.com/users/mountaindweller-16471232/'
         }
     ],
 
@@ -120,6 +161,28 @@ const SistemaMusicasFundo = {
                 this.musicaAtual = config.musicaId;
             }
         }
+        
+        // Injetar CSS da animação
+        this.injetarCSS();
+    },
+    
+    // Injetar CSS necessário
+    injetarCSS() {
+        if (document.getElementById('musica-css')) return;
+        
+        const style = document.createElement('style');
+        style.id = 'musica-css';
+        style.textContent = `
+            @keyframes musicPulse {
+                0%, 100% { box-shadow: 0 4px 15px rgba(255, 165, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3); }
+                50% { box-shadow: 0 4px 25px rgba(255, 165, 0, 0.7), 0 0 35px rgba(255, 215, 0, 0.5); }
+            }
+            
+            #btn-musica-flutuante {
+                transition: all 0.3s ease !important;
+            }
+        `;
+        document.head.appendChild(style);
     },
 
     // Tocar música
@@ -242,6 +305,16 @@ const SistemaMusicasFundo = {
                 this.tocando = true;
             }
             this.atualizarUI();
+            this.atualizarBotaoModal(); // Atualiza o botão no modal também
+        }
+    },
+    
+    // Atualizar botão play/pause dentro do modal
+    atualizarBotaoModal() {
+        const btnToggle = document.querySelector('#modal-musicas button[onclick="SistemaMusicasFundo.toggle()"]');
+        if (btnToggle) {
+            btnToggle.style.background = this.tocando ? '#dc2626' : '#16a34a';
+            btnToggle.innerHTML = this.tocando ? '⏸️ Pausar' : '▶️ Tocar';
         }
     },
 
@@ -267,12 +340,30 @@ const SistemaMusicasFundo = {
         const btn = document.getElementById('btn-musica-flutuante');
         if (btn) {
             if (this.carregando) {
-                btn.innerHTML = '⏳';
+                btn.innerHTML = this.getIconeCarregando();
             } else {
-                btn.innerHTML = this.tocando ? '🎵' : '🔇';
+                btn.innerHTML = this.getIconeSVG();
             }
-            btn.classList.toggle('animate-pulse', this.tocando || this.carregando);
+            
+            // Efeito visual quando tocando
+            if (this.tocando) {
+                btn.style.background = 'linear-gradient(145deg, #FFD700, #FFA500)';
+                btn.style.animation = 'musicPulse 1.5s ease-in-out infinite';
+            } else {
+                btn.style.background = 'linear-gradient(145deg, #E8D5B7, #D4B896)';
+                btn.style.animation = 'none';
+            }
         }
+    },
+    
+    // Ícone de carregando
+    getIconeCarregando() {
+        return `<svg width="28" height="28" viewBox="0 0 64 64" fill="none">
+            <circle cx="32" cy="32" r="20" stroke="#B8860B" stroke-width="4" fill="none" opacity="0.3"/>
+            <path d="M32 12 A20 20 0 0 1 52 32" stroke="#B8860B" stroke-width="4" fill="none" stroke-linecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="1s" repeatCount="indefinite"/>
+            </path>
+        </svg>`;
     },
 
     // Criar botão flutuante
@@ -281,72 +372,196 @@ const SistemaMusicasFundo = {
         
         const btn = document.createElement('button');
         btn.id = 'btn-musica-flutuante';
-        // Posição: canto superior direito para não atrapalhar chat nem bottom nav
-        btn.className = 'fixed top-24 right-4 w-11 h-11 bg-purple-600/90 hover:bg-purple-500 text-white text-lg rounded-full shadow-lg z-40 flex items-center justify-center transition-all backdrop-blur-sm border border-purple-400/30';
-        btn.innerHTML = this.tocando ? '🎵' : '🔇';
+        // Posição: canto superior direito, abaixo do header para não cobrir o foguinho
+        btn.style.cssText = `
+            position: fixed !important;
+            top: 145px !important;
+            right: 16px !important;
+            width: 44px !important;
+            height: 44px !important;
+            border-radius: 50% !important;
+            background: linear-gradient(145deg, #E8D5B7, #D4B896) !important;
+            border: 2px solid #B8860B !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+            padding: 0 !important;
+            z-index: 50 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+        `;
+        btn.innerHTML = this.getIconeSVG();
         btn.title = 'Música de Fundo';
         btn.onclick = () => this.abrir();
         
+        // Hover effect
+        btn.onmouseenter = () => {
+            btn.style.transform = 'scale(1.1)';
+            btn.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
+        };
+        btn.onmouseleave = () => {
+            btn.style.transform = 'scale(1)';
+            btn.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3)';
+        };
+        
         document.body.appendChild(btn);
+    },
+    
+    // Ícone SVG colorido para o botão de música
+    getIconeSVG() {
+        if (this.tocando) {
+            // Ícone tocando - notas musicais animadas
+            return `<svg width="28" height="28" viewBox="0 0 64 64" fill="none">
+                <defs>
+                    <linearGradient id="mNote" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#8B4513"/>
+                        <stop offset="100%" style="stop-color:#5D3A1A"/>
+                    </linearGradient>
+                    <linearGradient id="mHeart" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FF69B4"/>
+                        <stop offset="100%" style="stop-color:#FF1493"/>
+                    </linearGradient>
+                    <linearGradient id="mWave" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFD700"/>
+                        <stop offset="100%" style="stop-color:#FFA500"/>
+                    </linearGradient>
+                </defs>
+                <!-- Ondas sonoras animadas -->
+                <path d="M10 28 Q14 32 10 36" stroke="url(#mWave)" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.9">
+                    <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1s" repeatCount="indefinite"/>
+                </path>
+                <path d="M54 28 Q50 32 54 36" stroke="url(#mWave)" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.9">
+                    <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1s" repeatCount="indefinite"/>
+                </path>
+                <!-- Notas musicais -->
+                <rect x="22" y="20" width="4" height="22" rx="2" fill="url(#mNote)"/>
+                <rect x="38" y="24" width="4" height="18" rx="2" fill="url(#mNote)"/>
+                <path d="M24 20 Q31 16 40 24" stroke="url(#mNote)" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <ellipse cx="20" cy="44" rx="6" ry="4" fill="url(#mNote)" transform="rotate(-20 20 44)"/>
+                <ellipse cx="36" cy="44" rx="6" ry="4" fill="url(#mNote)" transform="rotate(-20 36 44)"/>
+                <!-- Coração -->
+                <path d="M48 12 Q48 8 51 8 Q53 8 53 11 Q53 8 55 8 Q58 8 58 12 Q58 16 53 20 Q48 16 48 12Z" fill="url(#mHeart)">
+                    <animate attributeName="transform" values="scale(1);scale(1.1);scale(1)" dur="0.8s" repeatCount="indefinite" additive="sum"/>
+                </path>
+                <!-- Brilhos -->
+                <circle cx="14" cy="16" r="2" fill="#FFD700" opacity="0.9"/>
+                <circle cx="50" cy="48" r="1.5" fill="#FFD700" opacity="0.8"/>
+            </svg>`;
+        } else {
+            // Ícone silêncio - mais suave
+            return `<svg width="28" height="28" viewBox="0 0 64 64" fill="none">
+                <defs>
+                    <linearGradient id="mNoteOff" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#A08060"/>
+                        <stop offset="100%" style="stop-color:#806040"/>
+                    </linearGradient>
+                </defs>
+                <!-- Notas musicais (mais opacas) -->
+                <rect x="22" y="20" width="4" height="22" rx="2" fill="url(#mNoteOff)" opacity="0.6"/>
+                <rect x="38" y="24" width="4" height="18" rx="2" fill="url(#mNoteOff)" opacity="0.6"/>
+                <path d="M24 20 Q31 16 40 24" stroke="url(#mNoteOff)" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.6"/>
+                <ellipse cx="20" cy="44" rx="6" ry="4" fill="url(#mNoteOff)" opacity="0.6" transform="rotate(-20 20 44)"/>
+                <ellipse cx="36" cy="44" rx="6" ry="4" fill="url(#mNoteOff)" opacity="0.6" transform="rotate(-20 36 44)"/>
+                <!-- Linha de "mudo" -->
+                <line x1="12" y1="52" x2="52" y2="12" stroke="#B8860B" stroke-width="4" stroke-linecap="round"/>
+            </svg>`;
+        }
     },
 
     // Abrir seletor de músicas
     abrir() {
         const modal = document.createElement('div');
         modal.id = 'modal-musicas';
-        modal.className = 'fixed inset-0 z-[60] flex items-end justify-center';
-        modal.style.background = 'rgba(0,0,0,0.7)';
+        // Usando estilos inline para garantir posicionamento correto
+        modal.style.cssText = `
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0,0,0,0.7) !important;
+            z-index: 9999 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 20px !important;
+        `;
         modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
         
         modal.innerHTML = `
-            <div class="bg-gradient-to-br from-gray-900 to-purple-900/90 backdrop-blur rounded-t-3xl w-full max-w-lg max-h-[80vh] overflow-hidden animate-slide-up">
+            <div style="
+                background: linear-gradient(to bottom right, #1f2937, rgba(88, 28, 135, 0.9));
+                backdrop-filter: blur(10px);
+                border-radius: 24px;
+                width: 100%;
+                max-width: 400px;
+                max-height: 80vh;
+                display: flex;
+                flex-direction: column;
+                animation: slideUp 0.3s ease;
+            ">
                 <!-- Header -->
-                <div class="p-4 border-b border-white/10">
-                    <div class="flex items-center justify-between mb-2">
-                        <h2 class="text-white text-lg font-bold flex items-center gap-2">
+                <div style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <h2 style="color: white; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px; margin: 0;">
                             <span>🎵</span>
                             <span>Música de Fundo</span>
                         </h2>
-                        <button onclick="document.getElementById('modal-musicas').remove()" class="p-2 bg-white/10 rounded-full">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <button onclick="document.getElementById('modal-musicas').remove()" style="padding: 8px; background: rgba(255,255,255,0.1); border-radius: 50%; border: none; cursor: pointer;">
+                            <svg style="width: 20px; height: 20px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>
                     
                     <!-- Volume -->
-                    <div class="flex items-center gap-3">
-                        <span class="text-white/60 text-sm">🔈</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="color: rgba(255,255,255,0.6); font-size: 14px;">🔈</span>
                         <input type="range" min="0" max="100" value="${this.volume * 100}" 
                                onchange="SistemaMusicasFundo.setVolume(this.value / 100)"
-                               class="flex-1 h-2 bg-white/20 rounded-full appearance-none cursor-pointer accent-purple-500">
-                        <span class="text-white/60 text-sm">🔊</span>
+                               style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 9999px; cursor: pointer;">
+                        <span style="color: rgba(255,255,255,0.6); font-size: 14px;">🔊</span>
                     </div>
                 </div>
                 
                 <!-- Lista de músicas -->
-                <div class="overflow-y-auto max-h-[55vh] p-4 space-y-4">
+                <div style="overflow-y: auto; flex: 1; padding: 16px;">
                     ${Object.entries(this.categorias).map(([catKey, cat]) => {
                         const musicasCategoria = this.musicas.filter(m => m.categoria === catKey);
                         if (musicasCategoria.length === 0) return '';
                         
                         return `
-                            <div>
-                                <h3 class="text-white/60 text-xs font-semibold mb-2 flex items-center gap-1">
+                            <div style="margin-bottom: 16px;">
+                                <h3 style="color: rgba(255,255,255,0.6); font-size: 12px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
                                     <span>${cat.icone}</span>
                                     <span>${cat.nome}</span>
                                 </h3>
-                                <div class="space-y-2">
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
                                     ${musicasCategoria.map(m => {
                                         const ativa = this.musicaAtual === m.id;
                                         const tocandoEsta = ativa && this.tocando;
                                         return `
                                             <button onclick="SistemaMusicasFundo.tocar('${m.id}'); document.getElementById('modal-musicas').remove();" 
-                                                    class="w-full flex items-center gap-3 p-3 rounded-xl ${ativa ? 'bg-purple-600' : 'bg-white/5 hover:bg-white/10'} transition-all text-left">
-                                                <span class="text-2xl">${m.icone}</span>
-                                                <div class="flex-1">
-                                                    <p class="text-white font-semibold text-sm">${m.nome}</p>
-                                                    <p class="text-white/50 text-xs">${m.descricao}</p>
+                                                    style="
+                                                        width: 100%;
+                                                        display: flex;
+                                                        align-items: center;
+                                                        gap: 12px;
+                                                        padding: 12px;
+                                                        border-radius: 12px;
+                                                        background: ${ativa ? '#7c3aed' : 'rgba(255,255,255,0.05)'};
+                                                        border: none;
+                                                        cursor: pointer;
+                                                        text-align: left;
+                                                        transition: all 0.2s;
+                                                    ">
+                                                <span style="font-size: 24px;">${m.icone}</span>
+                                                <div style="flex: 1;">
+                                                    <p style="color: white; font-weight: 600; font-size: 14px; margin: 0;">${m.nome}</p>
+                                                    <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin: 0;">${m.descricao}</p>
                                                 </div>
-                                                ${tocandoEsta ? '<span class="text-white animate-pulse">♪</span>' : ''}
+                                                ${tocandoEsta ? '<span style="color: white;">♪</span>' : ''}
                                             </button>
                                         `;
                                     }).join('')}
@@ -357,26 +572,47 @@ const SistemaMusicasFundo = {
                 </div>
                 
                 <!-- Controles -->
-                <div class="p-4 border-t border-white/10 flex gap-3">
-                    <button onclick="SistemaMusicasFundo.toggle()" class="flex-1 py-3 ${this.tocando ? 'bg-red-600 hover:bg-red-500' : 'bg-green-600 hover:bg-green-500'} text-white font-bold rounded-xl transition-all">
+                <div style="padding: 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 12px; flex-shrink: 0;">
+                    <button onclick="SistemaMusicasFundo.toggle()" style="
+                        flex: 1;
+                        padding: 12px;
+                        background: ${this.tocando ? '#dc2626' : '#16a34a'};
+                        color: white;
+                        font-weight: bold;
+                        border-radius: 12px;
+                        border: none;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    ">
                         ${this.tocando ? '⏸️ Pausar' : '▶️ Tocar'}
                     </button>
                 </div>
                 
                 <!-- Créditos -->
-                <div class="px-4 pb-4">
-                    <button onclick="SistemaMusicasFundo.mostrarCreditos()" class="w-full py-2 text-white/50 text-xs hover:text-white/70 transition-all flex items-center justify-center gap-2">
+                <div style="padding: 0 16px 16px; flex-shrink: 0;">
+                    <button onclick="SistemaMusicasFundo.mostrarCreditos()" style="
+                        width: 100%;
+                        padding: 8px;
+                        background: transparent;
+                        color: rgba(255,255,255,0.5);
+                        font-size: 12px;
+                        border: none;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                    ">
                         <span>📝</span> Ver Créditos das Músicas
                     </button>
                 </div>
             </div>
             
             <style>
-                @keyframes slide-up {
-                    from { transform: translateY(100%); }
-                    to { transform: translateY(0); }
+                @keyframes slideUp {
+                    from { transform: translateY(100%); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
                 }
-                .animate-slide-up { animation: slide-up 0.3s ease-out; }
             </style>
         `;
         
@@ -391,51 +627,194 @@ const SistemaMusicasFundo = {
         
         const modal = document.createElement('div');
         modal.id = 'modal-creditos-musicas';
-        modal.className = 'fixed inset-0 z-[70] flex items-center justify-center p-4';
-        modal.style.background = 'rgba(0,0,0,0.9)';
+        modal.style.cssText = `
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0,0,0,0.9) !important;
+            z-index: 10000 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 16px !important;
+        `;
         modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
         
         modal.innerHTML = `
-            <div class="bg-gradient-to-br from-gray-900 to-purple-900/50 rounded-2xl w-full max-w-md max-h-[85vh] overflow-hidden" style="animation: slideUp 0.3s ease;">
-                <div class="p-4 border-b border-white/10">
-                    <h2 class="text-white text-lg font-bold text-center flex items-center justify-center gap-2">
+            <div style="
+                background: linear-gradient(to bottom right, #1f2937, rgba(88, 28, 135, 0.5));
+                border-radius: 16px;
+                width: 100%;
+                max-width: 400px;
+                max-height: 85vh;
+                overflow: hidden;
+                animation: slideUp 0.3s ease;
+            ">
+                <div style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <h2 style="color: white; font-size: 18px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <span>📝</span> Créditos das Músicas
                     </h2>
                 </div>
                 
-                <div class="overflow-y-auto max-h-[60vh] p-4">
-                    <p class="text-white/70 text-sm text-center mb-4">
+                <div style="overflow-y: auto; max-height: 60vh; padding: 16px;">
+                    <p style="color: rgba(255,255,255,0.7); font-size: 14px; text-align: center; margin-bottom: 16px;">
                         Todas as músicas são livres de direitos autorais, licenciadas através do Pixabay.
                     </p>
                     
-                    <div class="space-y-3">
-                        ${this.musicas.filter(m => m.url).map(m => `
-                            <div class="bg-white/5 rounded-xl p-3">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-2xl">${m.icone}</span>
-                                    <div class="flex-1">
-                                        <p class="text-white font-semibold text-sm">${m.nome}</p>
-                                        <p class="text-white/50 text-xs">${m.descricao}</p>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        ${this.musicas.filter(m => m.url && m.autor).map(m => `
+                            <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <span style="font-size: 24px;">${m.icone}</span>
+                                    <div style="flex: 1;">
+                                        <p style="color: white; font-weight: 600; font-size: 14px; margin: 0;">${m.nome}</p>
+                                        <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin: 4px 0 0 0;">
+                                            ${m.autorUrl 
+                                                ? `<a href="${m.autorUrl}" target="_blank" style="color: #a78bfa; text-decoration: underline;">${m.autor}</a>` 
+                                                : m.autor
+                                            }
+                                            ${m.autorUrl ? ' • ' + (m.autorUrl.includes('instagram') ? 'Instagram' : 'Pixabay') : ''}
+                                        </p>
                                     </div>
+                                    ${m.licencaCompleta ? `
+                                        <button onclick="SistemaMusicasFundo.mostrarLicenca('${m.id}')" style="
+                                            padding: 6px 10px;
+                                            background: rgba(167, 139, 250, 0.2);
+                                            border: 1px solid rgba(167, 139, 250, 0.3);
+                                            border-radius: 8px;
+                                            color: #a78bfa;
+                                            font-size: 11px;
+                                            cursor: pointer;
+                                        ">Ver Licença</button>
+                                    ` : ''}
                                 </div>
                             </div>
                         `).join('')}
                     </div>
                     
-                    <div class="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-                        <p class="text-yellow-300 text-xs text-center">
+                    <div style="margin-top: 24px; padding: 16px; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.2); border-radius: 12px;">
+                        <p style="color: #fcd34d; font-size: 12px; text-align: center;">
                             <strong>Licença:</strong> Pixabay Content License<br>
                             Uso comercial permitido • Sem necessidade de atribuição
                         </p>
-                        <p class="text-white/50 text-xs text-center mt-2">
-                            <a href="https://pixabay.com/service/terms/" target="_blank" class="underline">Ver termos completos</a>
+                        <p style="color: rgba(255,255,255,0.5); font-size: 12px; text-align: center; margin-top: 8px;">
+                            <a href="https://pixabay.com/service/terms/" target="_blank" style="text-decoration: underline; color: inherit;">Ver termos completos</a>
                         </p>
                     </div>
                 </div>
                 
-                <div class="p-4 border-t border-white/10">
-                    <button onclick="document.getElementById('modal-creditos-musicas').remove(); SistemaMusicasFundo.abrir();" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all">
+                <div style="padding: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button onclick="document.getElementById('modal-creditos-musicas').remove(); SistemaMusicasFundo.abrir();" style="
+                        width: 100%;
+                        padding: 12px;
+                        background: #7c3aed;
+                        color: white;
+                        font-weight: bold;
+                        border-radius: 12px;
+                        border: none;
+                        cursor: pointer;
+                    ">
                         ← Voltar às Músicas
+                    </button>
+                </div>
+            </div>
+            
+            <style>
+                @keyframes slideUp {
+                    from { transform: translateY(20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+            </style>
+        `;
+        
+        document.body.appendChild(modal);
+    },
+    
+    // Mostrar licença completa de uma música
+    mostrarLicenca(musicaId) {
+        const musica = this.musicas.find(m => m.id === musicaId);
+        if (!musica || !musica.licencaCompleta) return;
+        
+        const modal = document.createElement('div');
+        modal.id = 'modal-licenca-musica';
+        modal.style.cssText = `
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0,0,0,0.95) !important;
+            z-index: 10001 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 16px !important;
+        `;
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        
+        modal.innerHTML = `
+            <div style="
+                background: linear-gradient(to bottom right, #1f2937, rgba(30, 58, 95, 0.9));
+                border-radius: 16px;
+                width: 100%;
+                max-width: 420px;
+                max-height: 85vh;
+                overflow: hidden;
+                animation: slideUp 0.3s ease;
+            ">
+                <div style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <h2 style="color: white; font-size: 16px; font-weight: bold; display: flex; align-items: center; gap: 8px; margin: 0;">
+                            <span>${musica.icone}</span>
+                            <span>${musica.nome}</span>
+                        </h2>
+                        <button onclick="document.getElementById('modal-licenca-musica').remove()" style="
+                            padding: 6px;
+                            background: rgba(255,255,255,0.1);
+                            border-radius: 50%;
+                            border: none;
+                            cursor: pointer;
+                        ">
+                            <svg style="width: 16px; height: 16px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="overflow-y: auto; max-height: 60vh; padding: 16px;">
+                    <pre style="
+                        background: rgba(0,0,0,0.3);
+                        border-radius: 12px;
+                        padding: 16px;
+                        color: rgba(255,255,255,0.85);
+                        font-size: 12px;
+                        font-family: 'Courier New', monospace;
+                        white-space: pre-wrap;
+                        word-wrap: break-word;
+                        line-height: 1.5;
+                        margin: 0;
+                    ">${musica.licencaCompleta}</pre>
+                </div>
+                
+                <div style="padding: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button onclick="document.getElementById('modal-licenca-musica').remove()" style="
+                        width: 100%;
+                        padding: 12px;
+                        background: #7c3aed;
+                        color: white;
+                        font-weight: bold;
+                        border-radius: 12px;
+                        border: none;
+                        cursor: pointer;
+                    ">
+                        Fechar
                     </button>
                 </div>
             </div>
