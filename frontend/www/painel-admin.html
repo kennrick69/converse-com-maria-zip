@@ -567,6 +567,10 @@
             <button class="tab-btn" onclick="trocarTab('usuarios')">👥 Usuários</button>
             <button class="tab-btn" onclick="trocarTab('intencoes')">🙏 Intenções</button>
             <button class="tab-btn" onclick="trocarTab('velas')">🕯️ Velas</button>
+            <!-- F1 (2026-05-25): abas novas de conteúdo gerenciado via Firestore -->
+            <button class="tab-btn" onclick="trocarTab('livros')">📚 Livros</button>
+            <button class="tab-btn" onclick="trocarTab('musicas')">🎵 Músicas</button>
+            <button class="tab-btn" onclick="trocarTab('frases')">💬 Frases do Dia</button>
         </nav>
         
         <!-- Dashboard -->
@@ -646,6 +650,46 @@
             <h2 class="section-title">🕯️ Velas <span id="velas-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
             <div class="intencoes-grid" id="velas-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
         </div>
+
+        <!-- 📚 LIVROS (F1 — conteúdo dinâmico via Firestore) -->
+        <div class="tab-content" id="tab-livros">
+            <div class="controls-bar">
+                <button class="btn-action green" onclick="abrirModalLivro()">➕ Novo Livro</button>
+                <button class="btn-action blue" onclick="carregarLivros()">🔄 Atualizar</button>
+                <button class="btn-action" style="background:var(--accent-purple);color:#fff;" onclick="importarLivrosHostinger()" title="Baixa o catálogo do conversecommaria.com.br e popula o Firestore">📥 Importar do Hostinger</button>
+            </div>
+            <h2 class="section-title">📚 Livros <span id="livros-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
+                Conteúdo da biblioteca do app. O app passa a ler daqui (Firestore) — se vazio, usa fallback do Hostinger.
+            </p>
+            <div id="livros-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
+        </div>
+
+        <!-- 🎵 MÚSICAS (F1) -->
+        <div class="tab-content" id="tab-musicas">
+            <div class="controls-bar">
+                <button class="btn-action green" onclick="abrirModalMusica()">➕ Nova Música</button>
+                <button class="btn-action blue" onclick="carregarMusicas()">🔄 Atualizar</button>
+            </div>
+            <h2 class="section-title">🎵 Músicas <span id="musicas-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
+                Trilhas de fundo do app. Categorias: silencio, sacra, instrumental, natureza.
+            </p>
+            <div id="musicas-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
+        </div>
+
+        <!-- 💬 FRASES DO DIA (F1) -->
+        <div class="tab-content" id="tab-frases">
+            <div class="controls-bar">
+                <button class="btn-action green" onclick="abrirModalFrase()">➕ Nova Frase</button>
+                <button class="btn-action blue" onclick="carregarFrases()">🔄 Atualizar</button>
+            </div>
+            <h2 class="section-title">💬 Frases do Dia <span id="frases-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
+                Frases curtas exibidas no app. Cada dia o app pega uma aleatória.
+            </p>
+            <div id="frases-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
+        </div>
     </div>
     
     <!-- Modal -->
@@ -662,6 +706,77 @@
             <div class="modal-body" id="modal-body"></div>
         </div>
     </div>
+
+    <!-- F1: Modal genérico de conteúdo (Livro / Música / Frase) -->
+    <div class="modal-overlay" id="conteudo-modal" style="display:none;" onclick="if(event.target===this)fecharConteudoModal()">
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width:720px;">
+            <div class="modal-header" style="justify-content:space-between;">
+                <h2 id="conteudo-modal-titulo" style="font-size:18px;">Editar</h2>
+                <button class="modal-close" onclick="fecharConteudoModal()">×</button>
+            </div>
+            <div class="modal-body" id="conteudo-modal-body"></div>
+        </div>
+    </div>
+
+    <!-- F1: Estilos cards conteúdo -->
+    <style>
+        .conteudo-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            transition: all .15s;
+        }
+        .conteudo-card:hover { border-color: var(--accent-gold); background: var(--bg-card-hover); }
+        .conteudo-card .icone { font-size: 36px; flex-shrink: 0; }
+        .conteudo-card .info { flex: 1; min-width: 0; }
+        .conteudo-card .info h3 { font-size: 15px; color: var(--text-primary); margin-bottom: 4px; }
+        .conteudo-card .info p { font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conteudo-card .acoes { display: flex; gap: 6px; flex-shrink: 0; }
+        .conteudo-card .acoes button {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .conteudo-card .acoes button:hover { background: var(--bg-card-hover); }
+        .conteudo-card .acoes button.danger { color: var(--accent-red); }
+        .form-row { margin-bottom: 14px; }
+        .form-row label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+        .form-row input, .form-row textarea, .form-row select {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+        }
+        .form-row textarea { min-height: 100px; resize: vertical; }
+        .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+        .form-actions button {
+            background: var(--accent-gold); color: #000; border: 0;
+            padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer;
+        }
+        .form-actions button.secondary { background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border); }
+        .capitulo-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+        .capitulo-item h4 { font-size: 13px; color: var(--accent-gold); margin-bottom: 4px; }
+        .capitulo-item p { font-size: 12px; color: var(--text-secondary); }
+    </style>
 
     <script>
         // Firebase Config
@@ -1246,6 +1361,329 @@
             t.textContent = msg;
             document.body.appendChild(t);
             setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+        }
+
+        // ============================================================
+        // F1 (2026-05-25): CRUD de conteúdo — Livros, Músicas, Frases
+        // Collections Firestore: conteudo_livros, conteudo_musicas,
+        // conteudo_frases. Cada doc auto-id, struct documentada inline.
+        // ============================================================
+
+        // -- Auto-load quando troca pra aba ---------------------------
+        const _origTrocarTab = trocarTab;
+        trocarTab = function(tabId) {
+            _origTrocarTab(tabId);
+            if (tabId === 'livros' && !window._livrosCarregados) carregarLivros();
+            if (tabId === 'musicas' && !window._musicasCarregados) carregarMusicas();
+            if (tabId === 'frases' && !window._frasesCarregadas) carregarFrases();
+        };
+
+        function fecharConteudoModal() {
+            document.getElementById('conteudo-modal').style.display = 'none';
+        }
+        function abrirConteudoModal(titulo, html) {
+            document.getElementById('conteudo-modal-titulo').textContent = titulo;
+            document.getElementById('conteudo-modal-body').innerHTML = html;
+            document.getElementById('conteudo-modal').style.display = 'flex';
+        }
+
+        // ════════════════ 📚 LIVROS ════════════════
+        let _livros = [];
+        async function carregarLivros() {
+            const grid = document.getElementById('livros-grid');
+            grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando...</p></div>';
+            try {
+                const snap = await db.collection('conteudo_livros').orderBy('ordem', 'asc').get();
+                _livros = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+                window._livrosCarregados = true;
+                renderizarLivros();
+            } catch (e) {
+                console.error(e);
+                grid.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>Erro: ${e.message}</p></div>`;
+            }
+        }
+        function renderizarLivros() {
+            const grid = document.getElementById('livros-grid');
+            document.getElementById('livros-count').textContent = `(${_livros.length})`;
+            if (!_livros.length) {
+                grid.innerHTML = `<div class="empty-state"><div class="icon">📚</div><p>Nenhum livro cadastrado. Use "Importar do Hostinger" pra começar.</p></div>`;
+                return;
+            }
+            grid.innerHTML = _livros.map(l => `
+                <div class="conteudo-card">
+                    <span class="icone">${l.capa || '📖'}</span>
+                    <div class="info">
+                        <h3>${escapeHtml(l.titulo || 'Sem título')}</h3>
+                        <p>${escapeHtml(l.autor || '-')} · ${(l.capitulos || []).length} capítulo(s) · id: ${l.id || l.docId}</p>
+                    </div>
+                    <div class="acoes">
+                        <button onclick="editarLivro('${l.docId}')">✏️</button>
+                        <button class="danger" onclick="deletarLivro('${l.docId}', '${escapeHtml(l.titulo || '').replace(/'/g,"\\'")}')">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        function abrirModalLivro() {
+            editarLivro(null);
+        }
+        function editarLivro(docId) {
+            const l = docId ? _livros.find(x => x.docId === docId) : { id: '', titulo: '', autor: '', capa: '📖', ordem: _livros.length, capitulos: [] };
+            if (!l) return;
+            const html = `
+                <div class="form-row"><label>ID (slug, sem espaços — ex: imitacao-cristo)</label>
+                    <input id="livro-id" value="${escapeHtml(l.id || '')}" ${docId ? 'readonly' : ''} /></div>
+                <div class="form-row"><label>Título</label>
+                    <input id="livro-titulo" value="${escapeHtml(l.titulo || '')}" /></div>
+                <div class="form-row"><label>Autor</label>
+                    <input id="livro-autor" value="${escapeHtml(l.autor || '')}" /></div>
+                <div class="form-row"><label>Capa (emoji)</label>
+                    <input id="livro-capa" value="${escapeHtml(l.capa || '📖')}" maxlength="4" /></div>
+                <div class="form-row"><label>Ordem (número p/ ordenar lista)</label>
+                    <input id="livro-ordem" type="number" value="${l.ordem ?? 0}" /></div>
+                <div class="form-row"><label>Capítulos (JSON — array de {numero, titulo, texto})</label>
+                    <textarea id="livro-capitulos" style="min-height:180px;font-family:ui-monospace,monospace;font-size:12px;">${escapeHtml(JSON.stringify(l.capitulos || [], null, 2))}</textarea>
+                    <small style="color:var(--text-secondary);font-size:11px;">Ex: [{"numero":1,"titulo":"...","texto":"..."}]</small></div>
+                <div class="form-actions">
+                    <button class="secondary" onclick="fecharConteudoModal()">Cancelar</button>
+                    <button onclick="salvarLivro('${docId || ''}')">${docId ? 'Salvar' : 'Criar'}</button>
+                </div>
+            `;
+            abrirConteudoModal(docId ? `✏️ Editar livro` : `➕ Novo livro`, html);
+        }
+        async function salvarLivro(docId) {
+            const id = document.getElementById('livro-id').value.trim();
+            const titulo = document.getElementById('livro-titulo').value.trim();
+            const autor = document.getElementById('livro-autor').value.trim();
+            const capa = document.getElementById('livro-capa').value.trim() || '📖';
+            const ordem = parseInt(document.getElementById('livro-ordem').value) || 0;
+            const capRaw = document.getElementById('livro-capitulos').value.trim();
+            if (!id || !titulo) return toast('❌ ID e título obrigatórios', 'error');
+            let capitulos = [];
+            try { capitulos = JSON.parse(capRaw || '[]'); }
+            catch { return toast('❌ JSON de capítulos inválido', 'error'); }
+            if (!Array.isArray(capitulos)) return toast('❌ Capítulos precisa ser array', 'error');
+            const payload = { id, titulo, autor, capa, ordem, capitulos, atualizadoEm: firebase.firestore.FieldValue.serverTimestamp() };
+            try {
+                if (docId) await db.collection('conteudo_livros').doc(docId).update(payload);
+                else { payload.criadoEm = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('conteudo_livros').add(payload); }
+                toast('✅ Salvo!');
+                fecharConteudoModal();
+                carregarLivros();
+            } catch (e) { console.error(e); toast('❌ Erro: ' + e.message, 'error'); }
+        }
+        async function deletarLivro(docId, titulo) {
+            if (!confirm(`Apagar "${titulo}"?\n\nIrreversível — o app deixará de mostrar este livro.`)) return;
+            try {
+                await db.collection('conteudo_livros').doc(docId).delete();
+                toast('🗑️ Apagado');
+                carregarLivros();
+            } catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
+        }
+        async function importarLivrosHostinger() {
+            if (!confirm('Vai baixar o catálogo de conversecommaria.com.br/livros e popular o Firestore.\n\nLivros existentes com mesmo ID serão SOBRESCRITOS.\n\nContinuar?')) return;
+            try {
+                toast('📥 Baixando catálogo...');
+                const cat = await fetch('https://conversecommaria.com.br/livros/catalogo.json?t=' + Date.now()).then(r => r.json());
+                const livros = cat.livros || [];
+                let ok = 0;
+                for (let i = 0; i < livros.length; i++) {
+                    const meta = livros[i];
+                    try {
+                        const full = await fetch(`https://conversecommaria.com.br/livros/${meta.id}.json?t=${Date.now()}`).then(r => r.json());
+                        const existing = _livros.find(l => l.id === meta.id);
+                        const payload = {
+                            id: meta.id,
+                            titulo: full.titulo || meta.titulo,
+                            autor: full.autor || meta.autor,
+                            capa: meta.capa || '📖',
+                            ordem: i,
+                            capitulos: full.capitulos || [],
+                            atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+                            origem: 'hostinger-import'
+                        };
+                        if (existing) await db.collection('conteudo_livros').doc(existing.docId).update(payload);
+                        else { payload.criadoEm = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('conteudo_livros').add(payload); }
+                        ok++;
+                    } catch (e) { console.error('Falha em ' + meta.id, e); }
+                }
+                toast(`✅ ${ok}/${livros.length} livros importados`);
+                carregarLivros();
+            } catch (e) { console.error(e); toast('❌ Falha import: ' + e.message, 'error'); }
+        }
+
+        // ════════════════ 🎵 MÚSICAS ════════════════
+        let _musicas = [];
+        async function carregarMusicas() {
+            const grid = document.getElementById('musicas-grid');
+            grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando...</p></div>';
+            try {
+                const snap = await db.collection('conteudo_musicas').orderBy('ordem', 'asc').get();
+                _musicas = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+                window._musicasCarregados = true;
+                renderizarMusicas();
+            } catch (e) { console.error(e); grid.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>Erro: ${e.message}</p></div>`; }
+        }
+        function renderizarMusicas() {
+            const grid = document.getElementById('musicas-grid');
+            document.getElementById('musicas-count').textContent = `(${_musicas.length})`;
+            if (!_musicas.length) {
+                grid.innerHTML = `<div class="empty-state"><div class="icon">🎵</div><p>Nenhuma música. Adicione uma com "Nova Música".</p></div>`;
+                return;
+            }
+            grid.innerHTML = _musicas.map(m => `
+                <div class="conteudo-card">
+                    <span class="icone">${m.icone || '🎵'}</span>
+                    <div class="info">
+                        <h3>${escapeHtml(m.nome || 'Sem nome')}</h3>
+                        <p>${escapeHtml(m.descricao || '')} · ${escapeHtml(m.categoria || '-')} · ${m.url ? '🎧' : 'sem URL'}</p>
+                    </div>
+                    <div class="acoes">
+                        <button onclick="editarMusica('${m.docId}')">✏️</button>
+                        <button class="danger" onclick="deletarMusica('${m.docId}', '${escapeHtml(m.nome || '').replace(/'/g,"\\'")}')">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        function abrirModalMusica() { editarMusica(null); }
+        function editarMusica(docId) {
+            const m = docId ? _musicas.find(x => x.docId === docId) : { id:'', nome:'', descricao:'', icone:'🎵', url:'', categoria:'sacra', autor:'', autorUrl:'', ordem:_musicas.length };
+            if (!m) return;
+            const html = `
+                <div class="form-row"><label>ID (slug)</label>
+                    <input id="musica-id" value="${escapeHtml(m.id || '')}" ${docId ? 'readonly' : ''} /></div>
+                <div class="form-row"><label>Nome</label>
+                    <input id="musica-nome" value="${escapeHtml(m.nome || '')}" /></div>
+                <div class="form-row"><label>Descrição curta</label>
+                    <input id="musica-desc" value="${escapeHtml(m.descricao || '')}" /></div>
+                <div class="form-row"><label>Ícone (emoji)</label>
+                    <input id="musica-icone" value="${escapeHtml(m.icone || '🎵')}" maxlength="4" /></div>
+                <div class="form-row"><label>URL do áudio (relativa ao app ou absoluta)</label>
+                    <input id="musica-url" value="${escapeHtml(m.url || '')}" placeholder="audio/ave_maria.mp3 ou https://..." /></div>
+                <div class="form-row"><label>Categoria</label>
+                    <select id="musica-categoria">
+                        <option value="sacra" ${m.categoria==='sacra'?'selected':''}>Sacra</option>
+                        <option value="instrumental" ${m.categoria==='instrumental'?'selected':''}>Instrumental</option>
+                        <option value="natureza" ${m.categoria==='natureza'?'selected':''}>Natureza</option>
+                        <option value="silencio" ${m.categoria==='silencio'?'selected':''}>Silêncio</option>
+                    </select></div>
+                <div class="form-row"><label>Autor (créditos)</label>
+                    <input id="musica-autor" value="${escapeHtml(m.autor || '')}" /></div>
+                <div class="form-row"><label>URL do autor (créditos)</label>
+                    <input id="musica-autorurl" value="${escapeHtml(m.autorUrl || '')}" /></div>
+                <div class="form-row"><label>Ordem</label>
+                    <input id="musica-ordem" type="number" value="${m.ordem ?? 0}" /></div>
+                <div class="form-actions">
+                    <button class="secondary" onclick="fecharConteudoModal()">Cancelar</button>
+                    <button onclick="salvarMusica('${docId || ''}')">${docId ? 'Salvar' : 'Criar'}</button>
+                </div>
+            `;
+            abrirConteudoModal(docId ? `✏️ Editar música` : `➕ Nova música`, html);
+        }
+        async function salvarMusica(docId) {
+            const id = document.getElementById('musica-id').value.trim();
+            const nome = document.getElementById('musica-nome').value.trim();
+            if (!id || !nome) return toast('❌ ID e nome obrigatórios', 'error');
+            const payload = {
+                id, nome,
+                descricao: document.getElementById('musica-desc').value.trim(),
+                icone: document.getElementById('musica-icone').value.trim() || '🎵',
+                url: document.getElementById('musica-url').value.trim() || null,
+                categoria: document.getElementById('musica-categoria').value,
+                autor: document.getElementById('musica-autor').value.trim() || null,
+                autorUrl: document.getElementById('musica-autorurl').value.trim() || null,
+                ordem: parseInt(document.getElementById('musica-ordem').value) || 0,
+                atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            try {
+                if (docId) await db.collection('conteudo_musicas').doc(docId).update(payload);
+                else { payload.criadoEm = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('conteudo_musicas').add(payload); }
+                toast('✅ Salvo!'); fecharConteudoModal(); carregarMusicas();
+            } catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
+        }
+        async function deletarMusica(docId, nome) {
+            if (!confirm(`Apagar música "${nome}"?`)) return;
+            try { await db.collection('conteudo_musicas').doc(docId).delete(); toast('🗑️ Apagado'); carregarMusicas(); }
+            catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
+        }
+
+        // ════════════════ 💬 FRASES DO DIA ════════════════
+        let _frases = [];
+        async function carregarFrases() {
+            const grid = document.getElementById('frases-grid');
+            grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando...</p></div>';
+            try {
+                const snap = await db.collection('conteudo_frases').orderBy('criadoEm', 'desc').get();
+                _frases = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+                window._frasesCarregadas = true;
+                renderizarFrases();
+            } catch (e) { console.error(e); grid.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>Erro: ${e.message}</p></div>`; }
+        }
+        function renderizarFrases() {
+            const grid = document.getElementById('frases-grid');
+            document.getElementById('frases-count').textContent = `(${_frases.length})`;
+            if (!_frases.length) {
+                grid.innerHTML = `<div class="empty-state"><div class="icon">💬</div><p>Nenhuma frase. Adicione uma com "Nova Frase".</p></div>`;
+                return;
+            }
+            grid.innerHTML = _frases.map(f => `
+                <div class="conteudo-card">
+                    <span class="icone">💬</span>
+                    <div class="info">
+                        <h3 style="white-space:normal;font-style:italic;">"${escapeHtml(f.texto || '')}"</h3>
+                        <p>— ${escapeHtml(f.autor || 'Anônimo')}${f.ativo === false ? ' · <span style="color:var(--accent-red);">INATIVA</span>' : ''}</p>
+                    </div>
+                    <div class="acoes">
+                        <button onclick="editarFrase('${f.docId}')">✏️</button>
+                        <button class="danger" onclick="deletarFrase('${f.docId}')">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        function abrirModalFrase() { editarFrase(null); }
+        function editarFrase(docId) {
+            const f = docId ? _frases.find(x => x.docId === docId) : { texto:'', autor:'', ativo:true };
+            if (!f) return;
+            const html = `
+                <div class="form-row"><label>Texto da frase</label>
+                    <textarea id="frase-texto" maxlength="280">${escapeHtml(f.texto || '')}</textarea>
+                    <small style="color:var(--text-secondary);font-size:11px;">Máx 280 caracteres.</small></div>
+                <div class="form-row"><label>Autor</label>
+                    <input id="frase-autor" value="${escapeHtml(f.autor || '')}" placeholder="Maria, São João Paulo II, anônimo..." /></div>
+                <div class="form-row"><label><input type="checkbox" id="frase-ativo" ${f.ativo !== false ? 'checked' : ''}> Frase ativa (aparece no app)</label></div>
+                <div class="form-actions">
+                    <button class="secondary" onclick="fecharConteudoModal()">Cancelar</button>
+                    <button onclick="salvarFrase('${docId || ''}')">${docId ? 'Salvar' : 'Criar'}</button>
+                </div>
+            `;
+            abrirConteudoModal(docId ? `✏️ Editar frase` : `➕ Nova frase`, html);
+        }
+        async function salvarFrase(docId) {
+            const texto = document.getElementById('frase-texto').value.trim();
+            if (!texto) return toast('❌ Texto obrigatório', 'error');
+            const payload = {
+                texto,
+                autor: document.getElementById('frase-autor').value.trim() || 'Anônimo',
+                ativo: document.getElementById('frase-ativo').checked,
+                atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            try {
+                if (docId) await db.collection('conteudo_frases').doc(docId).update(payload);
+                else { payload.criadoEm = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('conteudo_frases').add(payload); }
+                toast('✅ Salvo!'); fecharConteudoModal(); carregarFrases();
+            } catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
+        }
+        async function deletarFrase(docId) {
+            if (!confirm('Apagar frase?')) return;
+            try { await db.collection('conteudo_frases').doc(docId).delete(); toast('🗑️ Apagado'); carregarFrases(); }
+            catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
+        }
+
+        // Helper de escape HTML (reaproveita em todos os 3)
+        function escapeHtml(s) {
+            if (s === null || s === undefined) return '';
+            return String(s).replace(/[&<>"']/g, c => ({
+                '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+            })[c]);
         }
     </script>
 </body>

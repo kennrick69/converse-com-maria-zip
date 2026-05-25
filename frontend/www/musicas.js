@@ -161,9 +161,44 @@ Pappelallee 78/79, 10437 Berlin, Germany`
                 this.musicaAtual = config.musicaId;
             }
         }
-        
+
         // Injetar CSS da animação
         this.injetarCSS();
+
+        // F1 (2026-05-25): se Firestore tiver músicas, substitui o array
+        // hardcoded. Mantém o que existe localmente como fallback (offline).
+        this.carregarDoFirestore();
+    },
+
+    // F1 — carrega coleção conteudo_musicas e mescla no array. Itens vindos
+    // do Firestore têm precedência (mesmo id sobrescreve hardcoded).
+    async carregarDoFirestore() {
+        try {
+            if (!window.firebase || !firebase.firestore) return;
+            const snap = await firebase.firestore().collection('conteudo_musicas').orderBy('ordem', 'asc').get();
+            if (snap.empty) return;
+            const dbMusicas = snap.docs.map(d => {
+                const data = d.data();
+                return {
+                    id: data.id || d.id,
+                    nome: data.nome,
+                    descricao: data.descricao,
+                    icone: data.icone || '🎵',
+                    url: data.url || null,
+                    categoria: data.categoria || 'sacra',
+                    autor: data.autor || null,
+                    autorUrl: data.autorUrl || null
+                };
+            });
+            // Mescla: itens do Firestore têm precedência por id; mantém os
+            // hardcoded que não foram redefinidos (mantém retrocompatibilidade).
+            const idsFirestore = new Set(dbMusicas.map(m => m.id));
+            const sobreviventes = this.musicas.filter(m => !idsFirestore.has(m.id));
+            this.musicas = [...dbMusicas, ...sobreviventes];
+            console.log(`[musicas] ${dbMusicas.length} do Firestore + ${sobreviventes.length} hardcoded`);
+        } catch (e) {
+            console.warn('[musicas] Firestore falhou, mantém hardcoded:', e.message);
+        }
     },
     
     // Injetar CSS necessário
