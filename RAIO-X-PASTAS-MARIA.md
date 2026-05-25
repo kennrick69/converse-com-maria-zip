@@ -46,7 +46,13 @@
    - `audio.zip` (24MB), `backend.zip` (14MB)
    - `Screenshots/`, `Captura de tela ...png`
 
-⚠️ **Pendência**: tem o backup pesado `audios-terco/` (6.3MB de .mpeg WhatsApp) e `audio.zip`/`backend.zip` que estão no `.gitignore` mas continuam ocupando 354 MB localmente. Posso ajudar a mover esses pra um pen drive/Drive se quiser desafogar disco.
+⚠️ **Pendência sobre `audios-terco/` (corrigido 2026-05-25)**:
+- Eu classifiquei erradamente no .gitignore como "WhatsApp brutos descartáveis". **NÃO SÃO**.
+- Verificação md5: os 9 arquivos nomeados (`ave-maria.mpeg`, `creio.mpeg`, `fatima.mpeg`, `gloria.mpeg`, `oferecimento.mpeg`, `pai-nosso.mpeg`, `pelo-sinal.mpeg`, `salve-rainha.mpeg`, `sinal-da-cruz.mpeg`) são **bit-a-bit IDÊNTICOS** aos `.mp3` em `frontend/www/audio/terco/` (que estão no repo). São as **masters de produção** dos áudios do terço, apenas com extensão `.mpeg` original do WhatsApp.
+- Os 9 `WhatsApp Audio 2026-04-28 ...mpeg` (sem nome próprio) são fontes brutas extras, possivelmente novas gravações ainda não processadas.
+- **Status do terço hoje**: `terco.js:246-281` ainda mostra "Áudio em breve! 🎙️" — integração dos pré-gravados não foi ligada ainda, mas os `.mp3` finais já estão no repo prontos.
+- **Recomendação**: manter `audios-terco/` no disco (são masters), mas pode mover pra Drive externo (não precisam estar no repo — os finais `.mp3` já estão lá). NÃO apagar sem cópia em outro lugar.
+- Sobre `audio.zip` (24MB) e `backend.zip` (14MB) na raiz: provavelmente backups antigos. JOs decide se desafoga disco movendo pra Drive.
 
 ---
 
