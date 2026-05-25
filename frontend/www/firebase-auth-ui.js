@@ -1,6 +1,7 @@
 // ========================================
 // 🔐 TELA DE LOGIN/CADASTRO
 // Converse com Maria - Firebase Auth
+// ✅ CORRIGIDO: await no syncCloudToLocal
 // ========================================
 
 const TelaAuth = {
@@ -182,25 +183,21 @@ const TelaAuth = {
     },
     
     // Mostrar erro
-    mostrarErro(mensagem) {
+    mostrarErro(msg) {
         const erro = document.getElementById('auth-erro');
-        const sucesso = document.getElementById('auth-sucesso');
         if (erro) {
-            erro.textContent = mensagem;
+            erro.textContent = msg;
             erro.classList.remove('hidden');
         }
-        if (sucesso) sucesso.classList.add('hidden');
     },
     
     // Mostrar sucesso
-    mostrarSucesso(mensagem) {
+    mostrarSucesso(msg) {
         const sucesso = document.getElementById('auth-sucesso');
-        const erro = document.getElementById('auth-erro');
         if (sucesso) {
-            sucesso.textContent = mensagem;
+            sucesso.textContent = msg;
             sucesso.classList.remove('hidden');
         }
-        if (erro) erro.classList.add('hidden');
     },
     
     // Limpar mensagens
@@ -209,7 +206,7 @@ const TelaAuth = {
         document.getElementById('auth-sucesso')?.classList.add('hidden');
     },
     
-    // Desabilitar botões durante loading
+    // Loading
     setLoading(loading) {
         const btnLogin = document.getElementById('btn-login');
         const btnCadastro = document.getElementById('btn-cadastro');
@@ -346,24 +343,30 @@ const TelaAuth = {
         }
     },
     
-    // Callback de sucesso no login
-    onLoginSuccess(user) {
+    // ========================================
+    // ✅ CORRIGIDO: Callback de sucesso no login
+    // ========================================
+    async onLoginSuccess(user) {
         console.log('✅ Login success:', user.displayName || user.email);
         
-        // Carregar dados da nuvem
-        UserDataService.syncCloudToLocal();
+        // ✅ AGUARDAR sincronização dos dados da nuvem
+        console.log('🔄 Iniciando sync...');
+        await UserDataService.syncCloudToLocal();
+        console.log('✅ Sync completo!');
         
-        // Verificar se tem perfil completo
-        UserDataService.getUserData().then(userData => {
-            if (userData?.perfil?.nome && userData?.perfil?.genero) {
-                // Tem perfil completo - ir para chat
-                irParaChat();
-            } else {
-                // Precisa completar onboarding
-                document.getElementById('testimonials')?.classList.add('hidden');
-                document.getElementById('onboarding')?.classList.remove('hidden');
-            }
-        });
+        // Agora buscar dados atualizados
+        const userData = await UserDataService.getUserData();
+        console.log('📊 userData:', userData);
+        
+        // ✅ CORRIGIDO: Verificar apenas se tem NOME (gênero é opcional)
+        if (userData?.perfil?.nome) {
+            console.log('✅ Perfil encontrado, indo para chat...');
+            irParaChat();
+        } else {
+            console.log('⚠️ Perfil incompleto, mostrando onboarding...');
+            document.getElementById('testimonials')?.classList.add('hidden');
+            document.getElementById('onboarding')?.classList.remove('hidden');
+        }
     }
 };
 
@@ -377,7 +380,10 @@ function irParaChat() {
     const perfil = localStorage.getItem('mariaPerfil');
     if (perfil) {
         const { nome } = JSON.parse(perfil);
-        document.getElementById('header-nome').textContent = `Conversando com ${nome}`;
+        const headerNome = document.getElementById('header-nome');
+        if (headerNome) {
+            headerNome.textContent = `Conversando com ${nome}`;
+        }
     }
 }
 

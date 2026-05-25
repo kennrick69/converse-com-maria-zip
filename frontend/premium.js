@@ -370,7 +370,7 @@ const TelaPremium = {
                             </div>
                             <div class="bg-white/5 rounded-xl p-4">
                                 <p class="text-white font-semibold text-sm mb-1">Como funciona o pagamento?</p>
-                                <p class="text-white/60 text-sm">Aceitamos cartão de crédito, PIX e boleto. Tudo seguro e criptografado.</p>
+                                <p class="text-white/60 text-sm">Aceitamos cartão de crédito e PIX. Tudo seguro e criptografado.</p>
                             </div>
                         </div>
                     </div>
@@ -743,6 +743,41 @@ const TelaPremium = {
         this.mostrarTelaCheckout(this.planos[this.planoSelecionado]);
     },
 
+    // Enviar dados do brinde por email (após pagamento confirmado)
+    async enviarDadosBrinde() {
+        if (!this.enderecoMedalha) return;
+        
+        const dados = {
+            tipo: 'brinde_medalha',
+            plano: this.planoSelecionado,
+            endereco: this.enderecoMedalha,
+            email_usuario: this.getUserEmail(),
+            data: new Date().toLocaleString('pt-BR')
+        };
+        
+        try {
+            // Enviar para o PHP na Hostinger
+            const response = await fetch('https://conversecommaria.com.br/api/enviar-brinde.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            
+            if (response.ok) {
+                console.log('📧 Dados do brinde enviados com sucesso!');
+            }
+        } catch (e) {
+            console.error('Erro ao enviar dados do brinde:', e);
+        }
+    },
+
+    getUserEmail() {
+        if (typeof FirebaseService !== 'undefined' && FirebaseService.getCurrentUser()) {
+            return FirebaseService.getCurrentUser().email;
+        }
+        return localStorage.getItem('maria_user_email') || 'não informado';
+    },
+
     // Mostrar tela de checkout
     mostrarTelaCheckout(plano) {
         const checkout = document.createElement('div');
@@ -771,20 +806,11 @@ const TelaPremium = {
                         <svg class="w-5 h-5 text-white/40 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                     
-                    <button onclick="TelaPremium.processarPagamento('pix')" class="w-full flex items-center gap-4 p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
+                    <button onclick="TelaPremium.processarPagamento('pix')" class="w-full flex items-center gap-4 p-4 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 rounded-xl transition-all">
                         <span class="text-2xl">🔑</span>
                         <div class="text-left">
                             <p class="text-white font-semibold">PIX</p>
-                            <p class="text-white/50 text-xs">Aprovação instantânea</p>
-                        </div>
-                        <svg class="w-5 h-5 text-white/40 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                    
-                    <button onclick="TelaPremium.processarPagamento('boleto')" class="w-full flex items-center gap-4 p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
-                        <span class="text-2xl">📄</span>
-                        <div class="text-left">
-                            <p class="text-white font-semibold">Boleto</p>
-                            <p class="text-white/50 text-xs">Aprovação em 1-3 dias úteis</p>
+                            <p class="text-emerald-400 text-xs">Aprovação instantânea</p>
                         </div>
                         <svg class="w-5 h-5 text-white/40 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
@@ -838,13 +864,6 @@ const TelaPremium = {
                 PagamentoService.pagarComPix(plano);
                 break;
                 
-            case 'boleto':
-                // TODO: Implementar boleto via Mercado Pago
-                if (window.showToast) {
-                    showToast('Boleto em breve! Use PIX por enquanto 🙏');
-                }
-                break;
-                
             default:
                 console.warn('Método de pagamento desconhecido:', metodo);
         }
@@ -881,6 +900,11 @@ const TelaPremium = {
     mostrarSucesso() {
         const plano = this.planos[this.planoSelecionado];
         const temMedalha = plano.medalha && this.enderecoMedalha;
+        
+        // Se tem medalha, enviar dados por email
+        if (temMedalha) {
+            this.enviarDadosBrinde();
+        }
         
         const sucesso = document.createElement('div');
         sucesso.id = 'sucesso-premium';

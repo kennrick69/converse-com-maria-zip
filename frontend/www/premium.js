@@ -226,16 +226,16 @@ const TelaPremium = {
                             
                             <div class="flex items-center gap-4">
                                 <div class="flex-shrink-0">
-                                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-600 flex items-center justify-center shadow-xl medalha-shine">
-                                        <span class="text-4xl">🏅</span>
+                                    <div class="w-24 h-24 rounded-2xl bg-white flex items-center justify-center shadow-xl border-2 border-yellow-500/50 medalha-shine p-2 cursor-pointer hover:scale-110 transition-transform" onclick="TelaPremium.abrirImagemMedalha()" title="Toque para ampliar">
+                                        <img src="medalha.jpg" alt="Medalha Milagrosa" class="w-full h-full object-contain"/>
                                     </div>
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-1">
                                         <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">BRINDE EXCLUSIVO</span>
                                     </div>
-                                    <h3 class="text-white font-bold text-lg">Medalha de Nossa Senhora</h3>
-                                    <p class="text-white/70 text-sm">Receba em casa uma linda medalha benta para abençoar seu lar</p>
+                                    <h3 class="text-white font-bold text-lg">Medalha Milagrosa</h3>
+                                    <p class="text-white/70 text-sm">Medalha de Nossa Senhora das Graças</p>
                                     <p class="text-yellow-400 text-xs mt-1 font-semibold">🎁 Grátis no plano Anual!</p>
                                 </div>
                             </div>
@@ -370,7 +370,7 @@ const TelaPremium = {
                             </div>
                             <div class="bg-white/5 rounded-xl p-4">
                                 <p class="text-white font-semibold text-sm mb-1">Como funciona o pagamento?</p>
-                                <p class="text-white/60 text-sm">Aceitamos cartão de crédito, PIX e boleto. Tudo seguro e criptografado.</p>
+                                <p class="text-white/60 text-sm">Aceitamos cartão de crédito e PIX. Tudo seguro e criptografado.</p>
                             </div>
                         </div>
                     </div>
@@ -531,7 +531,7 @@ const TelaPremium = {
                 <p class="text-white font-bold text-lg">${plano.nome}</p>
                 
                 <div class="flex items-baseline gap-1 mt-2">
-                    <span class="text-3xl font-bold ${selecionado ? 'text-yellow-400' : 'text-white'}">R$${plano.preco.toFixed(2).replace('.', ',')}</span>
+                    <span class="preco-valor text-3xl font-bold ${selecionado ? 'text-yellow-400' : 'text-white'}">R$${plano.preco.toFixed(2).replace('.', ',')}</span>
                     <span class="text-white/60 text-sm">${plano.periodo}</span>
                 </div>
                 
@@ -556,7 +556,7 @@ const TelaPremium = {
                 
                 <!-- Indicador de seleção -->
                 <div class="mt-3 flex justify-center">
-                    <div class="w-5 h-5 rounded-full border-2 ${selecionado ? 'border-yellow-400 bg-yellow-400' : 'border-white/30'} flex items-center justify-center">
+                    <div class="indicador-selecao w-5 h-5 rounded-full border-2 ${selecionado ? 'border-yellow-400 bg-yellow-400' : 'border-white/30'} flex items-center justify-center transition-all duration-300">
                         ${selecionado ? '<svg class="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>' : ''}
                     </div>
                 </div>
@@ -595,12 +595,41 @@ const TelaPremium = {
         Object.keys(this.planos).forEach(key => {
             const card = document.getElementById(`plano-${key}`);
             if (card) {
-                if (key === this.planoSelecionado) {
+                const selecionado = key === this.planoSelecionado;
+                
+                // Atualizar classes do card
+                if (selecionado) {
                     card.classList.add('selecionado', 'bg-gradient-to-br', 'from-yellow-500/20', 'to-orange-500/20', 'border-yellow-500/50');
                     card.classList.remove('bg-white/5', 'border-white/10');
                 } else {
                     card.classList.remove('selecionado', 'bg-gradient-to-br', 'from-yellow-500/20', 'to-orange-500/20', 'border-yellow-500/50');
                     card.classList.add('bg-white/5', 'border-white/10');
+                }
+                
+                // Atualizar indicador de seleção (check)
+                const indicador = card.querySelector('.indicador-selecao');
+                if (indicador) {
+                    if (selecionado) {
+                        indicador.classList.add('border-yellow-400', 'bg-yellow-400');
+                        indicador.classList.remove('border-white/30');
+                        indicador.innerHTML = '<svg class="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+                    } else {
+                        indicador.classList.remove('border-yellow-400', 'bg-yellow-400');
+                        indicador.classList.add('border-white/30');
+                        indicador.innerHTML = '';
+                    }
+                }
+                
+                // Atualizar cor do preço
+                const preco = card.querySelector('.preco-valor');
+                if (preco) {
+                    if (selecionado) {
+                        preco.classList.add('text-yellow-400');
+                        preco.classList.remove('text-white');
+                    } else {
+                        preco.classList.remove('text-yellow-400');
+                        preco.classList.add('text-white');
+                    }
                 }
             }
         });
@@ -634,11 +663,11 @@ const TelaPremium = {
         form.innerHTML = `
             <div class="bg-gradient-to-br from-gray-900 to-purple-900/50 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 animate-scale-in">
                 <div class="text-center mb-6">
-                    <div class="w-20 h-20 mx-auto bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mb-4 shadow-lg medalha-shine">
-                        <span class="text-4xl">🏅</span>
+                    <div class="w-24 h-24 mx-auto bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg border-2 border-yellow-500/50 medalha-shine p-2 cursor-pointer hover:scale-110 transition-transform" onclick="TelaPremium.abrirImagemMedalha()" title="Toque para ampliar">
+                        <img src="medalha.jpg" alt="Medalha Milagrosa" class="w-full h-full object-contain"/>
                     </div>
                     <h2 class="text-white text-xl font-bold">Receba sua Medalha!</h2>
-                    <p class="text-white/60 text-sm mt-1">Informe o endereço para enviarmos sua medalha benta</p>
+                    <p class="text-white/60 text-sm mt-1">Informe o endereço para enviarmos sua Medalha Milagrosa</p>
                 </div>
                 
                 <!-- Formulário -->
@@ -650,7 +679,11 @@ const TelaPremium = {
                     
                     <div>
                         <label class="text-white/70 text-sm mb-1 block">CEP *</label>
-                        <input type="text" id="endereco-cep" placeholder="00000-000" maxlength="9" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-yellow-500">
+                        <div class="relative">
+                            <input type="text" id="endereco-cep" placeholder="00000-000" maxlength="9" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-yellow-500">
+                            <span id="cep-loading" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-yellow-400 text-sm">🔄</span>
+                        </div>
+                        <p id="cep-erro" class="text-red-400 text-xs mt-1 hidden">CEP não encontrado</p>
                     </div>
                     
                     <div>
@@ -707,6 +740,94 @@ const TelaPremium = {
         `;
         
         document.body.appendChild(form);
+        
+        // Configurar busca automática de CEP
+        this.configurarBuscaCEP();
+    },
+    
+    // Buscar endereço pelo CEP usando ViaCEP
+    configurarBuscaCEP() {
+        const cepInput = document.getElementById('endereco-cep');
+        if (!cepInput) return;
+        
+        // Máscara de CEP
+        cepInput.addEventListener('input', (e) => {
+            let valor = e.target.value.replace(/\D/g, '');
+            if (valor.length > 5) {
+                valor = valor.substring(0, 5) + '-' + valor.substring(5, 8);
+            }
+            e.target.value = valor;
+            
+            // Buscar quando tiver 8 dígitos
+            if (valor.replace(/\D/g, '').length === 8) {
+                this.buscarCEP(valor.replace(/\D/g, ''));
+            }
+        });
+        
+        // Também buscar ao sair do campo
+        cepInput.addEventListener('blur', (e) => {
+            const cep = e.target.value.replace(/\D/g, '');
+            if (cep.length === 8) {
+                this.buscarCEP(cep);
+            }
+        });
+    },
+    
+    // Buscar endereço na API ViaCEP
+    async buscarCEP(cep) {
+        const loading = document.getElementById('cep-loading');
+        const erro = document.getElementById('cep-erro');
+        
+        if (loading) loading.classList.remove('hidden');
+        if (erro) erro.classList.add('hidden');
+        
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+            
+            if (data.erro) {
+                if (erro) {
+                    erro.textContent = 'CEP não encontrado';
+                    erro.classList.remove('hidden');
+                }
+                return;
+            }
+            
+            // Preencher campos
+            const campos = {
+                'endereco-rua': data.logradouro || '',
+                'endereco-bairro': data.bairro || '',
+                'endereco-cidade': data.localidade || '',
+                'endereco-uf': data.uf || ''
+            };
+            
+            for (const [id, valor] of Object.entries(campos)) {
+                const input = document.getElementById(id);
+                if (input && valor) {
+                    input.value = valor;
+                    // Destacar campo preenchido
+                    input.style.borderColor = '#eab308';
+                    setTimeout(() => {
+                        input.style.borderColor = '';
+                    }, 1500);
+                }
+            }
+            
+            // Focar no campo número
+            const numeroInput = document.getElementById('endereco-numero');
+            if (numeroInput) numeroInput.focus();
+            
+            console.log('✅ CEP encontrado:', data.localidade, data.uf);
+            
+        } catch (error) {
+            console.error('Erro ao buscar CEP:', error);
+            if (erro) {
+                erro.textContent = 'Erro ao buscar CEP. Preencha manualmente.';
+                erro.classList.remove('hidden');
+            }
+        } finally {
+            if (loading) loading.classList.add('hidden');
+        }
     },
 
     // Validar endereço
@@ -743,6 +864,75 @@ const TelaPremium = {
         this.mostrarTelaCheckout(this.planos[this.planoSelecionado]);
     },
 
+    // Enviar dados do brinde por email (após pagamento confirmado)
+    async enviarDadosBrinde() {
+        if (!this.enderecoMedalha) return;
+        
+        const dados = {
+            tipo: 'brinde_medalha',
+            plano: this.planoSelecionado,
+            endereco: this.enderecoMedalha,
+            email_usuario: this.getUserEmail(),
+            data: new Date().toLocaleString('pt-BR')
+        };
+        
+        try {
+            // Enviar para o PHP na Hostinger
+            const response = await fetch('https://conversecommaria.com.br/api/enviar-brinde.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            
+            if (response.ok) {
+                console.log('📧 Dados do brinde enviados com sucesso!');
+            }
+        } catch (e) {
+            console.error('Erro ao enviar dados do brinde:', e);
+        }
+    },
+
+    // Abrir imagem da medalha em tela cheia
+    abrirImagemMedalha() {
+        const modal = document.createElement('div');
+        modal.id = 'modal-medalha-ampliada';
+        modal.className = 'fixed inset-0 z-[200] flex items-center justify-center p-4';
+        modal.style.background = 'rgba(0,0,0,0.95)';
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.remove();
+        };
+        
+        modal.innerHTML = `
+            <div class="relative max-w-sm w-full animate-scale-in">
+                <!-- Botão fechar -->
+                <button onclick="document.getElementById('modal-medalha-ampliada').remove()" class="absolute -top-12 right-0 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                
+                <!-- Imagem da medalha -->
+                <div class="bg-white rounded-3xl p-6 shadow-2xl">
+                    <img src="medalha.jpg" alt="Medalha Milagrosa de Nossa Senhora das Graças" class="w-full h-auto rounded-xl"/>
+                </div>
+                
+                <!-- Descrição -->
+                <div class="text-center mt-4">
+                    <h3 class="text-white font-bold text-lg">Medalha Milagrosa</h3>
+                    <p class="text-white/70 text-sm mt-1">Nossa Senhora das Graças</p>
+                    <p class="text-yellow-400 text-xs mt-2">🎁 Brinde exclusivo do plano Anual</p>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    },
+
+    getUserEmail() {
+        if (typeof FirebaseService !== 'undefined' && FirebaseService.getCurrentUser()) {
+            return FirebaseService.getCurrentUser().email;
+        }
+        return localStorage.getItem('maria_user_email') || 'não informado';
+    },
+
     // Mostrar tela de checkout
     mostrarTelaCheckout(plano) {
         const checkout = document.createElement('div');
@@ -771,20 +961,11 @@ const TelaPremium = {
                         <svg class="w-5 h-5 text-white/40 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                     
-                    <button onclick="TelaPremium.processarPagamento('pix')" class="w-full flex items-center gap-4 p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
+                    <button onclick="TelaPremium.processarPagamento('pix')" class="w-full flex items-center gap-4 p-4 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 rounded-xl transition-all">
                         <span class="text-2xl">🔑</span>
                         <div class="text-left">
                             <p class="text-white font-semibold">PIX</p>
-                            <p class="text-white/50 text-xs">Aprovação instantânea</p>
-                        </div>
-                        <svg class="w-5 h-5 text-white/40 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                    
-                    <button onclick="TelaPremium.processarPagamento('boleto')" class="w-full flex items-center gap-4 p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
-                        <span class="text-2xl">📄</span>
-                        <div class="text-left">
-                            <p class="text-white font-semibold">Boleto</p>
-                            <p class="text-white/50 text-xs">Aprovação em 1-3 dias úteis</p>
+                            <p class="text-emerald-400 text-xs">Aprovação instantânea</p>
                         </div>
                         <svg class="w-5 h-5 text-white/40 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
@@ -838,13 +1019,6 @@ const TelaPremium = {
                 PagamentoService.pagarComPix(plano);
                 break;
                 
-            case 'boleto':
-                // TODO: Implementar boleto via Mercado Pago
-                if (window.showToast) {
-                    showToast('Boleto em breve! Use PIX por enquanto 🙏');
-                }
-                break;
-                
             default:
                 console.warn('Método de pagamento desconhecido:', metodo);
         }
@@ -881,6 +1055,11 @@ const TelaPremium = {
     mostrarSucesso() {
         const plano = this.planos[this.planoSelecionado];
         const temMedalha = plano.medalha && this.enderecoMedalha;
+        
+        // Se tem medalha, enviar dados por email
+        if (temMedalha) {
+            this.enviarDadosBrinde();
+        }
         
         const sucesso = document.createElement('div');
         sucesso.id = 'sucesso-premium';
@@ -952,6 +1131,15 @@ const TelaPremium = {
             plano: this.planoSelecionado,
             enderecoMedalha: this.enderecoMedalha || null
         }));
+        
+        // 🔥 SINCRONIZAR PREMIUM COM FIREBASE
+        const duracaoDias = this.planoSelecionado === 'anual' ? 365 : 30;
+        if (window.sincronizarPremiumFirebase) {
+            sincronizarPremiumFirebase(this.planoSelecionado, duracaoDias);
+        } else if (window.PremiumService && window.FirebaseService?.isLoggedIn()) {
+            PremiumService.ativarPremium(this.planoSelecionado, duracaoDias);
+        }
+        console.log('💎 Premium ativado e sincronizado:', this.planoSelecionado);
     },
 
     // Criar confetes

@@ -3,6 +3,10 @@
   "appName": "Converse com Maria",
   "webDir": "www",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
   }
 }

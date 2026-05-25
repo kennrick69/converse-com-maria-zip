@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Banner Play Store - Converse com Maria</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            padding: 40px;
+            gap: 30px;
+        }
+
+        .banner {
+            width: 1024px;
+            height: 500px;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Crimson Text', Georgia, serif;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            background: linear-gradient(135deg, #0d2818 0%, #1a4a35 50%, #0a1f12 100%);
+        }
+
+        /* Imagem de Maria */
+        .bg-image {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 600px;
+            height: 500px;
+            background: url('maria-splash.jpg') center 65%;
+            background-size: cover;
+            mask-image: linear-gradient(to left, black 50%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to left, black 50%, transparent 100%);
+        }
+
+        /* Brilho celestial */
+        .celestial-glow {
+            position: absolute;
+            top: -50%;
+            right: 10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(ellipse, rgba(255,255,255,0.2) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .celestial-glow-2 {
+            position: absolute;
+            top: 0;
+            right: 150px;
+            width: 300px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(255,215,100,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Partículas flutuantes */
+        .particles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+            50% { transform: translateY(-15px) scale(1.2); opacity: 1; }
+        }
+
+        /* Conteúdo principal */
+        .content {
+            position: absolute;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            max-width: 480px;
+        }
+
+        .crown-icon {
+            font-size: 42px;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 0 20px rgba(255,215,0,0.5));
+        }
+
+        .app-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: 78px;
+            color: #fff;
+            text-shadow: 
+                0 4px 30px rgba(0,0,0,0.8),
+                0 0 60px rgba(255,255,255,0.2),
+                0 0 100px rgba(212,165,116,0.3);
+            line-height: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 22px;
+            color: #d4a574;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.8);
+            margin-bottom: 18px;
+        }
+
+        .tagline {
+            font-size: 19px;
+            color: rgba(255,255,255,0.95);
+            line-height: 1.6;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.8);
+            font-style: italic;
+        }
+
+        .tagline strong {
+            color: #f5d9a8;
+            font-style: normal;
+        }
+
+        /* Features em pills */
+        .features {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(212,165,116,0.25) 0%, rgba(212,165,116,0.1) 100%);
+            padding: 10px 18px;
+            border-radius: 30px;
+            border: 1px solid rgba(212,165,116,0.4);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .feature-icon {
+            font-size: 18px;
+        }
+
+        .feature-text {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Gradiente inferior */
+        .bottom-gradient {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        /* Linha decorativa dourada */
+        .gold-line {
+            position: absolute;
+            bottom: 25px;
+            left: 50px;
+            width: 150px;
+            height: 2px;
+            background: linear-gradient(90deg, #d4a574, transparent);
+        }
+
+        .instructions {
+            color: #d4a574;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-align: center;
+            max-width: 700px;
+            line-height: 1.8;
+            background: rgba(255,255,255,0.05);
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .instructions strong {
+            color: #fff;
+        }
+
+        .instructions code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #7deb7d;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <strong>📸 COMO SALVAR O BANNER:</strong><br><br>
+        1. Coloque este arquivo HTML na pasta <code>C:\Users\sss\Pictures\x DEPLOY\proj_maria\frontend</code><br>
+        2. Abra o HTML no Chrome (duplo clique)<br>
+        3. Pressione <strong>F12</strong> → <strong>Ctrl+Shift+P</strong> → digite <strong>"screenshot"</strong><br>
+        4. Escolha <strong>"Capture node screenshot"</strong> → Clique no banner abaixo!
+    </div>
+
+    <div class="banner">
+        <!-- Efeitos de luz -->
+        <div class="celestial-glow"></div>
+        <div class="celestial-glow-2"></div>
+        
+        <!-- Partículas -->
+        <div class="particles">
+            <div class="particle" style="top: 10%; left: 15%; width: 6px; height: 6px; animation-delay: 0s;"></div>
+            <div class="particle" style="top: 25%; left: 30%; width: 4px; height: 4px; animation-delay: 0.5s;"></div>
+            <div class="particle" style="top: 45%; left: 8%; width: 5px; height: 5px; animation-delay: 1s;"></div>
+            <div class="particle" style="top: 65%; left: 22%; width: 4px; height: 4px; animation-delay: 1.5s;"></div>
+            <div class="particle" style="top: 80%; left: 35%; width: 5px; height: 5px; animation-delay: 2s;"></div>
+            <div class="particle" style="top: 15%; left: 42%; width: 3px; height: 3px; animation-delay: 0.3s;"></div>
+            <div class="particle" style="top: 55%; left: 38%; width: 4px; height: 4px; animation-delay: 0.8s;"></div>
+            <div class="particle" style="top: 35%; left: 5%; width: 5px; height: 5px; animation-delay: 1.2s;"></div>
+        </div>
+
+        <!-- Imagem de Maria -->
+        <div class="bg-image"></div>
+        
+        <!-- Conteúdo -->
+        <div class="content">
+            <div class="crown-icon">👑</div>
+            <h1 class="app-title">Converse com Maria</h1>
+            <p class="subtitle">Mãe de Jesus Cristo</p>
+            <p class="tagline">
+                Encontre <strong>paz</strong> e <strong>conforto espiritual</strong><br>
+                através das Sagradas Escrituras
+            </p>
+            
+            <div class="features">
+                <div class="feature">
+                    <span class="feature-icon">💬</span>
+                    <span class="feature-text">Chat com Maria</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">📿</span>
+                    <span class="feature-text">Santo Terço</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🕯️</span>
+                    <span class="feature-text">Velas</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🙏</span>
+                    <span class="feature-text">Comunidade</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gradiente inferior -->
+        <div class="bottom-gradient"></div>
+        <div class="gold-line"></div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bgRoyal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="crown" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef08a"/>
+      <stop offset="50%" style="stop-color:#fde047"/>
+      <stop offset="100%" style="stop-color:#ca8a04"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    <filter id="glow-gold">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  
+  <style>
+    .coroa { animation: brilhar-coroa 2s ease-in-out infinite alternate; transform-origin: 50px 47px; }
+    .joia-vermelha { animation: pulsar-joia 1s ease-in-out infinite; }
+    .joia-azul { animation: pulsar-joia 1s ease-in-out infinite 0.3s; }
+    .joia-verde { animation: pulsar-joia 1s ease-in-out infinite 0.6s; }
+    .brilho1 { animation: sparkle 1.5s ease-in-out infinite; }
+    .brilho2 { animation: sparkle 1.2s ease-in-out infinite 0.4s; }
+    .estrela1 { animation: twinkle 1.5s ease-in-out infinite; }
+    .estrela2 { animation: twinkle 1.3s ease-in-out infinite 0.5s; }
+    .numero { animation: glow-numero 1.5s ease-in-out infinite alternate; }
+    
+    @keyframes brilhar-coroa {
+      0% { filter: none; transform: scale(1); }
+      100% { filter: url(#glow-gold); transform: scale(1.02); }
+    }
+    @keyframes pulsar-joia {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+    @keyframes sparkle {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.4; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    @keyframes glow-numero {
+      0% { opacity: 0.8; }
+      100% { opacity: 1; }
+    }
+  </style>
+  
+  <circle cx="50" cy="50" r="45" fill="url(#bgRoyal)" filter="url(#shadow)"/>
+  <circle cx="50" cy="50" r="42" fill="none" stroke="#ddd6fe" stroke-width="3" opacity="0.5"/>
+  
+  <!-- Coroa (brilha) -->
+  <g class="coroa">
+    <path d="M22,55 L22,40 L32,50 L42,35 L50,48 L58,35 L68,50 L78,40 L78,55 Z" fill="url(#crown)"/>
+    <rect x="22" y="55" width="56" height="10" rx="2" fill="url(#crown)"/>
+    
+    <!-- Detalhes dourados -->
+    <path d="M22,55 L22,40" stroke="#fef9c3" stroke-width="2" opacity="0.5"/>
+    <path d="M78,55 L78,40" stroke="#fef9c3" stroke-width="2" opacity="0.5"/>
+  </g>
+  
+  <!-- Joias na coroa (pulsam em sequência) -->
+  <g style="transform-origin: 32px 50px;">
+    <circle cx="32" cy="50" r="4" fill="#ef4444" class="joia-vermelha"/>
+    <circle cx="30" cy="48" r="1.5" fill="#fff" opacity="0.7" class="brilho1"/>
+  </g>
+  <g style="transform-origin: 50px 42px;">
+    <circle cx="50" cy="42" r="5" fill="#3b82f6" class="joia-azul"/>
+    <circle cx="48" cy="40" r="2" fill="#fff" opacity="0.7" class="brilho2"/>
+  </g>
+  <g style="transform-origin: 68px 50px;">
+    <circle cx="68" cy="50" r="4" fill="#22c55e" class="joia-verde"/>
+    <circle cx="66" cy="48" r="1.5" fill="#fff" opacity="0.7" class="brilho1"/>
+  </g>
+  
+  <!-- Número 100 -->
+  <text x="50" y="82" text-anchor="middle" fill="#fef9c3" font-family="Arial Black" font-size="16" font-weight="bold" class="numero">100</text>
+  
+  <!-- Estrelas ao redor -->
+  <circle cx="20" cy="25" r="2" fill="#fef9c3" class="estrela1"/>
+  <circle cx="80" cy="28" r="2.5" fill="#fef9c3" class="estrela2"/>
+</svg>

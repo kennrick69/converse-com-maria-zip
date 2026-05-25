@@ -126,6 +126,10 @@
                 
                 <div class="modal-mais-body">
                     <div class="modal-mais-grid">
+                        <button class="modal-mais-item" onclick="window.BottomNav.fecharMais(); if(window.BibliotecaCrista) BibliotecaCrista.abrir();">
+                            <span class="modal-mais-item-icon">📚</span>
+                            <span class="modal-mais-item-label">Biblioteca</span>
+                        </button>
                         <button class="modal-mais-item" onclick="window.BottomNav.fecharMais(); if(window.SistemaMusicasFundo) SistemaMusicasFundo.abrir();">
                             <span class="modal-mais-item-icon">🎵</span>
                             <span class="modal-mais-item-label">Músicas</span>

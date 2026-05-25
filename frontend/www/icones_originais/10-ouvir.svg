@@ -1,0 +1,74 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="speakerBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB"/>
+      <stop offset="100%" style="stop-color:#4169E1"/>
+    </linearGradient>
+    <linearGradient id="speakerCone" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#B0E0E6"/>
+      <stop offset="100%" style="stop-color:#87CEEB"/>
+    </linearGradient>
+    <filter id="speakerGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Brilhos decorativos -->
+  <circle cx="8" cy="12" r="2.5" fill="#FFD700" opacity="0.6"/>
+  <circle cx="56" cy="8" r="2" fill="#FFD700" opacity="0.5"/>
+  <circle cx="6" cy="52" r="2" fill="#FFD700" opacity="0.4"/>
+  
+  <!-- Estrelinhas -->
+  <path d="M8 28L10 32L8 36L12 34L16 36L14 32L16 28L12 30L8 28Z" fill="#FFD700" opacity="0.7"/>
+  
+  <!-- Corpo do alto-falante -->
+  <path d="M12 24 L12 40 L22 40 L36 52 L36 12 L22 24 Z" 
+        fill="url(#speakerBody)" 
+        stroke="#3A5FCD" 
+        stroke-width="2"
+        filter="url(#speakerGlow)"/>
+  
+  <!-- Cone interno -->
+  <path d="M14 26 L14 38 L20 38 L32 48 L32 16 L20 26 Z" 
+        fill="url(#speakerCone)" 
+        opacity="0.7"/>
+  
+  <!-- Centro do alto-falante -->
+  <circle cx="18" cy="32" r="4" fill="#4169E1"/>
+  <circle cx="17" cy="31" r="1.5" fill="white" opacity="0.4"/>
+  
+  <!-- Ondas de som - com cores alegres -->
+  <path d="M42 22 Q50 26 50 32 Q50 38 42 42" 
+        stroke="#FF69B4" 
+        stroke-width="3" 
+        stroke-linecap="round" 
+        fill="none"
+        opacity="0.8"/>
+  
+  <path d="M48 16 Q60 24 60 32 Q60 40 48 48" 
+        stroke="#FFD700" 
+        stroke-width="3" 
+        stroke-linecap="round" 
+        fill="none"
+        opacity="0.6"/>
+  
+  <path d="M54 10 Q68 22 68 32 Q68 42 54 54" 
+        stroke="#87CEEB" 
+        stroke-width="2.5" 
+        stroke-linecap="round" 
+        fill="none"
+        opacity="0.4"/>
+  
+  <!-- Notas musicais flutuando -->
+  <text x="52" y="20" font-size="10" fill="#FF69B4" opacity="0.8">♪</text>
+  <text x="58" y="32" font-size="12" fill="#FFD700" opacity="0.7">♫</text>
+  <text x="54" y="46" font-size="9" fill="#FF69B4" opacity="0.6">♪</text>
+  
+  <!-- Coraçãozinho (voz de Maria com amor) -->
+  <path d="M56 52 Q56 50 58 50 Q59 50 59 51 Q59 50 60 50 Q62 50 62 52 Q62 54 59 56 Q56 54 56 52Z" 
+        fill="#FF69B4" opacity="0.7"/>
+</svg>

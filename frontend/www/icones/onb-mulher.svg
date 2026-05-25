@@ -1,0 +1,55 @@
+<svg width="32" height="32" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mulherBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F48FB1"/>
+      <stop offset="100%" style="stop-color:#EC407A"/>
+    </linearGradient>
+    <linearGradient id="mulherFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFECD2"/>
+      <stop offset="100%" style="stop-color:#FFDAB9"/>
+    </linearGradient>
+    <linearGradient id="mulherHeart" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF69B4"/>
+      <stop offset="100%" style="stop-color:#FF1493"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Brilhos -->
+  <circle cx="8" cy="10" r="2" fill="#FFD700" opacity="0.6"/>
+  <circle cx="56" cy="8" r="2.5" fill="#FFD700" opacity="0.5"/>
+  <path d="M50 40L52 44L50 48L54 46L58 48L56 44L58 40L54 42L50 40Z" fill="#FFD700" opacity="0.5"/>
+  
+  <!-- Corpo/vestido -->
+  <path d="M14 58 Q14 44 32 40 Q50 44 50 58 L50 64 L14 64 Z" fill="url(#mulherBody)"/>
+  
+  <!-- Cabeça -->
+  <circle cx="32" cy="22" r="15" fill="url(#mulherFace)" stroke="#E8A87C" stroke-width="2"/>
+  
+  <!-- Cabelo longo -->
+  <path d="M16 22 Q14 6 32 4 Q50 6 48 22 Q48 32 44 38 L40 30 Q36 26 32 26 Q28 26 24 30 L20 38 Q16 32 16 22Z" fill="#8B4513"/>
+  
+  <!-- Franja -->
+  <path d="M22 16 Q26 12 32 12 Q38 12 42 16 Q38 18 32 18 Q26 18 22 16Z" fill="#6D3A1A"/>
+  
+  <!-- Olhos com cílios -->
+  <ellipse cx="26" cy="22" rx="2" ry="2.5" fill="#5D4037"/>
+  <ellipse cx="38" cy="22" rx="2" ry="2.5" fill="#5D4037"/>
+  <circle cx="26.5" cy="21" r="1" fill="white"/>
+  <circle cx="38.5" cy="21" r="1" fill="white"/>
+  <path d="M24 20 L22 18" stroke="#5D4037" stroke-width="1"/>
+  <path d="M26 19 L26 17" stroke="#5D4037" stroke-width="1"/>
+  <path d="M40 20 L42 18" stroke="#5D4037" stroke-width="1"/>
+  <path d="M38 19 L38 17" stroke="#5D4037" stroke-width="1"/>
+  
+  <!-- Bochechas -->
+  <ellipse cx="20" cy="26" rx="3" ry="2" fill="#FFB6C1" opacity="0.5"/>
+  <ellipse cx="44" cy="26" rx="3" ry="2" fill="#FFB6C1" opacity="0.5"/>
+  
+  <!-- Sorriso -->
+  <path d="M27 30 Q32 34 37 30" stroke="#C97B84" stroke-width="2" stroke-linecap="round" fill="none"/>
+  
+  <!-- Coração no peito -->
+  <path d="M28 50 Q28 46 32 46 Q34 46 34 48 Q34 46 36 46 Q40 46 40 50 Q40 54 34 58 Q28 54 28 50Z" 
+        fill="url(#mulherHeart)"/>
+  <ellipse cx="30" cy="49" rx="1.5" ry="1" fill="white" opacity="0.4"/>
+</svg>

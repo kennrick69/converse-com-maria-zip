@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bgPink" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f472b6"/>
+      <stop offset="100%" style="stop-color:#db2777"/>
+    </linearGradient>
+    <linearGradient id="heart" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fda4af"/>
+      <stop offset="50%" style="stop-color:#fb7185"/>
+      <stop offset="100%" style="stop-color:#e11d48"/>
+    </linearGradient>
+    <radialGradient id="heartGlow" cx="30%" cy="30%">
+      <stop offset="0%" style="stop-color:#fff;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#fff;stop-opacity:0"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <style>
+    .coracao-principal { animation: pulsar 1s ease-in-out infinite; transform-origin: 50px 50px; }
+    .mini-coracao1 { animation: flutuar1 3s ease-in-out infinite; }
+    .mini-coracao2 { animation: flutuar2 2.5s ease-in-out infinite 0.5s; }
+    .mini-coracao3 { animation: flutuar3 2.8s ease-in-out infinite 1s; }
+    .brilho { animation: brilhar 1s ease-in-out infinite alternate; }
+    .sparkle1 { animation: sparkle 1.5s ease-in-out infinite; }
+    .sparkle2 { animation: sparkle 1.2s ease-in-out infinite 0.3s; }
+    
+    @keyframes pulsar {
+      0%, 100% { transform: scale(1); }
+      15% { transform: scale(1.1); }
+      30% { transform: scale(1); }
+      45% { transform: scale(1.08); }
+      60% { transform: scale(1); }
+    }
+    @keyframes flutuar1 {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+      50% { transform: translate(-5px, -10px) scale(1.1); opacity: 1; }
+    }
+    @keyframes flutuar2 {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+      50% { transform: translate(5px, -8px) scale(1.15); opacity: 1; }
+    }
+    @keyframes flutuar3 {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+      50% { transform: translate(-3px, -12px) scale(1.1); opacity: 0.9; }
+    }
+    @keyframes brilhar {
+      0% { opacity: 0.5; }
+      100% { opacity: 0.9; }
+    }
+    @keyframes sparkle {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+  </style>
+  
+  <circle cx="50" cy="50" r="45" fill="url(#bgPink)" filter="url(#shadow)"/>
+  <circle cx="50" cy="50" r="42" fill="none" stroke="#fbcfe8" stroke-width="3" opacity="0.5"/>
+  
+  <!-- Coração principal (pulsa) -->
+  <g class="coracao-principal">
+    <path d="M50,78 
+             C35,65 18,52 18,38 
+             C18,28 26,20 36,20 
+             C42,20 47,23 50,28 
+             C53,23 58,20 64,20 
+             C74,20 82,28 82,38 
+             C82,52 65,65 50,78Z" 
+          fill="url(#heart)"/>
+    
+    <!-- Brilho no coração -->
+    <ellipse cx="35" cy="35" rx="10" ry="8" fill="url(#heartGlow)" class="brilho"/>
+    <ellipse cx="32" cy="32" rx="4" ry="3" fill="#fff" opacity="0.7"/>
+  </g>
+  
+  <!-- Corações menores flutuando -->
+  <path d="M22,65 C20,62 16,60 16,56 C16,54 18,52 20,52 C21,52 22,53 22,54 C22,53 23,52 24,52 C26,52 28,54 28,56 C28,60 24,62 22,65Z" 
+        fill="#fda4af" class="mini-coracao1"/>
+  <path d="M78,60 C76,58 73,56 73,53 C73,51 75,50 76,50 C77,50 78,51 78,51.5 C78,51 79,50 80,50 C81,50 83,51 83,53 C83,56 80,58 78,60Z" 
+        fill="#fda4af" class="mini-coracao2"/>
+  <path d="M70,25 C69,24 67,23 67,21 C67,20 68,19 69,19 C69.5,19 70,19.5 70,19.8 C70,19.5 70.5,19 71,19 C72,19 73,20 73,21 C73,23 71,24 70,25Z" 
+        fill="#fda4af" class="mini-coracao3"/>
+  
+  <!-- Brilhos/estrelinhas -->
+  <circle cx="75" cy="35" r="2" fill="#fff" class="sparkle1"/>
+  <circle cx="28" cy="75" r="1.5" fill="#fff" class="sparkle2"/>
+</svg>

@@ -412,6 +412,11 @@ const SistemaConquistas = {
             .filter(c => conquistadas.includes(c.id))
             .reduce((sum, c) => sum + c.pontos, 0);
         
+        // Pegar as 3 últimas conquistas para mostrar no card
+        const ultimasConquistas = this.conquistas
+            .filter(c => conquistadas.includes(c.id))
+            .slice(-3);
+        
         const modal = document.createElement('div');
         modal.id = 'galeria-conquistas';
         modal.className = 'fixed inset-0 z-[60] overflow-y-auto';
@@ -420,13 +425,62 @@ const SistemaConquistas = {
         modal.innerHTML = `
             <div class="min-h-screen pb-8">
                 <!-- Header -->
-                <div class="sticky top-0 z-10 bg-gradient-to-b from-[#1a0a2e] via-[#1a0a2e] to-transparent p-4 pb-8">
+                <div class="sticky top-0 z-10 bg-gradient-to-b from-[#1a0a2e] via-[#1a0a2e] to-transparent p-4 pb-6">
                     <div class="flex items-center justify-between mb-4">
                         <button onclick="document.getElementById('galeria-conquistas').remove(); document.body.style.overflow='';" class="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                         <h1 class="text-white text-xl font-bold">🏅 Conquistas</h1>
                         <div class="w-10"></div>
+                    </div>
+                </div>
+                
+                <div class="px-4 space-y-6">
+                    <!-- CARD DE COMPARTILHAMENTO (TOPO) -->
+                    <div id="card-compartilhar" class="relative bg-gradient-to-br from-purple-900/80 via-indigo-900/80 to-purple-900/80 rounded-3xl p-5 border border-purple-500/30 overflow-hidden">
+                        <!-- Efeito de brilho -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+                        
+                        <!-- Conteúdo do card -->
+                        <div class="relative text-center">
+                            <!-- Medalhas conquistadas -->
+                            <div class="flex justify-center gap-2 mb-3">
+                                ${ultimasConquistas.length > 0 
+                                    ? ultimasConquistas.map(c => `
+                                        <div class="w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                                            <span class="text-2xl">${c.icone}</span>
+                                        </div>
+                                    `).join('')
+                                    : '<div class="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center"><span class="text-2xl">🏅</span></div>'
+                                }
+                            </div>
+                            
+                            <!-- Stats -->
+                            <p class="text-yellow-400 font-bold text-lg mb-1">${conquistadas.length} conquistas</p>
+                            <p class="text-white/70 text-sm mb-1">${totalPontos} pontos de fé</p>
+                            
+                            <!-- Streak -->
+                            <div class="inline-flex items-center gap-1 bg-orange-500/20 px-3 py-1 rounded-full mb-4">
+                                <span class="text-orange-400">🔥</span>
+                                <span class="text-orange-300 text-sm font-semibold">${dados.streakAtual || 0} dias em oração</span>
+                            </div>
+                            
+                            <!-- Texto e site -->
+                            <p class="text-white/60 text-xs mb-1">Baixe o app e comece sua jornada</p>
+                            <p class="text-purple-300 text-sm font-semibold mb-4">www.conversecommaria.com.br</p>
+                            
+                            <!-- Botões -->
+                            <div class="flex gap-3 justify-center">
+                                <button onclick="SistemaConquistas.baixarImagem()" class="flex-1 max-w-[140px] py-2.5 px-4 bg-white/10 hover:bg-white/20 rounded-xl text-white text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    Baixar
+                                </button>
+                                <button onclick="SistemaConquistas.compartilhar()" class="flex-1 max-w-[140px] py-2.5 px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl text-white text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                                    Compartilhar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Resumo -->
@@ -456,9 +510,8 @@ const SistemaConquistas = {
                             <p class="text-white/40 text-xs text-center mt-1">${Math.round((conquistadas.length / this.conquistas.length) * 100)}% completo</p>
                         </div>
                     </div>
-                </div>
-                
-                <div class="px-4 space-y-6">
+                    
+                    <!-- Lista de conquistas por categoria -->
                     ${Object.entries(this.categorias).map(([catKey, cat]) => {
                         const conquistasCategoria = this.conquistas.filter(c => c.categoria === catKey);
                         if (conquistasCategoria.length === 0) return '';
@@ -497,6 +550,185 @@ const SistemaConquistas = {
         
         document.body.appendChild(modal);
         document.body.style.overflow = 'hidden';
+    },
+
+    // Gerar imagem para compartilhamento
+    async gerarImagem() {
+        const conquistadas = this.carregarConquistadas();
+        const dados = window.EstatisticasOracao ? EstatisticasOracao.carregar() : {};
+        const totalPontos = this.conquistas
+            .filter(c => conquistadas.includes(c.id))
+            .reduce((sum, c) => sum + c.pontos, 0);
+        
+        const ultimasConquistas = this.conquistas
+            .filter(c => conquistadas.includes(c.id))
+            .slice(-3);
+        
+        // Criar canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = 600;
+        canvas.height = 800;
+        const ctx = canvas.getContext('2d');
+        
+        // Fundo gradiente
+        const gradient = ctx.createLinearGradient(0, 0, 0, 800);
+        gradient.addColorStop(0, '#1a0a2e');
+        gradient.addColorStop(0.5, '#2d1b4e');
+        gradient.addColorStop(1, '#1a0a2e');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 600, 800);
+        
+        // Título
+        ctx.fillStyle = '#FFD700';
+        ctx.font = 'bold 28px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('🏅 Minhas Conquistas', 300, 60);
+        
+        // Desenhar medalhas
+        const medalhaY = 150;
+        const medalhaSize = 80;
+        const startX = ultimasConquistas.length === 1 ? 300 : 
+                       ultimasConquistas.length === 2 ? 220 : 160;
+        
+        ultimasConquistas.forEach((c, i) => {
+            const x = startX + (i * 140);
+            
+            // Círculo dourado
+            const gradMedalha = ctx.createRadialGradient(x, medalhaY, 0, x, medalhaY, medalhaSize/2);
+            gradMedalha.addColorStop(0, '#FFD700');
+            gradMedalha.addColorStop(1, '#FF8C00');
+            ctx.fillStyle = gradMedalha;
+            ctx.beginPath();
+            ctx.arc(x, medalhaY, medalhaSize/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Emoji
+            ctx.font = '40px Arial';
+            ctx.fillStyle = '#000';
+            ctx.fillText(c.icone, x, medalhaY + 14);
+        });
+        
+        // Se não tem conquistas, mostrar placeholder
+        if (ultimasConquistas.length === 0) {
+            const gradMedalha = ctx.createRadialGradient(300, medalhaY, 0, 300, medalhaY, medalhaSize/2);
+            gradMedalha.addColorStop(0, '#666');
+            gradMedalha.addColorStop(1, '#333');
+            ctx.fillStyle = gradMedalha;
+            ctx.beginPath();
+            ctx.arc(300, medalhaY, medalhaSize/2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.font = '40px Arial';
+            ctx.fillText('🏅', 300, medalhaY + 14);
+        }
+        
+        // Stats
+        ctx.fillStyle = '#FFD700';
+        ctx.font = 'bold 36px Arial';
+        ctx.fillText(`${conquistadas.length} conquistas`, 300, 280);
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '24px Arial';
+        ctx.fillText(`${totalPontos} pontos de fé`, 300, 320);
+        
+        // Streak
+        ctx.fillStyle = '#FF6B35';
+        ctx.font = 'bold 28px Arial';
+        ctx.fillText(`🔥 ${dados.streakAtual || 0} dias em oração`, 300, 400);
+        
+        // Linha decorativa
+        ctx.strokeStyle = '#FFD700';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(100, 480);
+        ctx.lineTo(500, 480);
+        ctx.stroke();
+        
+        // Texto convite
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '20px Arial';
+        ctx.fillText('Baixe o app e comece sua jornada', 300, 540);
+        
+        // Logo/Site
+        ctx.fillStyle = '#9333EA';
+        ctx.font = 'bold 26px Arial';
+        ctx.fillText('✝️ Converse com Maria', 300, 620);
+        
+        ctx.fillStyle = '#C084FC';
+        ctx.font = '22px Arial';
+        ctx.fillText('www.conversecommaria.com.br', 300, 660);
+        
+        // Retornar como blob
+        return new Promise(resolve => {
+            canvas.toBlob(blob => resolve(blob), 'image/png');
+        });
+    },
+
+    // Baixar imagem
+    async baixarImagem() {
+        try {
+            showToast('Gerando imagem...');
+            const blob = await this.gerarImagem();
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'minhas-conquistas-maria.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Imagem baixada! 🎉');
+        } catch (error) {
+            console.error('Erro ao baixar:', error);
+            showToast('Erro ao gerar imagem');
+        }
+    },
+
+    // Compartilhar
+    async compartilhar() {
+        try {
+            showToast('Preparando...');
+            const blob = await this.gerarImagem();
+            const file = new File([blob], 'minhas-conquistas-maria.png', { type: 'image/png' });
+            
+            const conquistadas = this.carregarConquistadas();
+            const dados = window.EstatisticasOracao ? EstatisticasOracao.carregar() : {};
+            const totalPontos = this.conquistas
+                .filter(c => conquistadas.includes(c.id))
+                .reduce((sum, c) => sum + c.pontos, 0);
+            
+            const texto = `🏅 Minhas conquistas no Converse com Maria!\n\n` +
+                         `✨ ${conquistadas.length} conquistas\n` +
+                         `⭐ ${totalPontos} pontos de fé\n` +
+                         `🔥 ${dados.streakAtual || 0} dias em oração\n\n` +
+                         `Baixe o app e comece sua jornada!\n` +
+                         `👉 www.conversecommaria.com.br`;
+            
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: 'Minhas Conquistas - Converse com Maria',
+                    text: texto,
+                    files: [file]
+                });
+            } else if (navigator.share) {
+                // Compartilhar só texto se não suportar arquivos
+                await navigator.share({
+                    title: 'Minhas Conquistas - Converse com Maria',
+                    text: texto,
+                    url: 'https://www.conversecommaria.com.br'
+                });
+            } else {
+                // Fallback: copiar texto
+                await navigator.clipboard.writeText(texto);
+                showToast('Texto copiado! Cole nas redes sociais 📋');
+            }
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Erro ao compartilhar:', error);
+                showToast('Erro ao compartilhar');
+            }
+        }
     }
 };
 

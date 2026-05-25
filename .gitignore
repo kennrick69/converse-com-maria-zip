@@ -1,2 +1,29 @@
-.env 
-node_modules 
+.env
+node_modules
+
+# Binários grandes — não vão pro repo
+*.zip
+
+# PDFs (Tratado de Montfort tem copyright — não distribuir)
+*.pdf
+
+# Áudios pesados (24MB+) — WhatsApp brutos, NÃO os MP3 de prod em frontend/www/audio/
+audios-terco/
+# Backup site/ contém cópia duplicada dos MP3 (já rastreados em frontend/www/audio/).
+# A pasta inteira frontend/site/ é candidata a morto — preservada no commit
+# da FASE 0 só pra rede de segurança; será removida na FASE 2 após prova.
+frontend/site/www/audio/
+
+# Arquivos pessoais / screenshots
+Screenshots/
+Captura de tela*.png
+*Captura de tela*
+
+# Scripts/anotações locais
+att futuras/
+NOTAS-SESSAO-*.md
+limpar_projeto.bat
+
+# npm/npx criados acidentalmente como arquivos
+frontend/npm
+frontend/npx

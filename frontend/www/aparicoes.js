@@ -301,10 +301,10 @@ Irmã Agnes recuperou milagrosamente a audição após anos de surdez total.`,
                         </div>
                     </div>
                     
-                    <!-- Botão rezar -->
-                    <button onclick="HistoriasAparicoes.rezarPelaAparicao('${ap.id}')" class="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-2xl hover:from-blue-500 hover:to-purple-500 transition-all flex items-center justify-center gap-2">
-                        <span>🙏</span>
-                        <span>Rezar por ${ap.nome.split(' de ')[1] || ap.nome}</span>
+                    <!-- Botão voltar -->
+                    <button onclick="HistoriasAparicoes.voltarParaLista()" class="w-full py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-bold rounded-2xl hover:from-gray-500 hover:to-gray-600 transition-all flex items-center justify-center gap-2">
+                        <span>←</span>
+                        <span>Voltar para Aparições</span>
                     </button>
                 </div>
             </div>
@@ -313,7 +313,14 @@ Irmã Agnes recuperou milagrosamente a audição após anos de surdez total.`,
         document.body.appendChild(detalhe);
     },
 
-    // Rezar pela aparição
+    // Voltar para lista de aparições
+    voltarParaLista() {
+        document.getElementById('detalhe-aparicao')?.remove();
+        // Reabrir a galeria de aparições
+        this.abrir();
+    },
+
+    // Rezar pela aparição (mantido mas não usado)
     rezarPelaAparicao(id) {
         const ap = this.aparicoes.find(a => a.id === id);
         if (!ap) return;

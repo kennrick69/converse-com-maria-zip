@@ -1,0 +1,79 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="muralHands" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFDAB9"/>
+      <stop offset="100%" style="stop-color:#DEB887"/>
+    </linearGradient>
+    <linearGradient id="muralHeart" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF69B4"/>
+      <stop offset="100%" style="stop-color:#DC143C"/>
+    </linearGradient>
+    <linearGradient id="muralGlow" x1="50%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF69B4" stop-opacity="0.2"/>
+      <stop offset="100%" style="stop-color:#FFD700" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="heartGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Aura de luz -->
+  <ellipse cx="32" cy="32" rx="28" ry="28" fill="url(#muralGlow)"/>
+  
+  <!-- Brilhos decorativos -->
+  <circle cx="8" cy="12" r="2.5" fill="#FFD700" opacity="0.6"/>
+  <circle cx="56" cy="10" r="2" fill="#FFD700" opacity="0.5"/>
+  <circle cx="10" cy="52" r="2" fill="#FFD700" opacity="0.4"/>
+  <circle cx="54" cy="50" r="2.5" fill="#FFD700" opacity="0.5"/>
+  
+  <!-- Estrelinhas -->
+  <path d="M6 28L8 32L6 36L10 34L14 36L12 32L14 28L10 30L6 28Z" fill="#FFD700" opacity="0.7"/>
+  <path d="M50 28L52 32L50 36L54 34L58 36L56 32L58 28L54 30L50 28Z" fill="#FFD700" opacity="0.7"/>
+  
+  <!-- Coração atrás (maior, de fundo) -->
+  <path d="M32 52C32 52 12 38 12 24C12 16 18 10 26 10C30 10 32 13 32 13C32 13 34 10 38 10C46 10 52 16 52 24C52 38 32 52 32 52Z" 
+        fill="url(#muralHeart)" 
+        filter="url(#heartGlow)"
+        opacity="0.3"/>
+  
+  <!-- Mãos em oração -->
+  <!-- Mão esquerda -->
+  <path d="M22 54 L22 32 Q22 28 26 26 L30 24 Q32 23 32 26 L32 30" 
+        fill="url(#muralHands)" 
+        stroke="#C4A77D" 
+        stroke-width="1"/>
+  <path d="M22 54 Q22 56 24 56 L30 56 Q32 56 32 54 L32 30 Q32 28 30 28 L26 30 Q22 32 22 36 Z" 
+        fill="url(#muralHands)" 
+        stroke="#C4A77D" 
+        stroke-width="1"/>
+  
+  <!-- Mão direita -->
+  <path d="M42 54 L42 32 Q42 28 38 26 L34 24 Q32 23 32 26 L32 30" 
+        fill="url(#muralHands)" 
+        stroke="#C4A77D" 
+        stroke-width="1"/>
+  <path d="M42 54 Q42 56 40 56 L34 56 Q32 56 32 54 L32 30 Q32 28 34 28 L38 30 Q42 32 42 36 Z" 
+        fill="url(#muralHands)" 
+        stroke="#C4A77D" 
+        stroke-width="1"/>
+  
+  <!-- Dedos detalhes -->
+  <line x1="26" y1="32" x2="26" y2="44" stroke="#C4A77D" stroke-width="0.5" opacity="0.5"/>
+  <line x1="38" y1="32" x2="38" y2="44" stroke="#C4A77D" stroke-width="0.5" opacity="0.5"/>
+  
+  <!-- Coração pequeno entre as mãos -->
+  <path d="M32 20C32 20 27 16 27 12C27 9 29 7 31 7C31.8 7 32 8 32 8C32 8 32.2 7 33 7C35 7 37 9 37 12C37 16 32 20 32 20Z" 
+        fill="url(#muralHeart)" 
+        filter="url(#heartGlow)"/>
+  <!-- Brilho no coração -->
+  <ellipse cx="29" cy="11" rx="1" ry="0.8" fill="white" opacity="0.5"/>
+  
+  <!-- Raios de luz do coração -->
+  <line x1="32" y1="4" x2="32" y2="6" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+  <line x1="24" y1="8" x2="26" y2="10" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="40" y1="8" x2="38" y2="10" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

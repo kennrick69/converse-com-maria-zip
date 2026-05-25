@@ -1,0 +1,59 @@
+<svg width="32" height="32" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bebyFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF0E6"/>
+      <stop offset="100%" style="stop-color:#FFDAB9"/>
+    </linearGradient>
+    <linearGradient id="bebyBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB"/>
+      <stop offset="100%" style="stop-color:#5DADE2"/>
+    </linearGradient>
+    <linearGradient id="aureola" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="100%" style="stop-color:#FFA500"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Brilhos -->
+  <circle cx="8" cy="14" r="2.5" fill="#FFD700" opacity="0.6"/>
+  <circle cx="56" cy="10" r="2" fill="#FFD700" opacity="0.5"/>
+  <circle cx="10" cy="52" r="2" fill="#FF69B4" opacity="0.5"/>
+  
+  <!-- Estrelinhas -->
+  <path d="M8 32L10 36L8 40L12 38L16 40L14 36L16 32L12 34L8 32Z" fill="#FFD700" opacity="0.6"/>
+  <path d="M48 32L50 36L48 40L52 38L56 40L54 36L56 32L52 34L48 32Z" fill="#FFD700" opacity="0.6"/>
+  
+  <!-- Aureola dourada -->
+  <ellipse cx="32" cy="10" rx="12" ry="4" fill="none" stroke="url(#aureola)" stroke-width="3"/>
+  <ellipse cx="26" cy="9" rx="2" ry="1" fill="white" opacity="0.5"/>
+  
+  <!-- Rostinho do bebê -->
+  <circle cx="32" cy="30" r="18" fill="url(#bebyFace)" stroke="#E8C4A2" stroke-width="2"/>
+  
+  <!-- Cabelo fofinho -->
+  <path d="M20 22 Q20 14 26 14 Q28 16 30 14 Q32 16 34 14 Q36 16 38 14 Q44 14 44 22" 
+        fill="#DEB887" stroke="#C4A77D" stroke-width="1"/>
+  
+  <!-- Olhinhos fofos (grandes) -->
+  <ellipse cx="26" cy="28" rx="4" ry="5" fill="#5D4037"/>
+  <ellipse cx="38" cy="28" rx="4" ry="5" fill="#5D4037"/>
+  <circle cx="27" cy="27" r="2" fill="white"/>
+  <circle cx="39" cy="27" r="2" fill="white"/>
+  
+  <!-- Bochechas rosadas -->
+  <ellipse cx="18" cy="34" rx="4" ry="3" fill="#FFB6C1" opacity="0.6"/>
+  <ellipse cx="46" cy="34" rx="4" ry="3" fill="#FFB6C1" opacity="0.6"/>
+  
+  <!-- Boquinha sorridente -->
+  <path d="M28 38 Q32 42 36 38" stroke="#E8A87C" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  
+  <!-- Corpinho com roupinha -->
+  <path d="M18 58 Q18 48 32 46 Q46 48 46 58 L46 64 L18 64 Z" fill="url(#bebyBody)"/>
+  
+  <!-- Detalhes da roupa -->
+  <circle cx="32" cy="54" r="3" fill="white" opacity="0.7"/>
+  
+  <!-- Coraçãozinho -->
+  <path d="M48 50 Q48 46 51 46 Q53 46 53 49 Q53 46 55 46 Q58 46 58 50 Q58 54 53 58 Q48 54 48 50Z" 
+        fill="#FF69B4"/>
+</svg>

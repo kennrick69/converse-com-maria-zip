@@ -11,7 +11,7 @@
 // 5. Copie as credenciais e cole abaixo
 
 const firebaseConfig = {
-    apiKey: "AIzaSy8PHjPeMi3Vv9Eccml08uALLP-pSnGWAFQ",
+    apiKey: "AIzaSyBPHjPeMi3Vv9Eccml08uALLP-pSnGWAFQ",
     authDomain: "converse-com-maria.firebaseapp.com",
     projectId: "converse-com-maria",
     storageBucket: "converse-com-maria.firebasestorage.app",
@@ -86,10 +86,22 @@ const FirebaseService = {
     },
     
     // Callback quando usuário loga
-    onUserLogin(user) {
-        // Sincronizar dados locais para nuvem
-        setTimeout(() => {
-            UserDataService.syncLocalToCloud();
+    // ✅ CORRIGIDO: BAIXAR primeiro, depois enviar (evita sobrescrever dados)
+    async onUserLogin(user) {
+        console.log('🔄 onUserLogin - iniciando sincronização...');
+        
+        // 1. PRIMEIRO: Baixar dados do Firebase para local
+        setTimeout(async () => {
+            console.log('📥 Passo 1: Baixando dados do Firebase...');
+            await UserDataService.syncCloudToLocal();
+            console.log('✅ Dados baixados do Firebase!');
+            
+            // 2. Restaurar outros dados (perfil, etc)
+            if (window.restaurarDadosDoFirebase) {
+                restaurarDadosDoFirebase();
+            }
+            
+            console.log('✅ Sincronização completa!');
         }, 1000);
     },
     
@@ -473,11 +485,17 @@ const UserDataService = {
                 }));
             }
             
-            // Conquistas
-            if (userData.conquistas) {
-                const ids = userData.conquistas.map(c => c.id);
-                localStorage.setItem('mariaConquistas', JSON.stringify(ids));
+            // Conquistas - MERGE (não sobrescrever)
+            if (userData.conquistas && userData.conquistas.length > 0) {
+                const idsFirebase = userData.conquistas.map(c => c.id || c);
+                const idsLocal = JSON.parse(localStorage.getItem('mariaConquistas') || '[]');
+                
+                // Merge: unir conquistas do Firebase com locais (sem duplicatas)
+                const idsMerged = [...new Set([...idsLocal, ...idsFirebase])];
+                localStorage.setItem('mariaConquistas', JSON.stringify(idsMerged));
+                console.log('🏆 Conquistas merged:', idsMerged.length, 'total');
             }
+            // Se Firebase não tem conquistas, NÃO sobrescreve o localStorage
             
             // Preferências
             if (userData.preferencias) {

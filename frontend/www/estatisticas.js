@@ -55,6 +55,25 @@ const EstatisticasOracao = {
         }
     },
 
+    // ========================================
+    // 🔥 HELPER: SINCRONIZAR COM FIREBASE
+    // ========================================
+    async sincronizarFirebase(campo, valor, operacao = 'increment') {
+        // Verificar se Firebase está disponível e usuário logado
+        if (window.UserDataService && window.FirebaseService?.isLoggedIn()) {
+            try {
+                if (operacao === 'increment') {
+                    await UserDataService.incrementStat(campo, valor || 1);
+                } else if (operacao === 'set') {
+                    await UserDataService.updateStats(campo, valor);
+                }
+                console.log(`🔥 Firebase: ${campo} ${operacao === 'increment' ? '+' + (valor || 1) : '= ' + valor}`);
+            } catch (error) {
+                console.error('❌ Erro ao sincronizar Firebase:', error);
+            }
+        }
+    },
+
     // Carregar estatísticas
     carregar() {
         const salvo = localStorage.getItem(this.storageKey);
@@ -133,6 +152,17 @@ const EstatisticasOracao = {
         this.salvar(dados);
         this.registrarAtividadeHoje('terco');
         this.registrarAtividadeHoje('minutos', 20);
+        
+        // 🔥 Sincronizar com Firebase
+        this.sincronizarFirebase('tercosCompletos', 1);
+        this.sincronizarFirebase('aveMariasRezadas', 53);
+        this.sincronizarFirebase('paiNossosRezados', 6);
+        this.sincronizarFirebase('minutosEmOracao', 20);
+        
+        // 🏆 VERIFICAR CONQUISTAS após registrar
+        if (window.SistemaConquistas) {
+            setTimeout(() => SistemaConquistas.verificarEMostrar(), 500);
+        }
     },
 
     // Registrar terço iniciado (mas não completo)
@@ -140,6 +170,9 @@ const EstatisticasOracao = {
         const dados = this.carregar();
         dados.tercosIniciados++;
         this.salvar(dados);
+        
+        // 🔥 Sincronizar com Firebase
+        this.sincronizarFirebase('tercosIniciados', 1);
     },
 
     // Registrar vela acesa
@@ -153,6 +186,14 @@ const EstatisticasOracao = {
         
         this.salvar(dados);
         this.registrarAtividadeHoje('vela');
+        
+        // 🔥 Sincronizar com Firebase
+        this.sincronizarFirebase('velasAcesas', 1);
+        
+        // 🏆 VERIFICAR CONQUISTAS após registrar
+        if (window.SistemaConquistas) {
+            setTimeout(() => SistemaConquistas.verificarEMostrar(), 500);
+        }
     },
 
     // Registrar intenção publicada
@@ -160,6 +201,14 @@ const EstatisticasOracao = {
         const dados = this.carregar();
         dados.intencoesPublicadas++;
         this.salvar(dados);
+        
+        // 🔥 Sincronizar com Firebase
+        this.sincronizarFirebase('intencoesPublicadas', 1);
+        
+        // 🏆 VERIFICAR CONQUISTAS após registrar
+        if (window.SistemaConquistas) {
+            setTimeout(() => SistemaConquistas.verificarEMostrar(), 500);
+        }
     },
 
     // Registrar oração por intenção
@@ -168,6 +217,14 @@ const EstatisticasOracao = {
         dados.intencoesRezadas++;
         this.salvar(dados);
         this.registrarAtividadeHoje('oracao');
+        
+        // 🔥 Sincronizar com Firebase
+        this.sincronizarFirebase('intencoesRezadas', 1);
+        
+        // 🏆 VERIFICAR CONQUISTAS após registrar
+        if (window.SistemaConquistas) {
+            setTimeout(() => SistemaConquistas.verificarEMostrar(), 500);
+        }
     },
 
     // Registrar mensagem enviada
@@ -177,6 +234,15 @@ const EstatisticasOracao = {
         dados.minutosEmOracao += 2; // ~2 min por conversa
         this.salvar(dados);
         this.registrarAtividadeHoje('minutos', 2);
+        
+        // 🔥 Sincronizar com Firebase
+        this.sincronizarFirebase('mensagensEnviadas', 1);
+        this.sincronizarFirebase('minutosEmOracao', 2);
+        
+        // 🏆 VERIFICAR CONQUISTAS após registrar (só a cada 5 mensagens para não sobrecarregar)
+        if (window.SistemaConquistas && dados.mensagensEnviadas % 5 === 0) {
+            setTimeout(() => SistemaConquistas.verificarEMostrar(), 500);
+        }
     },
 
     // Registrar versículo lido
@@ -184,6 +250,9 @@ const EstatisticasOracao = {
         const dados = this.carregar();
         dados.versiculosLidos++;
         this.salvar(dados);
+        
+        // 🔥 Sincronizar com Firebase
+        this.sincronizarFirebase('versiculosLidos', 1);
     },
 
     // Atualizar streak
@@ -194,6 +263,11 @@ const EstatisticasOracao = {
             dados.streakMaximo = streakAtual;
         }
         this.salvar(dados);
+        
+        // 🔥 Sincronizar com Firebase
+        if (window.UserDataService && window.FirebaseService?.isLoggedIn()) {
+            UserDataService.updateStreak(streakAtual);
+        }
     },
 
     // Registrar novena
@@ -205,6 +279,14 @@ const EstatisticasOracao = {
             dados.novenasIniciadas++;
         }
         this.salvar(dados);
+        
+        // 🔥 Sincronizar com Firebase
+        this.sincronizarFirebase(completa ? 'novenasCompletas' : 'novenasIniciadas', 1);
+        
+        // 🏆 VERIFICAR CONQUISTAS após registrar
+        if (window.SistemaConquistas) {
+            setTimeout(() => SistemaConquistas.verificarEMostrar(), 500);
+        }
     },
 
     // Calcular nível espiritual
@@ -301,8 +383,8 @@ const EstatisticasOracao = {
         
         modal.innerHTML = `
             <div class="min-h-screen pb-8">
-                <!-- Header -->
-                <div class="sticky top-0 z-10 bg-gradient-to-b from-[#0f0c29] via-[#0f0c29] to-transparent p-4 pb-8">
+                <!-- Header com safe-area para notch -->
+                <div class="sticky top-0 z-10 bg-gradient-to-b from-[#0f0c29] via-[#0f0c29] to-transparent p-4 pb-8" style="padding-top: calc(1rem + env(safe-area-inset-top, 0px));">
                     <div class="flex items-center justify-between mb-4">
                         <button onclick="EstatisticasOracao.fechar()" class="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -312,7 +394,7 @@ const EstatisticasOracao = {
                     </div>
                     
                     <!-- Card de Nível -->
-                    <div class="bg-gradient-to-br from-purple-600/30 to-indigo-600/30 backdrop-blur rounded-2xl p-5 border border-purple-500/30">
+                    <div class="bg-gradient-to-br from-purple-600/30 to-indigo-600/30  rounded-2xl p-5 border border-purple-500/30">
                         <div class="flex items-center gap-4 mb-4">
                             <div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-3xl shadow-lg nivel-glow">
                                 ${nivel.nivelAtual.icone}
@@ -348,13 +430,13 @@ const EstatisticasOracao = {
                             <span>✨</span> Resumo da Jornada
                         </h3>
                         <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10">
+                            <div class="bg-white/5  rounded-xl p-4 border border-white/10">
                                 <p class="text-3xl mb-1">🔥</p>
                                 <p class="text-2xl font-bold text-white">${dados.streakAtual}</p>
                                 <p class="text-white/50 text-xs">Dias seguidos</p>
                                 <p class="text-yellow-400 text-xs mt-1">Recorde: ${dados.streakMaximo}</p>
                             </div>
-                            <div class="bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10">
+                            <div class="bg-white/5  rounded-xl p-4 border border-white/10">
                                 <p class="text-3xl mb-1">⏱️</p>
                                 <p class="text-2xl font-bold text-white">${this.formatarTempo(dados.minutosEmOracao)}</p>
                                 <p class="text-white/50 text-xs">Em oração</p>
@@ -363,32 +445,20 @@ const EstatisticasOracao = {
                         </div>
                     </div>
                     
-                    <!-- Gráfico da Semana -->
+                    <!-- Ação Rápida: Compartilhar -->
                     <div>
                         <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
-                            <span>📈</span> Atividade da Semana
+                            <span>⚡</span> Compartilhe sua Jornada
                         </h3>
-                        <div class="bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10">
-                            <div class="flex items-end justify-between gap-2 h-32">
-                                ${semana.map((dia, i) => `
-                                    <div class="flex-1 flex flex-col items-center gap-1">
-                                        <div class="w-full bg-white/10 rounded-t-lg relative" style="height: 100px;">
-                                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-purple-500 to-pink-500 rounded-t-lg transition-all duration-500" 
-                                                 style="height: ${(dia.total / maxSemana) * 100}%;">
-                                            </div>
-                                        </div>
-                                        <span class="text-white/60 text-xs">${dia.dia}</span>
-                                        ${i === 6 ? '<span class="text-yellow-400 text-[10px]">Hoje</span>' : ''}
-                                    </div>
-                                `).join('')}
+                        <button onclick="EstatisticasOracao.abrirModalCompartilhar()" class="w-full bg-gradient-to-br from-purple-600/40 to-pink-600/40  rounded-xl p-5 border border-purple-500/30 hover:from-purple-600/60 hover:to-pink-600/60 transition-all flex items-center justify-center gap-4">
+                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                             </div>
-                            <div class="flex justify-center gap-4 mt-4 text-xs">
-                                <span class="flex items-center gap-1 text-white/60">
-                                    <span class="w-3 h-3 rounded bg-gradient-to-t from-purple-500 to-pink-500"></span>
-                                    Atividades
-                                </span>
+                            <div class="text-left">
+                                <span class="text-white font-bold text-lg block">Compartilhar</span>
+                                <span class="text-white/50 text-sm">Mostre sua jornada espiritual</span>
                             </div>
-                        </div>
+                        </button>
                     </div>
                     
                     <!-- Estatísticas do Terço -->
@@ -396,7 +466,7 @@ const EstatisticasOracao = {
                         <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
                             <span>📿</span> Terço e Orações
                         </h3>
-                        <div class="bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10 space-y-4">
+                        <div class="bg-white/5  rounded-xl p-4 border border-white/10 space-y-4">
                             <div class="grid grid-cols-3 gap-3 text-center">
                                 <div>
                                     <p class="text-2xl font-bold text-white">${dados.tercosCompletos}</p>
@@ -446,7 +516,7 @@ const EstatisticasOracao = {
                         <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
                             <span>🕯️</span> Velas e Intenções
                         </h3>
-                        <div class="bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10">
+                        <div class="bg-white/5  rounded-xl p-4 border border-white/10">
                             <div class="grid grid-cols-3 gap-3 text-center mb-4">
                                 <div>
                                     <p class="text-2xl font-bold text-orange-400">${dados.velasAcesas}</p>
@@ -458,7 +528,7 @@ const EstatisticasOracao = {
                                 </div>
                                 <div>
                                     <p class="text-2xl font-bold text-pink-400">${dados.intencoesRezadas}</p>
-                                    <p class="text-white/50 text-xs">Orações pela comunidade</p>
+                                    <p class="text-white/50 text-xs">Rezei por outros</p>
                                 </div>
                             </div>
                             
@@ -481,7 +551,7 @@ const EstatisticasOracao = {
                         <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
                             <span>📅</span> Novenas e Devoções
                         </h3>
-                        <div class="bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10">
+                        <div class="bg-white/5  rounded-xl p-4 border border-white/10">
                             <div class="grid grid-cols-2 gap-4 text-center">
                                 <div>
                                     <p class="text-3xl font-bold text-green-400">${dados.novenasCompletas}</p>
@@ -500,7 +570,7 @@ const EstatisticasOracao = {
                         <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
                             <span>💬</span> Conversas com Maria
                         </h3>
-                        <div class="bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10">
+                        <div class="bg-white/5  rounded-xl p-4 border border-white/10">
                             <div class="flex items-center justify-center gap-8">
                                 <div class="text-center">
                                     <p class="text-4xl font-bold text-purple-400">${dados.mensagensEnviadas}</p>
@@ -579,34 +649,16 @@ const EstatisticasOracao = {
                     <canvas id="canvas-compartilhar" width="1080" height="1920" class="w-full h-auto"></canvas>
                 </div>
                 
-                <!-- Formato -->
+                <!-- Formato fixo Stories -->
                 <div class="mb-4">
-                    <p class="text-white/60 text-xs mb-2">Formato:</p>
-                    <div class="flex gap-2">
-                        <button onclick="EstatisticasOracao.mudarFormato('stories')" id="btn-stories" class="flex-1 py-2 px-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold rounded-xl">
-                            📱 Stories (9:16)
-                        </button>
-                        <button onclick="EstatisticasOracao.mudarFormato('feed')" id="btn-feed" class="flex-1 py-2 px-3 bg-white/10 text-white text-sm font-semibold rounded-xl hover:bg-white/20">
-                            🖼️ Feed (1:1)
-                        </button>
-                    </div>
+                    <p class="text-white/60 text-xs mb-2">📱 Formato: Stories (9:16)</p>
                 </div>
                 
                 <!-- Botões de ação -->
                 <div class="space-y-3">
-                    <button onclick="EstatisticasOracao.baixarImagem()" class="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:from-green-500 hover:to-emerald-500 transition-all flex items-center justify-center gap-2">
-                        <span>📥</span>
-                        <span>Baixar Imagem</span>
-                    </button>
-                    
                     <button onclick="EstatisticasOracao.compartilharDireto()" class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all flex items-center justify-center gap-2">
                         <span>📤</span>
                         <span>Compartilhar</span>
-                    </button>
-                    
-                    <button onclick="EstatisticasOracao.compartilharTexto()" class="w-full py-3 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition-all flex items-center justify-center gap-2">
-                        <span>📋</span>
-                        <span>Copiar Texto</span>
                     </button>
                 </div>
                 
@@ -780,7 +832,7 @@ const EstatisticasOracao = {
         if (isStories) {
             const cardsY3 = cardsY2 + cardH + h * 0.02;
             desenharCard(w/2 - cardW - cardGap/2, cardsY3, '🙏', dados.aveMariasRezadas, 'Ave-Marias', '#F472B6');
-            desenharCard(w/2 + cardGap/2, cardsY3, '💙', dados.intencoesRezadas, 'orações feitas', '#60A5FA');
+            desenharCard(w/2 + cardGap/2, cardsY3, '💙', dados.intencoesRezadas, 'Rezei por outros', '#60A5FA');
         }
         
         // Linha decorativa
@@ -850,8 +902,16 @@ const EstatisticasOracao = {
 
     // Compartilhar direto (com imagem se suportado)
     async compartilharDireto() {
+        // Mostrar loading
+        if (window.LoadingCompartilhar) {
+            LoadingCompartilhar.mostrar('Preparando estatísticas...');
+        }
+        
         const canvas = document.getElementById('canvas-compartilhar');
-        if (!canvas) return;
+        if (!canvas) {
+            if (window.LoadingCompartilhar) LoadingCompartilhar.esconder();
+            return;
+        }
         
         const dados = this.carregar();
         const nivel = this.calcularNivel(dados);
@@ -863,31 +923,45 @@ ${nivel.nivelAtual.icone} Nível: ${nivel.nivelAtual.nome}
 📿 ${dados.tercosCompletos} terços completos
 🕯️ ${dados.velasAcesas} velas acesas
 
-Baixe o app "Converse com Maria"! 💙`;
+Baixe o app "Converse com Maria"! 💙
+www.conversecommaria.com.br`;
 
         try {
-            // Converter canvas para blob
-            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-            const file = new File([blob], 'minha-jornada-maria.png', { type: 'image/png' });
-            
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    title: 'Minha Jornada de Oração',
-                    text: texto,
-                    files: [file]
-                });
-            } else if (navigator.share) {
-                await navigator.share({
-                    title: 'Minha Jornada de Oração',
-                    text: texto
-                });
-                if (window.showToast) showToast('💡 Dica: Baixe a imagem para compartilhar nas redes!');
+            // Usar CompartilharService se disponível
+            if (window.CompartilharService) {
+                await CompartilharService.compartilharComImagem(
+                    canvas,
+                    'Minha Jornada de Oração',
+                    texto
+                );
             } else {
-                this.baixarImagem();
+                // Fallback
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                const file = new File([blob], 'minha-jornada-maria.png', { type: 'image/png' });
+                
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        title: 'Minha Jornada de Oração',
+                        text: texto,
+                        files: [file]
+                    });
+                } else if (navigator.share) {
+                    await navigator.share({
+                        title: 'Minha Jornada de Oração',
+                        text: texto
+                    });
+                } else {
+                    this.baixarImagem();
+                }
             }
         } catch (err) {
             if (err.name !== 'AbortError') {
                 this.baixarImagem();
+            }
+        } finally {
+            // Esconder loading sempre
+            if (window.LoadingCompartilhar) {
+                LoadingCompartilhar.esconder();
             }
         }
     },
@@ -905,11 +979,17 @@ Baixe o app "Converse com Maria"! 💙`;
 🕯️ ${dados.velasAcesas} velas acesas
 ⏱️ ${this.formatarTempo(dados.minutosEmOracao)} em oração
 
-Baixe o app "Converse com Maria" e comece sua jornada espiritual! 💙`;
+Baixe o app "Converse com Maria" e comece sua jornada espiritual! 💙
+www.conversecommaria.com.br`;
 
-        navigator.clipboard.writeText(texto).then(() => {
-            if (window.showToast) showToast('📋 Texto copiado!');
-        });
+        // Usar CompartilharService se disponível
+        if (window.CompartilharService) {
+            CompartilharService.compartilharTexto('Minha Jornada de Oração', texto);
+        } else {
+            navigator.clipboard.writeText(texto).then(() => {
+                if (window.showToast) showToast('📋 Texto copiado!');
+            });
+        }
     },
 
     // Fechar

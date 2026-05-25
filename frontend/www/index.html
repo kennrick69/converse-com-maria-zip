@@ -42,6 +42,7 @@
     <script src="temas.js?v=2" defer></script>
     <script src="musicas.js?v=1" defer></script>
     <script src="limite.js?v=1" defer></script>
+    <script src="biblioteca.js?v=1" defer></script>
     
     <!-- Scripts de Monetização -->
     <script src="pagamento.js?v=1" defer></script>
@@ -2331,6 +2332,18 @@ function abrirMuralIntencoes() {
         MuralIntencoes.abrir();
     } else {
         showToast('Carregando mural...');
+    }
+}
+
+// ========================================
+// 📚 BIBLIOTECA CRISTÃ
+// ========================================
+
+function abrirBiblioteca() {
+    if (window.BibliotecaCrista) {
+        BibliotecaCrista.abrir();
+    } else {
+        showToast('Carregando biblioteca...');
     }
 }
 

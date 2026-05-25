@@ -1,201 +1,322 @@
 // ========================================
-// 🔔 SISTEMA DE NOTIFICAÇÕES - CONVERSE COM MARIA
+// 🔔 SISTEMA DE LEMBRETES - CONVERSE COM MARIA
+// Versão simplificada (som padrão do sistema)
 // ========================================
 
 const NotificationSystem = {
+    // Som padrão apenas
+
     // Versículos do dia
     versiculos: [
-        { texto: "Eis aqui a serva do Senhor. Faça-se em mim segundo a tua palavra.", ref: "Lucas 1:38", reflexao: "A entrega total a Deus é o caminho da paz verdadeira." },
-        { texto: "Minha alma engrandece o Senhor, meu espírito exulta em Deus meu Salvador.", ref: "Lucas 1:46-47", reflexao: "Deixe seu coração transbordar de gratidão hoje." },
-        { texto: "Fazei tudo o que Ele vos disser.", ref: "João 2:5", reflexao: "Confie e obedeça, mesmo sem entender os planos de Deus." },
-        { texto: "Maria guardava todas estas coisas, meditando-as no seu coração.", ref: "Lucas 2:19", reflexao: "Reserve um momento de silêncio para ouvir a voz de Deus." },
-        { texto: "Bendita és tu entre as mulheres e bendito é o fruto do teu ventre.", ref: "Lucas 1:42", reflexao: "Você também é abençoado(a) por Deus de forma única." },
-        { texto: "O Todo-Poderoso fez em mim maravilhas, Santo é o seu nome.", ref: "Lucas 1:49", reflexao: "Reconheça as maravilhas que Deus já fez em sua vida." },
-        { texto: "Sua misericórdia se estende de geração em geração.", ref: "Lucas 1:50", reflexao: "A misericórdia de Deus nunca tem fim. Confie nela." },
-        { texto: "Não temas, Maria, pois encontraste graça diante de Deus.", ref: "Lucas 1:30", reflexao: "Não tenha medo. Você também encontrou graça diante de Deus." },
-        { texto: "O Senhor é contigo!", ref: "Lucas 1:28", reflexao: "Em cada momento, lembre-se: Deus está ao seu lado." },
-        { texto: "Todas as gerações me chamarão bem-aventurada.", ref: "Lucas 1:48", reflexao: "A humildade atrai as bênçãos do Céu." },
-        { texto: "Junto à cruz de Jesus estava sua mãe.", ref: "João 19:25", reflexao: "Nos momentos de dor, Maria está ao seu lado também." },
-        { texto: "Mulher, eis aí teu filho. Filho, eis aí tua mãe.", ref: "João 19:26-27", reflexao: "Jesus nos deu Maria como Mãe. Acolha esse presente." },
-        { texto: "Todos perseveravam na oração, junto com Maria.", ref: "Atos 1:14", reflexao: "A oração perseverante move montanhas." },
-        { texto: "Eis que a virgem conceberá e dará à luz um filho.", ref: "Isaías 7:14", reflexao: "Deus cumpre suas promessas, mesmo as impossíveis." },
-        { texto: "Dispersou os soberbos e exaltou os humildes.", ref: "Lucas 1:51-52", reflexao: "A verdadeira grandeza está na humildade." }
+        { texto: "Eis aqui a serva do Senhor. Faça-se em mim segundo a tua palavra.", ref: "Lucas 1:38" },
+        { texto: "Minha alma engrandece o Senhor, meu espírito exulta em Deus meu Salvador.", ref: "Lucas 1:46-47" },
+        { texto: "Fazei tudo o que Ele vos disser.", ref: "João 2:5" },
+        { texto: "Maria guardava todas estas coisas, meditando-as no seu coração.", ref: "Lucas 2:19" },
+        { texto: "Bendita és tu entre as mulheres e bendito é o fruto do teu ventre.", ref: "Lucas 1:42" },
+        { texto: "O Todo-Poderoso fez em mim maravilhas, Santo é o seu nome.", ref: "Lucas 1:49" },
+        { texto: "Sua misericórdia se estende de geração em geração.", ref: "Lucas 1:50" },
+        { texto: "Não temas, Maria, pois encontraste graça diante de Deus.", ref: "Lucas 1:30" },
+        { texto: "O Senhor é contigo!", ref: "Lucas 1:28" },
+        { texto: "Todas as gerações me chamarão bem-aventurada.", ref: "Lucas 1:48" },
+        { texto: "Junto à cruz de Jesus estava sua mãe.", ref: "João 19:25" },
+        { texto: "Mulher, eis aí teu filho. Filho, eis aí tua mãe.", ref: "João 19:26-27" },
+        { texto: "Todos perseveravam na oração, junto com Maria.", ref: "Atos 1:14" },
+        { texto: "Eis que a virgem conceberá e dará à luz um filho.", ref: "Isaías 7:14" },
+        { texto: "Dispersou os soberbos e exaltou os humildes.", ref: "Lucas 1:51-52" }
     ],
 
-    // Mensagens para cada horário
-    mensagensHorario: {
+    // Mensagens para cada tipo de lembrete
+    mensagens: {
         manha: [
-            "Bom dia, filho(a)! Maria tem uma palavra para você hoje...",
-            "O sol nasceu e com ele novas graças. Venha receber sua bênção!",
-            "Que este dia seja repleto da paz de Deus. Maria te espera.",
-            "Acorde com o coração cheio de esperança. Nossa Senhora te abençoa!",
-            "Um novo dia é um novo presente de Deus. Vamos agradecer juntos?"
+            "☀️ Bom dia! Maria tem uma palavra para você...",
+            "🌅 O sol nasceu! Venha receber sua bênção.",
+            "🙏 Que este dia seja repleto da paz de Deus."
         ],
         angelus: [
             "🔔 Hora do Angelus! O anjo do Senhor anunciou a Maria...",
-            "Meio-dia: momento de pausar e rezar o Angelus com Maria.",
-            "Pare um instante e lembre-se do SIM de Maria que mudou o mundo.",
-            "O sino toca ao meio-dia. É hora de oração com Nossa Senhora."
+            "⏰ Meio-dia: momento de pausar e rezar.",
+            "🕊️ Pare um instante e lembre-se do SIM de Maria."
         ],
         noite: [
-            "Boa noite, filho(a). Venha encerrar o dia em oração com Maria.",
-            "O dia termina, mas o amor de Deus não. Descanse em paz.",
-            "Antes de dormir, um momento com sua Mãe do Céu.",
-            "Que Nossa Senhora proteja seu sono e seus sonhos.",
-            "Entregue as preocupações do dia a Deus. Maria intercede por você."
+            "🌙 Boa noite! Venha encerrar o dia em oração.",
+            "✨ Antes de dormir, um momento com Maria.",
+            "💫 Que Nossa Senhora proteja seu sono."
         ]
     },
 
-    // Inicializar sistema
-    init() {
-        this.checkSupport();
+    // Estado
+    LocalNotifications: null,
+    isNative: false,
+    settings: null,
+
+    async init() {
+        console.log('🔔 Inicializando sistema de lembretes...');
+        this.isNative = this.detectCapacitor();
+        console.log('🔔 Plataforma:', this.isNative ? 'APK Nativo ✓' : 'Browser ✗');
+        
+        if (this.isNative) {
+            this.loadPlugin();
+            await this.createNotificationChannel();
+        }
+        
         this.loadSettings();
-        this.setupDailyVerse();
+        
+        if (this.isNative && this.settings.enabled) {
+            await this.scheduleAll();
+        }
     },
 
-    // Verificar suporte a notificações
-    checkSupport() {
-        if (!('Notification' in window)) {
-            console.log('❌ Navegador não suporta notificações');
+    detectCapacitor() {
+        try {
+            if (typeof Capacitor === 'undefined') return false;
+            if (typeof Capacitor.isNativePlatform === 'function') {
+                return Capacitor.isNativePlatform();
+            }
+            return Capacitor.isNative === true;
+        } catch (e) {
             return false;
         }
-        if (!('serviceWorker' in navigator)) {
-            console.log('❌ Navegador não suporta Service Worker');
-            return false;
-        }
-        return true;
     },
 
-    // Pedir permissão
-    async requestPermission() {
-        if (!this.checkSupport()) return false;
-        
-        const permission = await Notification.requestPermission();
-        console.log('🔔 Permissão de notificação:', permission);
-        
-        if (permission === 'granted') {
-            this.saveSettings({ enabled: true });
-            this.scheduleNotifications();
-            return true;
+    loadPlugin() {
+        try {
+            if (Capacitor.Plugins?.LocalNotifications) {
+                this.LocalNotifications = Capacitor.Plugins.LocalNotifications;
+            } else if (typeof LocalNotifications !== 'undefined') {
+                this.LocalNotifications = LocalNotifications;
+            }
+            console.log('🔔 Plugin LocalNotifications:', this.LocalNotifications ? '✓' : '✗');
+        } catch (e) {
+            console.error('🔔 Erro ao carregar plugin:', e);
         }
-        return false;
     },
 
-    // Configurações salvas
+    async createNotificationChannel() {
+        if (!this.LocalNotifications) return;
+        
+        try {
+            await this.LocalNotifications.createChannel({
+                id: 'maria-lembretes',
+                name: 'Lembretes de Oração',
+                description: 'Lembretes diários para oração com Maria',
+                importance: 4,
+                visibility: 1,
+                sound: 'default',
+                vibration: true,
+                lights: true
+            });
+            console.log('🔔 Canal de notificação criado');
+        } catch (e) {
+            console.log('🔔 Canal já existe ou erro:', e.message);
+        }
+    },
+
     loadSettings() {
-        const saved = localStorage.getItem('mariaNotifications');
+        const saved = localStorage.getItem('mariaLembretes');
         this.settings = saved ? JSON.parse(saved) : {
             enabled: false,
-            manha: true,
-            angelus: true,
-            noite: true,
-            horarios: { manha: '07:00', angelus: '12:00', noite: '20:00' }
+            lembretes: {
+                manha: { ativo: true, horario: '07:00' },
+                angelus: { ativo: true, horario: '12:00' },
+                noite: { ativo: true, horario: '20:00' }
+            }
         };
         return this.settings;
     },
 
-    saveSettings(newSettings) {
-        this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('mariaNotifications', JSON.stringify(this.settings));
+    saveSettings() {
+        localStorage.setItem('mariaLembretes', JSON.stringify(this.settings));
     },
 
-    // Versículo do dia (baseado na data)
+    async checkPermission() {
+        if (!this.isNative || !this.LocalNotifications) return false;
+        try {
+            const result = await this.LocalNotifications.checkPermissions();
+            return result.display === 'granted';
+        } catch (e) {
+            return false;
+        }
+    },
+
+    async requestPermission() {
+        if (!this.isNative || !this.LocalNotifications) {
+            return { success: false, message: 'Lembretes só funcionam no app instalado' };
+        }
+        
+        try {
+            const currentStatus = await this.LocalNotifications.checkPermissions();
+            
+            if (currentStatus.display !== 'granted') {
+                const result = await this.LocalNotifications.requestPermissions();
+                if (result.display !== 'granted') {
+                    return { 
+                        success: false, 
+                        message: 'Permissão negada. Vá em Configurações > Apps > Converse com Maria > Notificações e ative.' 
+                    };
+                }
+            }
+            
+            this.settings.enabled = true;
+            this.saveSettings();
+            await this.scheduleAll();
+            return { success: true, message: 'Lembretes ativados!' };
+        } catch (e) {
+            return { success: false, message: 'Erro: ' + e.message };
+        }
+    },
+
+    async scheduleAll() {
+        if (!this.isNative || !this.LocalNotifications) return;
+        
+        console.log('🔔 Agendando lembretes...');
+        await this.cancelAll();
+        
+        if (!this.settings.enabled) return;
+        
+        const notifications = [];
+        const verse = this.getDailyVerse();
+        let id = 1;
+        
+        for (const [tipo, config] of Object.entries(this.settings.lembretes)) {
+            if (!config.ativo) continue;
+            
+            const [hours, minutes] = config.horario.split(':').map(Number);
+            const msgs = this.mensagens[tipo];
+            const titulo = msgs[Math.floor(Math.random() * msgs.length)];
+            
+            notifications.push({
+                id: id++,
+                title: titulo,
+                body: '"' + verse.texto + '" - ' + verse.ref,
+                schedule: {
+                    on: { hour: hours, minute: minutes },
+                    repeats: true,
+                    allowWhileIdle: true
+                },
+                sound: 'default',
+                smallIcon: 'ic_stat_notify',
+                largeIcon: 'ic_launcher',
+                channelId: 'maria-lembretes',
+                extra: { tipo: tipo }
+            });
+            
+            console.log('🔔 Lembrete ' + tipo + ': ' + config.horario);
+        }
+        
+        if (notifications.length > 0) {
+            try {
+                await this.LocalNotifications.schedule({ notifications });
+                console.log('🔔 ' + notifications.length + ' lembretes agendados!');
+            } catch (e) {
+                console.error('🔔 Erro ao agendar:', e);
+            }
+        }
+    },
+
+    async cancelAll() {
+        if (!this.LocalNotifications) return;
+        try {
+            const pending = await this.LocalNotifications.getPending();
+            if (pending?.notifications?.length > 0) {
+                await this.LocalNotifications.cancel(pending);
+            }
+        } catch (e) {
+            console.log('🔔 Nada para cancelar');
+        }
+    },
+
+    async enable() {
+        return await this.requestPermission();
+    },
+
+    async disable() {
+        this.settings.enabled = false;
+        this.saveSettings();
+        await this.cancelAll();
+        return { success: true, message: 'Lembretes desativados' };
+    },
+
+    async toggle() {
+        if (this.settings.enabled) {
+            return await this.disable();
+        } else {
+            return await this.enable();
+        }
+    },
+
+    async setLembrete(tipo, config) {
+        if (!this.settings.lembretes[tipo]) return;
+        
+        this.settings.lembretes[tipo] = {
+            ...this.settings.lembretes[tipo],
+            ...config
+        };
+        this.saveSettings();
+        
+        if (this.settings.enabled) {
+            await this.scheduleAll();
+        }
+    },
+
+    async toggleLembrete(tipo) {
+        if (!this.settings.lembretes[tipo]) return;
+        
+        this.settings.lembretes[tipo].ativo = !this.settings.lembretes[tipo].ativo;
+        this.saveSettings();
+        
+        if (this.settings.enabled) {
+            await this.scheduleAll();
+        }
+    },
+
+    async testNotification(tipo = 'manha') {
+        if (!this.isNative || !this.LocalNotifications) {
+            return { success: false, message: 'Só funciona no app instalado' };
+        }
+        
+        const msgs = this.mensagens[tipo];
+        const titulo = msgs[Math.floor(Math.random() * msgs.length)];
+        const verse = this.getDailyVerse();
+        
+        try {
+            await this.LocalNotifications.schedule({
+                notifications: [{
+                    id: 999,
+                    title: titulo,
+                    body: '"' + verse.texto + '" - ' + verse.ref,
+                    schedule: { at: new Date(Date.now() + 2000) },
+                    sound: 'default',
+                    smallIcon: 'ic_stat_notify',
+                    channelId: 'maria-lembretes'
+                }]
+            });
+            return { success: true, message: 'Notificação enviada! Aguarde 2 segundos...' };
+        } catch (e) {
+            return { success: false, message: 'Erro: ' + e.message };
+        }
+    },
+
     getDailyVerse() {
         const today = new Date();
         const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-        const index = dayOfYear % this.versiculos.length;
-        return this.versiculos[index];
+        return this.versiculos[dayOfYear % this.versiculos.length];
     },
 
-    // Configurar versículo do dia
-    setupDailyVerse() {
-        const verse = this.getDailyVerse();
-        localStorage.setItem('mariaDailyVerse', JSON.stringify({
-            ...verse,
-            date: new Date().toDateString()
-        }));
-        return verse;
+    isSupported() {
+        return this.isNative && this.LocalNotifications !== null;
     },
 
-    // Mostrar notificação local
-    async showNotification(title, body, options = {}) {
-        if (Notification.permission !== 'granted') return;
-
-        const registration = await navigator.serviceWorker.ready;
-        
-        registration.showNotification(title, {
-            body,
-            icon: '/icons/icon-192.png',
-            badge: '/icons/icon-72.png',
-            vibrate: [100, 50, 100],
-            tag: options.tag || 'maria-notification',
-            renotify: true,
-            data: { url: '/' },
-            ...options
-        });
-    },
-
-    // Agendar notificações
-    scheduleNotifications() {
-        if (!this.settings.enabled) return;
-        
-        // Limpar agendamentos anteriores
-        if (this.scheduledTimers) {
-            this.scheduledTimers.forEach(timer => clearTimeout(timer));
-        }
-        this.scheduledTimers = [];
-
-        const now = new Date();
-        const scheduleFor = (timeStr, type) => {
-            const [hours, minutes] = timeStr.split(':').map(Number);
-            const target = new Date(now);
-            target.setHours(hours, minutes, 0, 0);
-            
-            // Se já passou, agenda para amanhã
-            if (target <= now) {
-                target.setDate(target.getDate() + 1);
-            }
-            
-            const delay = target - now;
-            console.log(`⏰ Notificação ${type} agendada para ${target.toLocaleString()}`);
-            
-            const timer = setTimeout(() => {
-                this.triggerNotification(type);
-                // Reagendar para o próximo dia
-                this.scheduleNotifications();
-            }, delay);
-            
-            this.scheduledTimers.push(timer);
+    getStatus() {
+        return {
+            supported: this.isSupported(),
+            enabled: this.settings?.enabled || false,
+            lembretes: this.settings?.lembretes || {}
         };
-
-        if (this.settings.manha) scheduleFor(this.settings.horarios.manha, 'manha');
-        if (this.settings.angelus) scheduleFor(this.settings.horarios.angelus, 'angelus');
-        if (this.settings.noite) scheduleFor(this.settings.horarios.noite, 'noite');
-    },
-
-    // Disparar notificação por tipo
-    triggerNotification(type) {
-        const mensagens = this.mensagensHorario[type];
-        const mensagem = mensagens[Math.floor(Math.random() * mensagens.length)];
-        const verse = this.getDailyVerse();
-        
-        this.showNotification(
-            mensagem,
-            `"${verse.texto}" - ${verse.ref}`,
-            { tag: `maria-${type}` }
-        );
-    },
-
-    // Testar notificação
-    async testNotification() {
-        const verse = this.getDailyVerse();
-        await this.showNotification(
-            'Maria tem uma palavra para você! 🙏',
-            `"${verse.texto}" - ${verse.ref}`,
-            { tag: 'maria-test' }
-        );
     }
 };
 
-// Exportar para uso global
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() { NotificationSystem.init(); }, 500);
+});
+
 window.NotificationSystem = NotificationSystem;

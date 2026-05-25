@@ -8,15 +8,28 @@
     "watch:css": "tailwindcss -i ./src/input.css -o ./css/tailwind.min.css --watch",
     "build": "npm run build:css"
   },
-  "keywords": ["maria", "católico", "chat", "espiritual"],
+  "keywords": [
+    "maria",
+    "católico",
+    "chat",
+    "espiritual"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "@capacitor-community/admob": "^8.0.0",
     "@capacitor/android": "^8.0.1",
+    "@capacitor/app": "^8.0.0",
     "@capacitor/cli": "^8.0.1",
-    "@capacitor/core": "^8.0.1"
+    "@capacitor/core": "^8.0.1",
+    "@capacitor/filesystem": "^8.0.0",
+    "@capacitor/haptics": "^8.0.0",
+    "@capacitor/local-notifications": "^8.0.0",
+    "@capacitor/share": "^8.0.0",
+    "cordova-plugin-x-socialsharing": "^6.0.4",
+    "es6-promise-plugin": "^4.2.2",
+    "firebase": "^12.8.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.23",

@@ -24,7 +24,15 @@ const CalendarioMariano = {
           descricao: "O Anjo Gabriel anuncia a Maria que ela será mãe do Salvador.",
           oracao: "Maria, ensina-nos a dizer SIM a Deus como Vós disseste!" },
         
+        // ABRIL
+        { dia: 26, mes: 4, nome: "Nossa Senhora do Bom Conselho", tipo: "memoria", cor: "branco",
+          descricao: "Maria como conselheira sábia. Devoção muito antiga na Igreja.",
+          oracao: "Nossa Senhora do Bom Conselho, guiai nossas decisões!" },
+        
         // MAIO (Mês de Maria)
+        { dia: 8, mes: 5, nome: "Nossa Senhora de Pompeia", tipo: "memoria", cor: "branco",
+          descricao: "Padroeira do Santo Rosário. Súplica à Virgem de Pompeia.",
+          oracao: "Virgem de Pompeia, dai-nos vitória pelo Rosário!" },
         { dia: 13, mes: 5, nome: "Nossa Senhora de Fátima", tipo: "memoria", cor: "branco",
           descricao: "Primeira aparição aos pastorinhos em 1917. Pedido de oração e conversão.",
           oracao: "Nossa Senhora de Fátima, convertei os pecadores!" },
@@ -41,9 +49,15 @@ const CalendarioMariano = {
           oracao: "Mãe do Perpétuo Socorro, não nos abandoneis!" },
         
         // JULHO
+        { dia: 2, mes: 7, nome: "Santa Isabel e São Joaquim", tipo: "memoria", cor: "branco",
+          descricao: "Pais de Maria e avós de Jesus. Família sagrada.",
+          oracao: "Santa Isabel e São Joaquim, protegei nossas famílias!" },
         { dia: 16, mes: 7, nome: "Nossa Senhora do Carmo", tipo: "memoria", cor: "branco",
           descricao: "Padroeira dos Carmelitas. Entregou o Escapulário a São Simão Stock.",
           oracao: "Nossa Senhora do Carmo, protegei-nos com vosso manto!" },
+        { dia: 26, mes: 7, nome: "Sant'Ana e São Joaquim", tipo: "memoria", cor: "branco",
+          descricao: "Avós de Jesus. Sant'Ana é padroeira das mães e avós.",
+          oracao: "Sant'Ana e São Joaquim, abençoai nossos avós!" },
         
         // AGOSTO
         { dia: 5, mes: 8, nome: "Nossa Senhora das Neves", tipo: "memoria", cor: "branco",
@@ -71,6 +85,9 @@ const CalendarioMariano = {
         { dia: 7, mes: 10, nome: "Nossa Senhora do Rosário", tipo: "memoria", cor: "branco",
           descricao: "Vitória de Lepanto. O Rosário como arma espiritual.",
           oracao: "Nossa Senhora do Rosário, ensinai-nos a rezar!" },
+        { dia: 11, mes: 10, nome: "Maternidade Divina de Maria", tipo: "memoria", cor: "branco",
+          descricao: "Maria é verdadeiramente Mãe de Deus. Dogma do Concílio de Éfeso (431).",
+          oracao: "Mãe de Deus, rogai por nós pecadores!" },
         { dia: 12, mes: 10, nome: "Nossa Senhora Aparecida", tipo: "solenidade", cor: "azul",
           descricao: "Padroeira do Brasil! Encontrada nas águas do Paraíba em 1717.",
           oracao: "Nossa Senhora Aparecida, rogai por nós, vossos filhos brasileiros!" },

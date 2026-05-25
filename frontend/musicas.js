@@ -71,12 +71,94 @@ const SistemaMusicasFundo = {
             icone: '🪕',
             url: 'https://upload.wikimedia.org/wikipedia/commons/7/77/Harp_glissando.ogg',
             categoria: 'instrumental'
+        },
+        {
+            id: 'oracao_pelo_sinal',
+            nome: 'Pelo Sinal da Santa Cruz',
+            descricao: 'Voz suave conduzindo a oração',
+            icone: '✝️',
+            url: 'audio/terco/pelo-sinal.mp3',
+            categoria: 'oracoes',
+            autor: 'Letícia Klee'
+        },
+        {
+            id: 'oracao_sinal_da_cruz',
+            nome: 'Sinal da Cruz',
+            descricao: 'Em nome do Pai, do Filho e do Espírito Santo',
+            icone: '✝️',
+            url: 'audio/terco/sinal-da-cruz.mp3',
+            categoria: 'oracoes',
+            autor: 'Letícia Klee'
+        },
+        {
+            id: 'oracao_oferecimento',
+            nome: 'Oferecimento do Terço',
+            descricao: 'Divino Jesus, nós Vos oferecemos este terço',
+            icone: '🙏',
+            url: 'audio/terco/oferecimento.mp3',
+            categoria: 'oracoes',
+            autor: 'Letícia Klee'
+        },
+        {
+            id: 'oracao_creio',
+            nome: 'Credo Apostólico',
+            descricao: 'Creio em Deus Pai Todo-Poderoso',
+            icone: '📜',
+            url: 'audio/terco/creio.mp3',
+            categoria: 'oracoes',
+            autor: 'Letícia Klee'
+        },
+        {
+            id: 'oracao_pai_nosso',
+            nome: 'Pai Nosso',
+            descricao: 'A oração que Jesus nos ensinou',
+            icone: '🙏',
+            url: 'audio/terco/pai-nosso.mp3',
+            categoria: 'oracoes',
+            autor: 'Letícia Klee'
+        },
+        {
+            id: 'oracao_ave_maria',
+            nome: 'Ave Maria',
+            descricao: 'Ave Maria, cheia de graça',
+            icone: '🌹',
+            url: 'audio/terco/ave-maria.mp3',
+            categoria: 'oracoes',
+            autor: 'Letícia Klee'
+        },
+        {
+            id: 'oracao_gloria',
+            nome: 'Glória ao Pai',
+            descricao: 'Glória ao Pai, ao Filho e ao Espírito Santo',
+            icone: '✨',
+            url: 'audio/terco/gloria.mp3',
+            categoria: 'oracoes',
+            autor: 'Letícia Klee'
+        },
+        {
+            id: 'oracao_fatima',
+            nome: 'Oração de Fátima',
+            descricao: 'Ó meu Jesus, perdoai-nos',
+            icone: '🌟',
+            url: 'audio/terco/fatima.mp3',
+            categoria: 'oracoes',
+            autor: 'Letícia Klee'
+        },
+        {
+            id: 'oracao_salve_rainha',
+            nome: 'Salve Rainha',
+            descricao: 'Salve Rainha, Mãe de misericórdia',
+            icone: '👑',
+            url: 'audio/terco/salve-rainha.mp3',
+            categoria: 'oracoes',
+            autor: 'Letícia Klee'
         }
     ],
 
     // Categorias
     categorias: {
         silencio: { nome: 'Silêncio', icone: '🔇' },
+        oracoes: { nome: 'Orações do Terço', icone: '🙏' },
         sacra: { nome: 'Música Sacra', icone: '⛪' },
         classica: { nome: 'Clássica', icone: '🎻' },
         instrumental: { nome: 'Instrumental', icone: '🎹' },
@@ -119,9 +201,9 @@ const SistemaMusicasFundo = {
         
         this.musicaAtual = musicaId;
         this.audio = new Audio(musica.url);
-        this.audio.volume = this.volume;
+        this.audio.volume = musica.categoria === 'oracoes' ? Math.max(this.volume, 0.8) : this.volume;
         this.audio.loop = true;
-        
+
         this.audio.play().then(() => {
             this.tocando = true;
             this.salvarConfig();
@@ -253,6 +335,7 @@ const SistemaMusicasFundo = {
                                                 <div class="flex-1">
                                                     <p class="text-white font-semibold text-sm">${m.nome}</p>
                                                     <p class="text-white/50 text-xs">${m.descricao}</p>
+                                                    ${m.autor ? `<p class="text-yellow-400/80 text-[10px] italic mt-0.5">🎙️ Voz: ${m.autor}</p>` : ''}
                                                 </div>
                                                 ${ativa && this.tocando ? '<span class="text-white animate-pulse">♪</span>' : ''}
                                             </button>

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bgLove" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f9a8d4"/>
+      <stop offset="100%" style="stop-color:#be185d"/>
+    </linearGradient>
+    <linearGradient id="heartPink" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fce7f3"/>
+      <stop offset="100%" style="stop-color:#ec4899"/>
+    </linearGradient>
+    <linearGradient id="heartGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef9c3"/>
+      <stop offset="100%" style="stop-color:#eab308"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <circle cx="50" cy="50" r="45" fill="url(#bgLove)" filter="url(#shadow)"/>
+  <circle cx="50" cy="50" r="42" fill="none" stroke="#fbcfe8" stroke-width="3" opacity="0.5"/>
+  
+  <!-- Coração dourado (Maria) -->
+  <path d="M35,55 
+           C22,42 10,32 10,22 
+           C10,12 18,5 28,5 
+           C32,5 35,8 35,12 
+           C35,8 38,5 42,5 
+           C52,5 60,12 60,22 
+           C60,32 48,42 35,55Z" 
+        fill="url(#heartGold)" transform="translate(0,15) scale(0.8)"/>
+  
+  <!-- Coração rosa (usuário) -->
+  <path d="M65,70 
+           C52,57 40,47 40,37 
+           C40,27 48,20 58,20 
+           C62,20 65,23 65,27 
+           C65,23 68,20 72,20 
+           C82,20 90,27 90,37 
+           C90,47 78,57 65,70Z" 
+        fill="url(#heartPink)" transform="translate(0,5) scale(0.8)"/>
+  
+  <!-- Linha conectando os corações -->
+  <path d="M42,45 Q55,50 58,38" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="4,3" opacity="0.8"/>
+  
+  <!-- Brilhos -->
+  <circle cx="22" cy="28" r="3" fill="#fff" opacity="0.7"/>
+  <circle cx="60" cy="35" r="3" fill="#fff" opacity="0.6"/>
+  
+  <!-- Estrelinhas -->
+  <circle cx="75" cy="20" r="2" fill="#fef9c3" opacity="0.8"/>
+  <circle cx="20" cy="70" r="2" fill="#fef9c3" opacity="0.7"/>
+  <circle cx="85" cy="65" r="1.5" fill="#fef9c3" opacity="0.6"/>
+</svg>

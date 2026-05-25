@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bgBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa"/>
+      <stop offset="100%" style="stop-color:#2563eb"/>
+    </linearGradient>
+    <linearGradient id="starGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef08a"/>
+      <stop offset="50%" style="stop-color:#fde047"/>
+      <stop offset="100%" style="stop-color:#eab308"/>
+    </linearGradient>
+    <radialGradient id="starGlow" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#fef9c3;stop-opacity:0.9"/>
+      <stop offset="100%" style="stop-color:#fef9c3;stop-opacity:0"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <style>
+    .estrela { animation: girar 8s linear infinite; transform-origin: 50px 50px; }
+    .estrela-brilho { animation: pulsar-estrela 1s ease-in-out infinite alternate; transform-origin: 50px 50px; }
+    .glow { animation: glow-pulse 1.5s ease-in-out infinite alternate; }
+    .mini-estrela1 { animation: twinkle 1s ease-in-out infinite; }
+    .mini-estrela2 { animation: twinkle 1.2s ease-in-out infinite 0.3s; }
+    .mini-estrela3 { animation: twinkle 0.8s ease-in-out infinite 0.6s; }
+    .numero { animation: bounce 2s ease-in-out infinite; }
+    
+    @keyframes girar {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulsar-estrela {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.05); }
+    }
+    @keyframes glow-pulse {
+      0% { opacity: 0.5; r: 25; }
+      100% { opacity: 0.8; r: 30; }
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+  </style>
+  
+  <circle cx="50" cy="50" r="45" fill="url(#bgBlue)" filter="url(#shadow)"/>
+  <circle cx="50" cy="50" r="42" fill="none" stroke="#93c5fd" stroke-width="3" opacity="0.5"/>
+  
+  <!-- Brilho atrás da estrela -->
+  <circle cx="50" cy="50" r="28" fill="url(#starGlow)" class="glow"/>
+  
+  <!-- Estrela principal (gira) -->
+  <g class="estrela">
+    <polygon 
+      points="50,18 56,38 78,38 61,52 67,73 50,60 33,73 39,52 22,38 44,38" 
+      fill="url(#starGold)"
+      class="estrela-brilho"
+    />
+  </g>
+  
+  <!-- Brilho na estrela (estático para o número aparecer) -->
+  <polygon 
+    points="50,25 53,35 60,38 52,45" 
+    fill="#fff" opacity="0.5"
+  />
+  
+  <!-- Número 7 no centro -->
+  <text x="50" y="56" text-anchor="middle" fill="#1e40af" font-family="Arial Black, sans-serif" font-size="20" font-weight="bold" class="numero">7</text>
+  
+  <!-- Estrelinhas menores ao redor (twinkle) -->
+  <polygon points="20,20 22,25 27,25 23,28 24,33 20,30 16,33 17,28 13,25 18,25" fill="#fef9c3" class="mini-estrela1"/>
+  <polygon points="80,25 81,28 84,28 82,30 83,33 80,31 77,33 78,30 76,28 79,28" fill="#fef9c3" class="mini-estrela2"/>
+  <polygon points="75,70 76,72 78,72 77,74 77.5,76 75,75 72.5,76 73,74 72,72 74,72" fill="#fef9c3" class="mini-estrela3"/>
+</svg>

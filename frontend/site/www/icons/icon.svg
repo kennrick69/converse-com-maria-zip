@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Gradiente do fundo -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0a2e"/>
+      <stop offset="50%" style="stop-color:#2d1b4e"/>
+      <stop offset="100%" style="stop-color:#1a0a2e"/>
+    </linearGradient>
+    
+    <!-- Gradiente dourado -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="50%" style="stop-color:#FFA500"/>
+      <stop offset="100%" style="stop-color:#FFD700"/>
+    </linearGradient>
+    
+    <!-- Gradiente do manto azul -->
+    <linearGradient id="mantoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E3A8A"/>
+      <stop offset="100%" style="stop-color:#3B82F6"/>
+    </linearGradient>
+    
+    <!-- Gradiente do véu branco -->
+    <linearGradient id="veuGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="100%" style="stop-color:#E8E8E8"/>
+    </linearGradient>
+    
+    <!-- Brilho -->
+    <radialGradient id="glowGrad" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#FFD700;stop-opacity:0"/>
+    </radialGradient>
+    
+    <!-- Sombra -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Fundo com gradiente -->
+  <rect width="512" height="512" rx="100" fill="url(#bgGrad)"/>
+  
+  <!-- Brilho atrás de Maria -->
+  <ellipse cx="256" cy="240" rx="180" ry="200" fill="url(#glowGrad)"/>
+  
+  <!-- Raios de luz -->
+  <g opacity="0.3">
+    <line x1="256" y1="80" x2="256" y2="20" stroke="#FFD700" stroke-width="3"/>
+    <line x1="310" y1="95" x2="340" y2="45" stroke="#FFD700" stroke-width="3"/>
+    <line x1="202" y1="95" x2="172" y2="45" stroke="#FFD700" stroke-width="3"/>
+    <line x1="350" y1="130" x2="400" y2="100" stroke="#FFD700" stroke-width="2"/>
+    <line x1="162" y1="130" x2="112" y2="100" stroke="#FFD700" stroke-width="2"/>
+  </g>
+  
+  <!-- Manto azul (camada de fundo) -->
+  <path d="M256 160 
+           C200 160 150 200 130 280 
+           L100 450 
+           C100 470 120 480 150 480 
+           L362 480 
+           C392 480 412 470 412 450 
+           L382 280 
+           C362 200 312 160 256 160Z" 
+        fill="url(#mantoGrad)" filter="url(#shadow)"/>
+  
+  <!-- Decoração dourada do manto -->
+  <path d="M256 165 
+           C205 165 158 202 138 278 
+           L110 445" 
+        fill="none" stroke="#FFD700" stroke-width="4" opacity="0.6"/>
+  <path d="M256 165 
+           C307 165 354 202 374 278 
+           L402 445" 
+        fill="none" stroke="#FFD700" stroke-width="4" opacity="0.6"/>
+  
+  <!-- Véu branco -->
+  <ellipse cx="256" cy="200" rx="70" ry="85" fill="url(#veuGrad)"/>
+  <path d="M186 200 
+           C186 160 220 130 256 130 
+           C292 130 326 160 326 200
+           L320 280
+           C310 320 270 340 256 340
+           C242 340 202 320 192 280
+           Z" 
+        fill="url(#veuGrad)" opacity="0.9"/>
+  
+  <!-- Rosto (tom de pele suave) -->
+  <ellipse cx="256" cy="210" rx="45" ry="55" fill="#F5D0C5"/>
+  
+  <!-- Olhos fechados em oração -->
+  <path d="M235 200 Q240 195 245 200" fill="none" stroke="#5D4037" stroke-width="2" stroke-linecap="round"/>
+  <path d="M267 200 Q272 195 277 200" fill="none" stroke="#5D4037" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Sobrancelhas suaves -->
+  <path d="M232 192 Q240 188 248 192" fill="none" stroke="#8D6E63" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M264 192 Q272 188 280 192" fill="none" stroke="#8D6E63" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Nariz delicado -->
+  <path d="M256 210 L256 225 Q256 230 252 232" fill="none" stroke="#D7A090" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Boca serena -->
+  <path d="M246 245 Q256 250 266 245" fill="none" stroke="#C48B7A" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Bochechas rosadas -->
+  <ellipse cx="228" cy="225" rx="12" ry="8" fill="#FFCDD2" opacity="0.5"/>
+  <ellipse cx="284" cy="225" rx="12" ry="8" fill="#FFCDD2" opacity="0.5"/>
+  
+  <!-- Mãos em oração -->
+  <path d="M230 380 
+           L256 350 
+           L282 380 
+           L256 400 
+           Z" 
+        fill="#F5D0C5" stroke="#E8C0B5" stroke-width="2"/>
+  <line x1="256" y1="355" x2="256" y2="395" stroke="#E8C0B5" stroke-width="1"/>
+  
+  <!-- COROA DOURADA -->
+  <g filter="url(#shadow)">
+    <!-- Base da coroa -->
+    <ellipse cx="256" cy="130" rx="55" ry="15" fill="url(#goldGrad)"/>
+    
+    <!-- Corpo da coroa -->
+    <path d="M201 130 
+             L201 100 
+             L220 115 
+             L235 85 
+             L256 110 
+             L277 85 
+             L292 115 
+             L311 100 
+             L311 130 
+             Z" 
+          fill="url(#goldGrad)"/>
+    
+    <!-- Detalhes da coroa -->
+    <circle cx="235" cy="95" r="6" fill="#FFF" opacity="0.8"/>
+    <circle cx="256" cy="88" r="8" fill="#FF6B6B"/>
+    <circle cx="277" cy="95" r="6" fill="#FFF" opacity="0.8"/>
+    
+    <!-- Cruz no topo -->
+    <rect x="252" y="70" width="8" height="20" fill="url(#goldGrad)"/>
+    <rect x="246" y="76" width="20" height="6" fill="url(#goldGrad)"/>
+  </g>
+  
+  <!-- Estrelas decorativas -->
+  <g fill="#FFD700" opacity="0.8">
+    <polygon points="80,150 83,158 92,158 85,164 88,172 80,167 72,172 75,164 68,158 77,158" transform="scale(0.8)"/>
+    <polygon points="440,180 443,188 452,188 445,194 448,202 440,197 432,202 435,194 428,188 437,188" transform="scale(0.7)"/>
+    <polygon points="100,380 103,388 112,388 105,394 108,402 100,397 92,402 95,394 88,388 97,388" transform="scale(0.6)"/>
+    <polygon points="420,350 423,358 432,358 425,364 428,372 420,367 412,372 415,364 408,358 417,358" transform="scale(0.6)"/>
+  </g>
+  
+  <!-- Auréola/Halo -->
+  <ellipse cx="256" cy="120" rx="90" ry="25" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.6"/>
+  
+  <!-- Texto "MARIA" -->
+  <text x="256" y="470" text-anchor="middle" font-family="Georgia, serif" font-size="36" font-weight="bold" fill="url(#goldGrad)">MARIA</text>
+  
+</svg>
