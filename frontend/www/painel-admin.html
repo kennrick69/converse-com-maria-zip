@@ -571,6 +571,8 @@
             <button class="tab-btn" onclick="trocarTab('livros')">📚 Livros</button>
             <button class="tab-btn" onclick="trocarTab('musicas')">🎵 Músicas</button>
             <button class="tab-btn" onclick="trocarTab('frases')">💬 Frases do Dia</button>
+            <!-- F-QA (2026-05-25): checklist de testes do JOs -->
+            <button class="tab-btn" onclick="trocarTab('qa')">✅ Checklist QA</button>
         </nav>
         
         <!-- Dashboard -->
@@ -690,6 +692,32 @@
             </p>
             <div id="frases-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
         </div>
+
+        <!-- ✅ CHECKLIST QA (F-QA — 2026-05-25) -->
+        <div class="tab-content" id="tab-qa">
+            <!-- Resumo -->
+            <div id="qa-stats" class="qa-stats-bar">
+                <div class="qa-stat ok">✅ <span id="qa-ok">0</span> funcionando</div>
+                <div class="qa-stat bug">❌ <span id="qa-bug">0</span> com bug</div>
+                <div class="qa-stat pendente">⏳ <span id="qa-pendente">0</span> não testados</div>
+                <div class="qa-stat total">📋 <span id="qa-total">0</span> no total</div>
+            </div>
+
+            <div class="controls-bar">
+                <button class="btn-action green" onclick="abrirModalQaItem()">➕ Novo item</button>
+                <button class="btn-action blue" onclick="carregarQaItems()">🔄 Atualizar</button>
+                <button class="btn-action" style="background:var(--accent-purple);color:#fff;" onclick="popularQaPadrao()" title="Cria os 15 itens padrão (login, terço, biblioteca, Maria, frase do dia, músicas, mural, velas, premium, painel admin) — só roda se a lista está vazia">📋 Pré-popular padrão</button>
+                <button class="btn-action" style="background:var(--accent-orange);color:#fff;" onclick="filtrarQa('todos')">Todos</button>
+                <button class="btn-action" style="background:var(--accent-red);color:#fff;" onclick="filtrarQa('bug')">❌ Só bugs</button>
+                <button class="btn-action" style="background:var(--accent-green);color:#fff;" onclick="filtrarQa('pendente')">⏳ Pendentes</button>
+            </div>
+
+            <h2 class="section-title">✅ Checklist QA <span id="qa-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
+                Marca cada item conforme testa. Anexa print de bug pra documentar. Tudo persiste no Firestore — volta amanhã e continua.
+            </p>
+            <div id="qa-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
+        </div>
     </div>
     
     <!-- Modal -->
@@ -776,6 +804,123 @@
         }
         .capitulo-item h4 { font-size: 13px; color: var(--accent-gold); margin-bottom: 4px; }
         .capitulo-item p { font-size: 12px; color: var(--text-secondary); }
+
+        /* F-QA Checklist */
+        .qa-stats-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+        .qa-stat {
+            flex: 1; min-width: 160px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            display: flex; gap: 8px; align-items: center;
+        }
+        .qa-stat span { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+        .qa-stat.ok { border-color: var(--accent-green); }
+        .qa-stat.bug { border-color: var(--accent-red); }
+        .qa-stat.pendente { border-color: var(--accent-orange); }
+        .qa-stat.total { border-color: var(--accent-gold); }
+
+        .qa-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--text-secondary);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+            transition: all .15s;
+        }
+        .qa-card.status-ok      { border-left-color: var(--accent-green); }
+        .qa-card.status-bug     { border-left-color: var(--accent-red); background: linear-gradient(90deg, rgba(239,68,68,0.05), var(--bg-card)); }
+        .qa-card.status-pendente { border-left-color: var(--accent-orange); }
+        .qa-card:hover { background: var(--bg-card-hover); }
+
+        .qa-card-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
+        .qa-card-head .info { flex: 1; }
+        .qa-card-head h3 { font-size: 15px; color: var(--text-primary); margin-bottom: 4px; }
+        .qa-card-head p  { font-size: 13px; color: var(--text-secondary); line-height: 1.45; }
+        .qa-card-head .acoes { display: flex; gap: 6px; }
+        .qa-card-head .acoes button {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: var(--text-secondary);
+            cursor: pointer; font-size: 12px;
+        }
+        .qa-card-head .acoes button:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+        .qa-card-head .acoes button.danger:hover { color: var(--accent-red); }
+
+        .qa-status-row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+        .qa-status-btn {
+            flex: 1; min-width: 110px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all .15s;
+        }
+        .qa-status-btn:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+        .qa-status-btn.ativo.ok       { background: var(--accent-green); color: #fff; border-color: var(--accent-green); }
+        .qa-status-btn.ativo.bug      { background: var(--accent-red); color: #fff; border-color: var(--accent-red); }
+        .qa-status-btn.ativo.pendente { background: var(--accent-orange); color: #fff; border-color: var(--accent-orange); }
+
+        .qa-comentario {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+            min-height: 60px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+        .qa-comentario:focus { outline: none; border-color: var(--accent-gold); }
+
+        .qa-print-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .qa-print-input {
+            background: var(--bg-dark);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            flex: 1; min-width: 200px;
+        }
+        .qa-print-input:hover { border-color: var(--accent-gold); color: var(--text-primary); }
+        .qa-print-thumb {
+            display: inline-block;
+            max-width: 140px; max-height: 100px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            object-fit: cover;
+        }
+        .qa-print-info {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .qa-saving { font-size: 11px; color: var(--accent-gold); opacity: 0; transition: opacity .25s; }
+        .qa-saving.show { opacity: 1; }
+
+        /* Lightbox simples pra abrir print em tela cheia */
+        .qa-lightbox {
+            position: fixed; inset: 0; z-index: 999999;
+            background: rgba(0,0,0,0.92);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            cursor: zoom-out;
+        }
+        .qa-lightbox img { max-width: 95vw; max-height: 95vh; border-radius: 8px; }
     </style>
 
     <script>
@@ -1684,6 +1829,327 @@
             return String(s).replace(/[&<>"']/g, c => ({
                 '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
             })[c]);
+        }
+
+        // ============================================================
+        // F-QA (2026-05-25): Checklist QA — JOs testa app, marca status,
+        // comenta, anexa print. Tudo na collection qa_checklist do
+        // Firestore. Print = base64 comprimido (canvas resize 800px +
+        // JPEG 0.7) — tipicamente 50-150KB, bem abaixo do limite 1MB/doc
+        // do Firestore. Se um dia precisar de prints grandes/muitos,
+        // migrar pra Firebase Storage (instruções no relatório).
+        // ============================================================
+
+        // Plug no trocarTab pra auto-carregar a aba QA
+        const _trocarTabSemQa = trocarTab;
+        trocarTab = function(tabId) {
+            _trocarTabSemQa(tabId);
+            if (tabId === 'qa' && !window._qaCarregado) carregarQaItems();
+        };
+
+        // Itens padrão pré-populados (cobre fluxos principais do app)
+        const QA_PADRAO = [
+            { ordem:  1, nome: 'Login Firebase funciona',                  descricao: 'Login com email+senha → entra no app sem erro. Logout funciona.' },
+            { ordem:  2, nome: 'Cadastro de novo usuário',                 descricao: 'Cria conta nova, recebe e-mail (se houver), entra com a conta criada.' },
+            { ordem:  3, nome: 'Maria responde no chat (IA Groq)',         descricao: 'Manda mensagem → Maria responde em PT-BR, tom maternal. Resposta não trava.' },
+            { ordem:  4, nome: 'Maria varia a abertura das mensagens',     descricao: 'Manda várias mensagens — verifica se ela não abre TODA com "Filho/Filha querido(a)".' },
+            { ordem:  5, nome: 'Terço guiado abre e funciona',             descricao: 'Abre o terço, navega pelos mistérios, marca conta de Ave-Maria.' },
+            { ordem:  6, nome: 'Terço — áudios das orações tocam',         descricao: 'Toca pelo sinal / pai-nosso / ave-maria / glória / salve-rainha / fátima. Áudio limpo, sem cortes.' },
+            { ordem:  7, nome: 'Biblioteca abre + lê livros',              descricao: 'Abre biblioteca, lista 3 livros, abre Imitação de Cristo, navega capítulos, lê com fonte legível.' },
+            { ordem:  8, nome: 'Biblioteca — grifar texto funciona',       descricao: 'Seleciona caneta, marca trechos com cor, salva, abre "Meus Grifos" e vê o que marcou.' },
+            { ordem:  9, nome: 'Frase do dia aparece (FrasesDoDia)',       descricao: 'Frase muda por dia, aparece no dashboard/home do app. (Console: FrasesDoDia.fraseDeHoje())' },
+            { ordem: 10, nome: 'Músicas de fundo tocam',                   descricao: 'Toca cada música de fundo (Ave Maria, gregoriano, chuva, sinos, etc). Volume ajusta.' },
+            { ordem: 11, nome: 'Mural de Intenções',                       descricao: 'Publica intenção, vê no mural, reza por outra (botão "rezar"). Notificação ao autor.' },
+            { ordem: 12, nome: 'Velas — acender + visualizar',             descricao: 'Acende vela com intenção, vê na sala de velas, vela apaga após tempo correto.' },
+            { ordem: 13, nome: 'Premium — fluxo de assinatura',            descricao: 'Tenta funcionalidade premium → mostra paywall → pagamento Stripe abre. NÃO testar pagamento real, só fluxo.' },
+            { ordem: 14, nome: 'Aparições / Calendário litúrgico',         descricao: 'Vê próximas aparições, calendário do mês, santo do dia se houver.' },
+            { ordem: 15, nome: 'Painel admin — abas novas (F1)',           descricao: 'Vai em Livros/Músicas/Frases neste painel, adiciona 1 item teste de cada, vê salvar e aparecer.' },
+            { ordem: 16, nome: 'Painel admin — importar Hostinger',        descricao: 'Clica "Importar do Hostinger" na aba Livros → puxa 3 livros pro Firestore.' },
+            { ordem: 17, nome: 'AdMob aparece (sem premium)',              descricao: 'Conta sem premium → vê banners no app. Conta premium → SEM banners.' },
+            { ordem: 18, nome: 'Notificações locais (lembretes)',          descricao: 'Configura lembrete de oração → notificação dispara no horário.' },
+            { ordem: 19, nome: 'Compartilhar / convidar amigo',            descricao: 'Botão de share abre menu nativo Android com link do app.' },
+            { ordem: 20, nome: 'App offline (PWA service worker)',         descricao: 'Modo avião → app abre, mostra conteúdo cached, mensagem "sem conexão" onde precisa.' },
+        ];
+
+        let _qaItems = [];
+        let _qaFiltro = 'todos';
+        const QA_PRINT_MAX_DIM = 800;       // px
+        const QA_PRINT_QUALITY = 0.7;        // JPEG 70%
+        const QA_PRINT_MAX_BYTES = 900 * 1024; // 900KB safety
+
+        async function carregarQaItems() {
+            const grid = document.getElementById('qa-grid');
+            grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando...</p></div>';
+            try {
+                const snap = await db.collection('qa_checklist').orderBy('ordem', 'asc').get();
+                _qaItems = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+                window._qaCarregado = true;
+                renderizarQa();
+                atualizarQaStats();
+            } catch (e) {
+                console.error(e);
+                grid.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>Erro: ${e.message}</p></div>`;
+            }
+        }
+
+        function atualizarQaStats() {
+            const ok = _qaItems.filter(x => x.status === 'ok').length;
+            const bug = _qaItems.filter(x => x.status === 'bug').length;
+            const pendente = _qaItems.length - ok - bug;
+            document.getElementById('qa-ok').textContent = ok;
+            document.getElementById('qa-bug').textContent = bug;
+            document.getElementById('qa-pendente').textContent = pendente;
+            document.getElementById('qa-total').textContent = _qaItems.length;
+        }
+
+        function filtrarQa(modo) { _qaFiltro = modo; renderizarQa(); }
+
+        function renderizarQa() {
+            const grid = document.getElementById('qa-grid');
+            let items = _qaItems;
+            if (_qaFiltro === 'bug') items = items.filter(x => x.status === 'bug');
+            else if (_qaFiltro === 'pendente') items = items.filter(x => x.status !== 'ok' && x.status !== 'bug');
+            document.getElementById('qa-count').textContent = `(${items.length}${_qaFiltro !== 'todos' ? ' de ' + _qaItems.length : ''})`;
+
+            if (!_qaItems.length) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📋</div>
+                        <p>Lista vazia. Clica "📋 Pré-popular padrão" pra criar os 20 itens iniciais.</p>
+                    </div>`;
+                return;
+            }
+            if (!items.length) {
+                grid.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><p>Nenhum item neste filtro.</p></div>`;
+                return;
+            }
+
+            grid.innerHTML = items.map(it => {
+                const s = it.status || 'pendente';
+                const id = it.docId;
+                const printSrc = it.printBase64 || '';
+                const printSize = it.printSize ? `${Math.round(it.printSize/1024)} KB` : '';
+                return `
+                    <div class="qa-card status-${s}" id="qa-card-${id}">
+                        <div class="qa-card-head">
+                            <div class="info">
+                                <h3>${escapeHtml(it.nome)}</h3>
+                                <p>${escapeHtml(it.descricao || '')}</p>
+                            </div>
+                            <div class="acoes">
+                                <button onclick="editarQaItem('${id}')" title="Editar nome/descrição">✏️</button>
+                                <button class="danger" onclick="deletarQaItem('${id}')" title="Remover item">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="qa-status-row">
+                            <button class="qa-status-btn ok ${s==='ok'?'ativo':''}" onclick="setQaStatus('${id}','ok')">✅ Funciona</button>
+                            <button class="qa-status-btn bug ${s==='bug'?'ativo':''}" onclick="setQaStatus('${id}','bug')">❌ Tem bug</button>
+                            <button class="qa-status-btn pendente ${s==='pendente'?'ativo':''}" onclick="setQaStatus('${id}','pendente')">⏳ Não testei</button>
+                        </div>
+                        <textarea class="qa-comentario" id="qa-comentario-${id}"
+                            placeholder="Comentário (o que você viu? passo a reproduzir? observação?)"
+                            onblur="salvarQaComentario('${id}', this.value)">${escapeHtml(it.comentario || '')}</textarea>
+                        <div class="qa-print-row">
+                            <input type="file" id="qa-print-${id}" accept="image/*" style="display:none;"
+                                onchange="anexarQaPrint('${id}', this.files[0])">
+                            <label for="qa-print-${id}" class="qa-print-input">
+                                📷 ${printSrc ? 'Trocar print' : 'Anexar print de bug'}
+                            </label>
+                            ${printSrc ? `
+                                <img class="qa-print-thumb" src="${printSrc}" onclick="abrirLightbox('${id}')" alt="print" />
+                                <span class="qa-print-info">${printSize}${it.printAt ? ' · ' + formatTimestamp(it.printAt) : ''}</span>
+                                <button class="qa-status-btn" style="flex:0;min-width:auto;" onclick="removerQaPrint('${id}')">🗑️ Print</button>
+                            ` : ''}
+                            <span class="qa-saving" id="qa-saving-${id}">💾 salvando...</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showSaving(id) {
+            const el = document.getElementById('qa-saving-' + id);
+            if (!el) return;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 1200);
+        }
+
+        async function setQaStatus(docId, status) {
+            const it = _qaItems.find(x => x.docId === docId);
+            if (!it) return;
+            it.status = status;
+            try {
+                showSaving(docId);
+                await db.collection('qa_checklist').doc(docId).update({
+                    status,
+                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                renderizarQa();
+                atualizarQaStats();
+            } catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
+        }
+
+        let _qaCommentTimers = {};
+        async function salvarQaComentario(docId, valor) {
+            try {
+                showSaving(docId);
+                await db.collection('qa_checklist').doc(docId).update({
+                    comentario: valor || '',
+                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                const it = _qaItems.find(x => x.docId === docId);
+                if (it) it.comentario = valor;
+            } catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
+        }
+
+        // Comprime imagem via canvas — limita maior lado a QA_PRINT_MAX_DIM,
+        // exporta JPEG QA_PRINT_QUALITY. Retorna { dataUrl, size }.
+        function comprimirImagem(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let { width, height } = img;
+                        if (width > height && width > QA_PRINT_MAX_DIM) {
+                            height = Math.round(height * QA_PRINT_MAX_DIM / width); width = QA_PRINT_MAX_DIM;
+                        } else if (height > QA_PRINT_MAX_DIM) {
+                            width = Math.round(width * QA_PRINT_MAX_DIM / height); height = QA_PRINT_MAX_DIM;
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width; canvas.height = height;
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', QA_PRINT_QUALITY);
+                        // base64 size em bytes ~ (length * 3/4)
+                        const size = Math.round(dataUrl.length * 3 / 4);
+                        resolve({ dataUrl, size, width, height });
+                    };
+                    img.onerror = () => reject(new Error('Imagem inválida'));
+                    img.src = ev.target.result;
+                };
+                reader.onerror = () => reject(new Error('Não consegui ler o arquivo'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function anexarQaPrint(docId, file) {
+            if (!file) return;
+            if (!file.type.startsWith('image/')) return toast('❌ Arquivo precisa ser imagem', 'error');
+            try {
+                toast('📷 Comprimindo print...');
+                const { dataUrl, size, width, height } = await comprimirImagem(file);
+                if (size > QA_PRINT_MAX_BYTES) {
+                    return toast(`❌ Print final ainda ficou ${Math.round(size/1024)}KB (limite ${Math.round(QA_PRINT_MAX_BYTES/1024)}KB). Tira uma menor.`, 'error');
+                }
+                showSaving(docId);
+                await db.collection('qa_checklist').doc(docId).update({
+                    printBase64: dataUrl,
+                    printSize: size,
+                    printDimensoes: `${width}x${height}`,
+                    printAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                const it = _qaItems.find(x => x.docId === docId);
+                if (it) { it.printBase64 = dataUrl; it.printSize = size; it.printAt = new Date(); }
+                renderizarQa();
+                toast('✅ Print anexado');
+            } catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
+        }
+
+        async function removerQaPrint(docId) {
+            if (!confirm('Remover o print deste item?')) return;
+            try {
+                showSaving(docId);
+                await db.collection('qa_checklist').doc(docId).update({
+                    printBase64: firebase.firestore.FieldValue.delete(),
+                    printSize: firebase.firestore.FieldValue.delete(),
+                    printAt: firebase.firestore.FieldValue.delete(),
+                    printDimensoes: firebase.firestore.FieldValue.delete(),
+                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                const it = _qaItems.find(x => x.docId === docId);
+                if (it) { delete it.printBase64; delete it.printSize; delete it.printAt; }
+                renderizarQa();
+                toast('🗑️ Print removido');
+            } catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
+        }
+
+        function abrirLightbox(docId) {
+            const it = _qaItems.find(x => x.docId === docId);
+            if (!it?.printBase64) return;
+            const lb = document.createElement('div');
+            lb.className = 'qa-lightbox';
+            lb.innerHTML = `<img src="${it.printBase64}" alt="print"/>`;
+            lb.onclick = () => lb.remove();
+            document.body.appendChild(lb);
+        }
+
+        function abrirModalQaItem() { editarQaItem(null); }
+        function editarQaItem(docId) {
+            const it = docId ? _qaItems.find(x => x.docId === docId) : { nome:'', descricao:'', ordem: (_qaItems[_qaItems.length-1]?.ordem || 0) + 1 };
+            if (!it) return;
+            const html = `
+                <div class="form-row"><label>Nome curto</label>
+                    <input id="qa-form-nome" value="${escapeHtml(it.nome || '')}" placeholder="Ex: Login funciona" /></div>
+                <div class="form-row"><label>Descrição do teste (opcional)</label>
+                    <textarea id="qa-form-desc" placeholder="O que testar? passos pra reproduzir?">${escapeHtml(it.descricao || '')}</textarea></div>
+                <div class="form-row"><label>Ordem na lista</label>
+                    <input id="qa-form-ordem" type="number" value="${it.ordem ?? 0}" /></div>
+                <div class="form-actions">
+                    <button class="secondary" onclick="fecharConteudoModal()">Cancelar</button>
+                    <button onclick="salvarQaItem('${docId || ''}')">${docId ? 'Salvar' : 'Criar'}</button>
+                </div>
+            `;
+            abrirConteudoModal(docId ? `✏️ Editar item` : `➕ Novo item de checklist`, html);
+        }
+        async function salvarQaItem(docId) {
+            const nome = document.getElementById('qa-form-nome').value.trim();
+            if (!nome) return toast('❌ Nome obrigatório', 'error');
+            const payload = {
+                nome,
+                descricao: document.getElementById('qa-form-desc').value.trim(),
+                ordem: parseInt(document.getElementById('qa-form-ordem').value) || 0,
+                atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            try {
+                if (docId) await db.collection('qa_checklist').doc(docId).update(payload);
+                else {
+                    payload.status = 'pendente';
+                    payload.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection('qa_checklist').add(payload);
+                }
+                toast('✅ Salvo!'); fecharConteudoModal(); carregarQaItems();
+            } catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
+        }
+        async function deletarQaItem(docId) {
+            const it = _qaItems.find(x => x.docId === docId);
+            if (!confirm(`Remover "${it?.nome}"? Comentário e print desse item serão perdidos.`)) return;
+            try { await db.collection('qa_checklist').doc(docId).delete(); toast('🗑️ Removido'); carregarQaItems(); }
+            catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
+        }
+
+        async function popularQaPadrao() {
+            if (_qaItems.length > 0) {
+                if (!confirm(`Já tem ${_qaItems.length} itens. Os padrão serão ADICIONADOS (não substituem). Continuar?`)) return;
+            }
+            try {
+                toast('📋 Criando itens padrão...');
+                const batch = db.batch();
+                const col = db.collection('qa_checklist');
+                QA_PADRAO.forEach(item => {
+                    const ref = col.doc();
+                    batch.set(ref, {
+                        ...item,
+                        status: 'pendente',
+                        comentario: '',
+                        criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+                        atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+                await batch.commit();
+                toast(`✅ ${QA_PADRAO.length} itens criados`);
+                carregarQaItems();
+            } catch (e) { toast('❌ Erro: ' + e.message, 'error'); }
         }
     </script>
 </body>
