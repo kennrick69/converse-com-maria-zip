@@ -1,0 +1,21 @@
+{
+  "id": "vida-devota",
+  "titulo": "Introdução à Vida Devota",
+  "autor": "São Francisco de Sales",
+  "anoOriginal": 1609,
+  "categoria": "devocional",
+  "descricao": "Guia prático para viver a santidade no dia a dia, qualquer que seja o seu estado de vida. Linguagem modernizada para o português brasileiro contemporâneo, preservando o sentido teológico do original.",
+  "capa": "📘",
+  "modernizado": true,
+  "modernizadoEm": "2026-05-25",
+  "incompleto": true,
+  "completar": "Apenas o capítulo 1 da Parte I (Descrição da verdadeira devoção) está presente. A obra original tem 5 Partes com cerca de 130 capítulos no total: Parte I (conduzir a alma à vida devota, 24 caps), Parte II (oração e sacramentos, 21 caps), Parte III (virtudes, 41 caps), Parte IV (combater as tentações, 15 caps), Parte V (renovação espiritual, 18 caps). JOs decide se completa em edições futuras.",
+  "observacao": "Modernização: 'tu/teu' (com que Francisco se dirige a 'Filoteia', a alma piedosa) substituídos por 'você/seu'. Mantida a invocação 'Filoteia' como interlocutora literária. Termos teológicos preservados: devoção, caridade, mandamentos, conselhos, virtude.",
+  "capitulos": [
+    {
+      "numero": 1,
+      "titulo": "Descrição da verdadeira devoção",
+      "conteudo": "Querida Filoteia, você deseja a devoção, porque, sendo cristã, sabe como esta virtude é agradável a Deus.\n\nMas, como os pequenos erros que se cometem no início de qualquer empreendimento vão aumentando infinitamente no decorrer dele, e no fim se tornam quase irreparáveis, é necessário, antes de tudo, que você saiba em que consiste a virtude da devoção.\n\nExiste apenas uma verdadeira devoção, e há muitas falsas e vãs. Se você não conhecer a verdadeira, poderá se enganar e perder tempo seguindo alguma devoção absurda e supersticiosa.\n\nA verdadeira e viva devoção pressupõe o amor de Deus e, mais ainda, não é outra coisa senão um verdadeiro amor de Deus. Mesmo assim, ela nem sempre é amor de modo simples.\n\nQuando o amor divino torna a alma mais diligente, fervorosa e pronta para cumprir os mandamentos de Deus, então ele se chama devoção.\n\nA devoção, portanto, não é outra coisa senão uma agilidade e vivacidade espiritual, pela qual a caridade opera em nós, ou nós por ela, com prontidão e afeto. E assim como é próprio da caridade fazer com que cumpramos, de modo geral, todos os mandamentos de Deus, é também próprio da devoção fazer com que os cumpramos com prontidão e diligência.\n\nPor isso, quem não observa todos os mandamentos de Deus não pode ser considerado bom nem devoto; pois, para ser bom, é preciso ter caridade, e, para ser devoto, é preciso, além de ter caridade, ter grande prontidão e fervor no exercício dos atos de caridade.\n\nE como a devoção consiste em um certo grau de exímia caridade, ela não só nos torna prontos, ativos e diligentes na observância de todos os mandamentos de Deus, mas também nos leva a praticar com prontidão e afeto o maior número possível de boas obras, mesmo que não sejam prescritas — apenas aconselhadas ou inspiradas."
+    }
+  ]
+}

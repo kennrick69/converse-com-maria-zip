@@ -1,0 +1,56 @@
+{
+  "versao": "2.1-modernizado",
+  "atualizado": "2026-05-25",
+  "observacao": "Catálogo da proposta de modernização linguística (PT-BR contemporâneo). Não está em produção. JOs revisa e sobe pro Hostinger (ou pro Firestore) quando aprovar.",
+  "livros": [
+    {
+      "id": "imitacao-cristo",
+      "titulo": "Imitação de Cristo",
+      "autor": "Tomás de Kempis",
+      "anoOriginal": 1418,
+      "categoria": "espiritualidade",
+      "descricao": "O livro mais lido da cristandade depois da Bíblia. Linguagem modernizada — Livro I completo (25 capítulos).",
+      "capa": "📕",
+      "capitulos": 25,
+      "tamanhoKB": 57,
+      "modernizado": true,
+      "incompleto": false
+    },
+    {
+      "id": "confissoes-agostinho",
+      "titulo": "Confissões",
+      "autor": "Santo Agostinho",
+      "anoOriginal": 397,
+      "categoria": "espiritualidade",
+      "descricao": "Autobiografia espiritual de um dos maiores Padres da Igreja. Linguagem modernizada — apenas 2 excertos (Livro I e Livro X).",
+      "capa": "📗",
+      "capitulos": 2,
+      "tamanhoKB": 3,
+      "modernizado": true,
+      "incompleto": true,
+      "completar": "13 livros originais — apenas 2 excertos presentes"
+    },
+    {
+      "id": "vida-devota",
+      "titulo": "Introdução à Vida Devota",
+      "autor": "São Francisco de Sales",
+      "anoOriginal": 1609,
+      "categoria": "devocional",
+      "descricao": "Guia prático para a santidade no dia a dia. Linguagem modernizada — apenas capítulo 1 da Parte I.",
+      "capa": "📘",
+      "capitulos": 1,
+      "tamanhoKB": 3,
+      "modernizado": true,
+      "incompleto": true,
+      "completar": "130+ capítulos originais em 5 Partes — apenas o cap. 1 está presente"
+    }
+  ],
+  "categorias": {
+    "santos": { "nome": "Vidas de Santos", "emoji": "👼", "cor": "#F59E0B" },
+    "doutrina": { "nome": "Doutrina", "emoji": "📖", "cor": "#6366F1" },
+    "oracao": { "nome": "Oração", "emoji": "🙏", "cor": "#8B5CF6" },
+    "espiritualidade": { "nome": "Espiritualidade", "emoji": "✨", "cor": "#EC4899" },
+    "devocional": { "nome": "Devocional", "emoji": "💜", "cor": "#7C3AED" },
+    "infantil": { "nome": "Infantil", "emoji": "👶", "cor": "#10B981" }
+  }
+}
