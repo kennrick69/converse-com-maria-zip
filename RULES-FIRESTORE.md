@@ -57,22 +57,24 @@ Se algo for negado por engano, reverte com o backup do passo 2 e me avisa.
 
 ## 📐 Decisões das rules (resumo)
 
+> ⚠️ **CORREÇÃO 2026-05-26**: a versão anterior tinha `if true` (leitura pública) em `biblioteca`/`conteudo_*`. **JOs apontou que o Maria exige cadastro+login** — afrouxei segurança sem motivo. Tudo abaixo é a **versão corrigida**.
+
 | Collection | Read | Write | Lógica |
 |---|---|---|---|
 | `usuarios/{uid}` | dono ou admin | dono ou admin | privacidade básica |
 | `intencoes` | autenticado | autenticado cria; dono/admin edita/deleta | mural social |
 | `velas` | autenticado | autenticado cria; dono/admin edita/deleta | sala de velas |
-| `biblioteca` (legado) | **público** (sem auth) | só admin | app carrega antes do login |
+| `biblioteca` (legado) | **autenticado** | só admin | app exige login |
 | `denuncias` | só admin | autenticado cria | privacidade — usuário não vê outros |
 | `leads` | só admin | só admin | backend usa firebase-admin SDK (ignora rules) |
-| `conteudo_livros` | **público** | só admin | app lê antes do login |
-| `conteudo_musicas` | **público** | só admin | idem |
-| `conteudo_frases` | **público** | só admin | idem |
+| `conteudo_livros` | **autenticado** | só admin | app exige login |
+| `conteudo_musicas` | **autenticado** | só admin | idem |
+| `conteudo_frases` | **autenticado** | só admin | idem |
 | `qa_checklist` | só admin | só admin | uso interno do JOs |
 | **qualquer outra** | NEGADO | NEGADO | default deny (segurança em primeiro lugar) |
 
-### Por que conteúdo é leitura pública?
-O app na Play Store carrega livros/músicas/frases **antes do usuário fazer login** (anônimo). Como não há dado sensível ali (textos religiosos, URLs públicas de áudio, frases curtas), abrir leitura pública é seguro e necessário pro fluxo do app funcionar.
+### Por que conteúdo NÃO é leitura pública?
+Maria é um app de cadastro+login — qualquer tela exige usuário logado. Não há motivo pra `conteudo_*` ser público. Tudo `if isAuth()`.
 
 ### Por que `qa_checklist` é admin-only?
 Os comentários e prints podem mostrar bugs com dados de usuário/email. Não expõe.

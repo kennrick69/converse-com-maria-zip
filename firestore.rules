@@ -70,8 +70,10 @@ service cloud.firestore {
 
     // ========== BIBLIOTECA (legado — pode estar vazia se migrar
     //          tudo pra conteudo_livros) ==========
+    // CORREÇÃO 2026-05-26: o Maria exige cadastro+login. Leitura é
+    // só pra usuário autenticado (não pública).
     match /biblioteca/{docId} {
-      allow read: if true;             // pública (app abre sem login)
+      allow read: if isAuth();
       allow write: if isAdmin();
     }
 
@@ -92,20 +94,19 @@ service cloud.firestore {
 
     // ========== CONTEÚDO ADMINISTRATIVO (F1 do painel) ==========
     // App lê pra exibir; só admin edita.
-    // ⚠️ Permitir LEITURA SEM AUTH (allow read: if true) porque o app
-    //    da Play Store carrega livros/músicas/frases antes mesmo do
-    //    usuário fazer login. Não há dado sensível aqui — é conteúdo
-    //    público (textos religiosos, URLs de áudio, frases).
+    // CORREÇÃO 2026-05-26: leitura exige login (Maria é app de
+    // cadastro+login). Versão anterior tinha "if true" — estava
+    // afrouxando segurança que o JOs não pediu.
     match /conteudo_livros/{docId} {
-      allow read: if true;
+      allow read: if isAuth();
       allow write: if isAdmin();
     }
     match /conteudo_musicas/{docId} {
-      allow read: if true;
+      allow read: if isAuth();
       allow write: if isAdmin();
     }
     match /conteudo_frases/{docId} {
-      allow read: if true;
+      allow read: if isAuth();
       allow write: if isAdmin();
     }
 
