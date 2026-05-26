@@ -1,0 +1,126 @@
+// ============================================================
+// Converse com Maria — Firestore Security Rules
+// ============================================================
+// Versionado em frontend/firestore.rules pra servir de fonte da verdade.
+// ⚠️ A aplicação REAL é no console Firebase: console.firebase.google.com
+//    → seu projeto → Firestore Database → aba "Rules" → cola este conteúdo
+//    → "Publish".
+//
+// PRINCÍPIOS:
+// - Admins: lista hardcoded em isAdmin() (igual ao painel-admin.html).
+// - Conteúdo público do app (livros/músicas/frases) = leitura pra todos
+//   (até deslogado, pra app abrir sem login), escrita só admin.
+// - Dados de usuário = só o dono lê/escreve o próprio doc.
+// - Conteúdo social (intenções/velas) = autenticado lê/cria; edita só
+//   dono ou admin.
+// - QA interno (qa_checklist, denuncias, leads) = só admin.
+// - Tudo o que não bater em nenhuma regra abaixo = NEGAR (default
+//   restritivo). Última linha `match /{document=**}` faz isso explícito.
+// ============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========== HELPERS ==========
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isAuth()
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() in [
+             'kennrick@gmail.com',
+             'rickboypoke@gmail.com'
+           ];
+    }
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    // ========== USUÁRIOS ==========
+    // Cada usuário lê/escreve só o próprio doc. Admin lê/escreve qualquer.
+    match /usuarios/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+
+      // Subcollections (estatísticas, histórico) seguem mesma regra
+      match /{subcol=**} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // ========== INTENÇÕES (mural público) ==========
+    // Autenticado lê e cria; edita/deleta só dono OU admin.
+    match /intencoes/{docId} {
+      allow read: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin()
+        || (isAuth() && resource.data.userId == request.auth.uid);
+    }
+
+    // ========== VELAS (sala virtual) ==========
+    match /velas/{docId} {
+      allow read: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin()
+        || (isAuth() && resource.data.userId == request.auth.uid);
+    }
+
+    // ========== BIBLIOTECA (legado — pode estar vazia se migrar
+    //          tudo pra conteudo_livros) ==========
+    match /biblioteca/{docId} {
+      allow read: if true;             // pública (app abre sem login)
+      allow write: if isAdmin();
+    }
+
+    // ========== DENÚNCIAS (privacidade — só admin lê) ==========
+    // Usuário autenticado CRIA, mas não LÊ (não vê denúncias dos outros).
+    // PHP enviar-denuncia.php usa Firebase Admin SDK (ignora rules).
+    match /denuncias/{docId} {
+      allow create: if isAuth();
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ========== LEADS (backend-only) ==========
+    // Backend usa firebase-admin SDK (ignora rules).
+    // No client/painel: só admin.
+    match /leads/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ========== CONTEÚDO ADMINISTRATIVO (F1 do painel) ==========
+    // App lê pra exibir; só admin edita.
+    // ⚠️ Permitir LEITURA SEM AUTH (allow read: if true) porque o app
+    //    da Play Store carrega livros/músicas/frases antes mesmo do
+    //    usuário fazer login. Não há dado sensível aqui — é conteúdo
+    //    público (textos religiosos, URLs de áudio, frases).
+    match /conteudo_livros/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /conteudo_musicas/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /conteudo_frases/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ========== QA CHECKLIST (F-QA do painel — só admin) ==========
+    // Lista de testes do JOs, comentários e prints base64.
+    // NÃO expor: usuários comuns não precisam ver.
+    match /qa_checklist/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ========== DEFAULT DENY ==========
+    // Qualquer collection que aparecer no futuro fica NEGADA por padrão.
+    // Adicione uma regra explícita acima antes de usar.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
