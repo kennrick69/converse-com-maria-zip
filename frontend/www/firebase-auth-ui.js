@@ -335,7 +335,7 @@ const TelaAuth = {
         this.fechar();
         
         // Ir para onboarding se for novo usuário
-        const perfil = localStorage.getItem('mariaPerfil');
+        const perfil = localStorage.getItem('maria_user_profile');
         if (!perfil) {
             // Mostrar onboarding
             document.getElementById('testimonials')?.classList.add('hidden');
@@ -374,7 +374,7 @@ function irParaChat() {
     document.getElementById('chat')?.classList.remove('hidden');
     
     // Carregar nome do perfil
-    const perfil = localStorage.getItem('mariaPerfil');
+    const perfil = localStorage.getItem('maria_user_profile');
     if (perfil) {
         const { nome } = JSON.parse(perfil);
         document.getElementById('header-nome').textContent = `Conversando com ${nome}`;

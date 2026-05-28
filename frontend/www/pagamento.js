@@ -442,7 +442,7 @@ const PagamentoService = {
     },
     
     getUserNome() {
-        const profile = localStorage.getItem('mariaUserProfile');
+        const profile = localStorage.getItem('maria_user_profile');
         if (profile) {
             return JSON.parse(profile).nome;
         }
