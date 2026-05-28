@@ -18,6 +18,20 @@ const TercoGuiado = {
     // API URL
     API_URL: 'https://converse-com-maria-production.up.railway.app',
 
+    // Áudios MP3 pré-gravados das orações (vozes humanas)
+    // Chave = chave em `oracoes`. Se não tiver match, cai pro "Áudio em breve".
+    audios: {
+        peloSinal:    'audio/terco/pelo-sinal.mp3',
+        sinalCruz:    'audio/terco/sinal-da-cruz.mp3',
+        oferecimento: 'audio/terco/oferecimento.mp3',
+        creio:        'audio/terco/creio.mp3',
+        paiNosso:     'audio/terco/pai-nosso.mp3',
+        aveMaria:     'audio/terco/ave-maria.mp3',
+        gloria:       'audio/terco/gloria.mp3',
+        fatima:       'audio/terco/fatima.mp3',
+        salveRainha:  'audio/terco/salve-rainha.mp3'
+    },
+
     // Orações do terço
     oracoes: {
         peloSinal: {
@@ -244,8 +258,82 @@ const TercoGuiado = {
     // ========================================
     
     async gerarAudio(texto, botaoId) {
-        // Mostrar aviso de que o recurso estará disponível em breve
+        // Sem MP3 pré-gravado pra esse texto (ex: meditações dos mistérios).
+        // Mostrar aviso de "em breve".
         this.mostrarAvisoAudioEmBreve();
+    },
+
+    // Tocar oração pré-gravada (MP3 em audio/terco/)
+    tocarOracao(chave, botaoId) {
+        const audioPath = this.audios[chave];
+        const botao = document.getElementById(botaoId);
+        if (!audioPath) {
+            this.mostrarAvisoAudioEmBreve();
+            return;
+        }
+
+        // Se já tem áudio tocando e é o mesmo botão → toggle pause/play
+        if (this.estado.audioAtivo && this.estado.audioBotaoAtual === botaoId) {
+            if (this.estado.audioAtivo.paused) {
+                this.estado.audioAtivo.play();
+                this._setBotaoOuvir(botao, 'pausar');
+            } else {
+                this.estado.audioAtivo.pause();
+                this._setBotaoOuvir(botao, 'continuar');
+            }
+            return;
+        }
+
+        // Outro áudio tocando? Parar e resetar botão anterior.
+        if (this.estado.audioAtivo) {
+            this.estado.audioAtivo.pause();
+            const btnAntigo = document.getElementById(this.estado.audioBotaoAtual);
+            if (btnAntigo) this._setBotaoOuvir(btnAntigo, 'ouvir');
+        }
+
+        // Criar novo áudio
+        const audio = new Audio(audioPath);
+        this.estado.audioAtivo = audio;
+        this.estado.audioBotaoAtual = botaoId;
+
+        this._setBotaoOuvir(botao, 'carregando');
+
+        audio.onplaying = () => this._setBotaoOuvir(botao, 'pausar');
+        audio.onpause = () => {
+            // Só atualiza se NÃO chegou ao fim (onended trata o reset)
+            if (!audio.ended) this._setBotaoOuvir(botao, 'continuar');
+        };
+        audio.onended = () => {
+            this._setBotaoOuvir(botao, 'ouvir');
+            if (this.estado.audioAtivo === audio) {
+                this.estado.audioAtivo = null;
+                this.estado.audioBotaoAtual = null;
+            }
+        };
+        audio.onerror = (e) => {
+            console.error('Erro ao carregar áudio do terço:', audioPath, e);
+            this._setBotaoOuvir(botao, 'ouvir');
+            this.mostrarAvisoAudioEmBreve();
+            this.estado.audioAtivo = null;
+            this.estado.audioBotaoAtual = null;
+        };
+
+        audio.play().catch(err => {
+            console.error('Erro ao tocar:', err);
+            this._setBotaoOuvir(botao, 'ouvir');
+        });
+    },
+
+    // Helper: muda texto/ícone do botão "Ouvir Maria"
+    _setBotaoOuvir(botao, estado) {
+        if (!botao) return;
+        const labels = {
+            ouvir:      '<span>🔊</span><span>Ouvir Maria</span>',
+            carregando: '<span>⏳</span><span>Carregando...</span>',
+            pausar:     '<span>⏸️</span><span>Pausar</span>',
+            continuar:  '<span>▶️</span><span>Continuar</span>'
+        };
+        botao.innerHTML = labels[estado] || labels.ouvir;
     },
     
     mostrarAvisoAudioEmBreve() {
@@ -493,8 +581,7 @@ const TercoGuiado = {
     // Renderizar oração COM botão de áudio
     renderizarOracaoComAudio(chave, audioId) {
         const oracao = this.oracoes[chave];
-        const textoLimpo = oracao.texto.replace(/\n/g, ' ');
-        
+
         return `
             <div class="bg-white/5 border border-white/10 rounded-2xl p-5 mb-4 hover:bg-white/10 transition-all">
                 <div class="flex items-center justify-between mb-3">
@@ -502,9 +589,9 @@ const TercoGuiado = {
                         <span class="text-2xl">🙏</span>
                         <h3 class="text-yellow-400 font-bold">${oracao.titulo}</h3>
                     </div>
-                    <button 
+                    <button
                         id="${audioId}"
-                        onclick="TercoGuiado.gerarAudio(\`${textoLimpo}\`, '${audioId}')"
+                        onclick="TercoGuiado.tocarOracao('${chave}', '${audioId}')"
                         class="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 rounded-full text-white text-xs font-semibold transition-all"
                     >
                         <span>🔊</span>
@@ -571,9 +658,9 @@ const TercoGuiado = {
                             <button onclick="TercoGuiado.marcarAve(${i})" class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${i < this.estado.aveAtual ? 'bg-yellow-500 text-black scale-90' : 'bg-white/20 text-white hover:bg-white/30'}">${i + 1}</button>
                         `).join('')}
                     </div>
-                    <button 
+                    <button
                         id="audio-ave-${numero}"
-                        onclick="TercoGuiado.gerarAudio(\`${this.oracoes.aveMaria.texto.replace(/\n/g, ' ')}\`, 'audio-ave-${numero}')"
+                        onclick="TercoGuiado.tocarOracao('aveMaria', 'audio-ave-${numero}')"
                         class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 rounded-xl text-white text-sm font-semibold transition-all mb-4"
                     >
                         <span>🔊</span>
