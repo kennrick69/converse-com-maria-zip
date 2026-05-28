@@ -4494,8 +4494,9 @@ function verificarRetornoPagamento() {
 // 🔥 LISTENER FIREBASE PARA PREMIUM
 // ========================================
 function iniciarListenerPremium() {
-    if (typeof firebase === 'undefined' || !firebase.auth) return;
-    
+    // Guard: precisa do SDK + app inicializado (firebase.apps.length > 0)
+    if (typeof firebase === 'undefined' || !firebase.apps || firebase.apps.length === 0) return;
+
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
             // Escutar mudanças no documento do usuário
@@ -4536,12 +4537,22 @@ function iniciarListenerPremium() {
     });
 }
 
-// Iniciar listener quando Firebase carregar
-if (typeof firebase !== 'undefined') {
-    iniciarListenerPremium();
-} else {
-    window.addEventListener('firebase-ready', iniciarListenerPremium);
-}
+// Iniciar listener quando Firebase estiver INICIALIZADO (não só carregado).
+// FirebaseService.init() em firebase-config.js é async — precisa esperar
+// que firebase.apps tenha o app [DEFAULT] registrado.
+(function aguardarFirebaseInit() {
+    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+        iniciarListenerPremium();
+    } else {
+        // Tenta de novo em 200ms; desiste após 30s (150 tentativas)
+        if (!window._fbWaitCount) window._fbWaitCount = 0;
+        if (window._fbWaitCount++ < 150) {
+            setTimeout(aguardarFirebaseInit, 200);
+        } else {
+            console.warn('Firebase nao inicializou em 30s — listener premium desativado');
+        }
+    }
+})();
 
 // ========================================
 // 🏅 CONQUISTAS, APARIÇÕES, TEMAS, ESTATÍSTICAS
@@ -5443,7 +5454,9 @@ function updateStreak() {
     }
     
     // Verificar conquistas de streak SILENCIOSAMENTE (sem popup)
-    if (window.SistemaConquistas) {
+    // Guard: a função pode não existir em conquistas.js (foi referenciada
+    // mas nunca implementada). Defensive check evita TypeError no console.
+    if (window.SistemaConquistas && typeof SistemaConquistas.verificarStreakSilencioso === 'function') {
         SistemaConquistas.verificarStreakSilencioso();
     }
     
