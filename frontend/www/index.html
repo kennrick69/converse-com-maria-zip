@@ -2107,8 +2107,9 @@
                 <div id="acesso-erro" class="acesso-erro"></div>
                 
                 <div class="acesso-input-group">
-                    <label>Nome completo</label>
-                    <input type="text" id="acesso-nome" placeholder="Ex: Maria da Silva Santos">
+                    <label>💛 Como gostaria que eu te chame?</label>
+                    <input type="text" id="acesso-nome" placeholder="Ex: Leda, Cris, Dudu..." maxlength="30" autocomplete="nickname">
+                    <p style="font-size:12px; color:rgba(255,255,255,0.55); margin-top:6px; font-style:italic;">Jesus chamava pelo nome do coração ✨</p>
                 </div>
                 
                 <div class="acesso-input-group">
@@ -2336,13 +2337,6 @@
                         <span class="choice-text">Não</span>
                     </button>
                 </div>
-            </div>
-
-            <!-- ==================== APELIDO (nome do coração) ==================== -->
-            <div>
-                <label class="onb-label">💛 Como gostaria que eu te chame?</label>
-                <input type="text" id="input-apelido" placeholder="Ex: Leda, Cris, Dudu..." class="onb-input" maxlength="30" autocomplete="nickname">
-                <p style="font-size:12px; color:#7a3a0a; margin-top:4px; opacity:0.85; font-style:italic;">Opcional — Jesus chamava pelo nome do coração ✨</p>
             </div>
 
             <!-- ==================== CHECKBOX DE POLÍTICA DE PRIVACIDADE ==================== -->
@@ -2610,79 +2604,74 @@ function mostrarOnboarding() {
 }
 
 // ==================== FUNÇÕES DE CADASTRO E LOGIN ====================
-
-// Formatar nome: Nome + Iniciais dos sobrenomes
-function formatarNome(nomeCompleto) {
-    const partes = nomeCompleto.trim().split(/\s+/);
-    if (partes.length === 1) return partes[0];
-    
-    const primeiroNome = partes[0];
-    const iniciais = partes.slice(1).map(nome => nome.charAt(0).toUpperCase() + '.').join(' ');
-    
-    return primeiroNome + ' ' + iniciais;
-}
+//
+// Decisão de produto (JOs):
+// - Cadastro pede apenas APELIDO (nome do coração) — Jesus chamava pelo nome
+//   do coração. Tira atrito do funil e cria intimidade no chat.
+// - Nome COMPLETO só é solicitado quando user vai assinar Premium (Stripe
+//   precisa pra emissão de nota / titularidade). TODO: pagamento.js deve
+//   mostrar modal "Nome completo para emissão de nota" antes do checkout.
 
 // Criar conta
 async function criarConta() {
-    const nome = document.getElementById('acesso-nome').value.trim();
+    const apelido = document.getElementById('acesso-nome').value.trim();
     const telefone = document.getElementById('acesso-telefone').value.trim();
     const email = document.getElementById('acesso-email').value.trim();
     const senha = document.getElementById('acesso-senha').value;
     const senhaConfirma = document.getElementById('acesso-senha-confirma').value;
     const btnCriar = document.getElementById('btn-criar-conta');
     const erroEl = document.getElementById('acesso-erro');
-    
+
     // Limpar erros
     erroEl.classList.remove('show');
     erroEl.textContent = '';
-    
+
     // Validações
-    if (!nome) {
-        mostrarErroAcesso('Por favor, digite seu nome');
+    if (!apelido || apelido.length < 2) {
+        mostrarErroAcesso('Digite como você gostaria que Maria te chame (mín. 2 letras)');
         return;
     }
-    
+
     // Validar telefone (mínimo 14 caracteres com máscara: (11) 99999-9999)
     const telefoneNumeros = telefone.replace(/\D/g, '');
     if (!telefone || telefoneNumeros.length < 10) {
         mostrarErroAcesso('Por favor, digite um telefone válido com DDD');
         return;
     }
-    
+
     if (!email || !email.includes('@')) {
         mostrarErroAcesso('Por favor, digite um email válido');
         return;
     }
-    
+
     if (senha.length < 6) {
         mostrarErroAcesso('A senha deve ter no mínimo 6 caracteres');
         return;
     }
-    
+
     if (senha !== senhaConfirma) {
         mostrarErroAcesso('As senhas não coincidem');
         return;
     }
-    
+
     // Desabilitar botão e mostrar loading
     btnCriar.disabled = true;
     btnCriar.innerHTML = '<div class="spinner"></div> Criando conta...';
-    
+
     try {
         // Aguardar Firebase inicializar
         if (!FirebaseService.initialized) {
             await FirebaseService.init();
         }
-        
-        // Formatar nome
-        const nomeFormatado = formatarNome(nome);
-        
-        // Criar conta no Firebase
-        const result = await AuthService.registerWithEmail(email, senha, nomeFormatado);
-        
+
+        // Criar conta no Firebase (displayName = apelido — nome completo só vem no Premium)
+        const result = await AuthService.registerWithEmail(email, senha, apelido);
+
         if (result.success) {
             // Salvar dados localmente para usar no onboarding
-            localStorage.setItem('maria_user_nome', nomeFormatado);
+            // 'maria_user_nome' guarda o apelido (que é como Maria vai chamar)
+            localStorage.setItem('maria_user_nome', apelido);
+            localStorage.setItem('maria_user_apelido', apelido);
             localStorage.setItem('maria_user_email', email);
             localStorage.setItem('maria_user_telefone', telefone);
             
@@ -3390,15 +3379,15 @@ function selecionarFilhos(temFilhos) {
 
 // ==================== FINALIZAR CADASTRO ====================
 function finalizarCadastro() {
-    // Usar nome do cadastro (salvo no localStorage)
-    userProfile.nome = localStorage.getItem('maria_user_nome') || 'Devoto(a)';
-
-    // Apelido opcional (nome do coração — como a Maria vai chamar)
-    const apelidoEl = document.getElementById('input-apelido');
-    userProfile.apelido = (apelidoEl && apelidoEl.value.trim()) || '';
-
-    // Nome usado nas saudações: apelido se houver, senão primeiro nome do cadastro
-    userProfile.primeiroNome = userProfile.apelido || userProfile.nome.split(' ')[0];
+    // Cadastro agora pede APELIDO (nome do coração) direto — não há mais nome completo
+    // O apelido fica em 'maria_user_nome' (compat) e em 'maria_user_apelido'
+    const apelido = localStorage.getItem('maria_user_apelido')
+                 || localStorage.getItem('maria_user_nome')
+                 || 'Devoto(a)';
+    userProfile.nome = apelido;
+    userProfile.apelido = apelido;
+    // Nome usado nas saudações = apelido (sem split — já é uma palavra)
+    userProfile.primeiroNome = apelido;
 
     const faltandoGenero = !userProfile.genero;
     const faltandoEstado = !userProfile.estadoCivil;
