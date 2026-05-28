@@ -2338,6 +2338,13 @@
                 </div>
             </div>
 
+            <!-- ==================== APELIDO (nome do coração) ==================== -->
+            <div>
+                <label class="onb-label">💛 Como gostaria que eu te chame?</label>
+                <input type="text" id="input-apelido" placeholder="Ex: Leda, Cris, Dudu..." class="onb-input" maxlength="30" autocomplete="nickname">
+                <p style="font-size:12px; color:#7a3a0a; margin-top:4px; opacity:0.85; font-style:italic;">Opcional — Jesus chamava pelo nome do coração ✨</p>
+            </div>
+
             <!-- ==================== CHECKBOX DE POLÍTICA DE PRIVACIDADE ==================== -->
             <div id="privacy-container" class="privacy-checkbox-container" onclick="togglePrivacyCheckbox()">
                 <div id="privacy-checkbox" class="privacy-checkbox">
@@ -2849,12 +2856,15 @@ async function fazerLogin() {
                 // 1. Restaurar PERFIL
                 const perfilRecuperado = {
                     nome: userData.perfil.nome || result.user.displayName,
+                    apelido: userData.perfil.apelido || '',
                     genero: userData.perfil.genero,
                     estadoCivil: userData.perfil.estadoCivil,
                     temFilhos: userData.perfil.temFilhos,
                     aceitouPrivacidade: true,
                     cadastroCompleto: true
                 };
+                // primeiroNome usado nas saudações: apelido > primeiro nome do cadastro
+                perfilRecuperado.primeiroNome = perfilRecuperado.apelido || (perfilRecuperado.nome || '').split(' ')[0];
                 localStorage.setItem('maria_user_profile', JSON.stringify(perfilRecuperado));
                 localStorage.setItem('maria_user_nome', perfilRecuperado.nome);
                 userProfile = perfilRecuperado;
@@ -2908,11 +2918,11 @@ async function fazerLogin() {
                 let saudacao;
                 
                 if (hora >= 5 && hora < 12) {
-                    saudacao = `Bom dia, ${tratamento} ${perfilRecuperado.nome}! Que bênção receber-te novamente. Como está seu coração hoje?`;
+                    saudacao = `Bom dia, ${tratamento} ${perfilRecuperado.primeiroNome}! Que bênção receber-te novamente. Como está seu coração hoje?`;
                 } else if (hora >= 12 && hora < 18) {
-                    saudacao = `Boa tarde, ${tratamento} ${perfilRecuperado.nome}! Que alegria te ver novamente. O que traz você aqui hoje?`;
+                    saudacao = `Boa tarde, ${tratamento} ${perfilRecuperado.primeiroNome}! Que alegria te ver novamente. O que traz você aqui hoje?`;
                 } else {
-                    saudacao = `Boa noite, ${tratamento} ${perfilRecuperado.nome}! Fico feliz que tenhas vindo falar comigo. Como posso te ajudar?`;
+                    saudacao = `Boa noite, ${tratamento} ${perfilRecuperado.primeiroNome}! Fico feliz que tenhas vindo falar comigo. Como posso te ajudar?`;
                 }
                 
                 adicionarMensagem('assistant', saudacao);
@@ -3382,9 +3392,13 @@ function selecionarFilhos(temFilhos) {
 function finalizarCadastro() {
     // Usar nome do cadastro (salvo no localStorage)
     userProfile.nome = localStorage.getItem('maria_user_nome') || 'Devoto(a)';
-    
-    // Extrair apenas o primeiro nome (sem sobrenome/inicial)
-    userProfile.primeiroNome = userProfile.nome.split(' ')[0];
+
+    // Apelido opcional (nome do coração — como a Maria vai chamar)
+    const apelidoEl = document.getElementById('input-apelido');
+    userProfile.apelido = (apelidoEl && apelidoEl.value.trim()) || '';
+
+    // Nome usado nas saudações: apelido se houver, senão primeiro nome do cadastro
+    userProfile.primeiroNome = userProfile.apelido || userProfile.nome.split(' ')[0];
 
     const faltandoGenero = !userProfile.genero;
     const faltandoEstado = !userProfile.estadoCivil;
@@ -3415,6 +3429,7 @@ function finalizarCadastro() {
         
         firebase.firestore().collection('usuarios').doc(userId).set({
             nome: userProfile.nome,
+            apelido: userProfile.apelido || '',
             email: firebase.auth().currentUser.email || '',
             telefone: telefone,
             genero: userProfile.genero,
