@@ -405,7 +405,7 @@ const UserDataService = {
         
         try {
             // Perfil
-            const perfilLocal = localStorage.getItem('mariaPerfil');
+            const perfilLocal = localStorage.getItem('maria_user_profile');
             if (perfilLocal) {
                 await this.updateProfile(JSON.parse(perfilLocal));
             }
@@ -466,7 +466,7 @@ const UserDataService = {
             
             // Perfil
             if (userData.perfil) {
-                localStorage.setItem('mariaPerfil', JSON.stringify(userData.perfil));
+                localStorage.setItem('maria_user_profile', JSON.stringify(userData.perfil));
             }
             
             // Estatísticas

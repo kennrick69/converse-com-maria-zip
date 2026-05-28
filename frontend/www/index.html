@@ -26,7 +26,6 @@
     <script src="firebase-auth-ui.js" defer></script>
     
     <!-- Botton Navigation -->
-    <script src="icones.js?v=1" defer></script>
     <script src="bottom-navigation.js?v=2" defer></script>
     
     <!-- Scripts de funcionalidades -->
@@ -2530,6 +2529,11 @@ window.addEventListener('load', function() {
     if (track) {
         const originalContent = track.innerHTML;
         track.innerHTML = originalContent + originalContent;
+    }
+    
+    // Inicializa BibliotecaCrista pra restaurar grifos do localStorage
+    if (window.BibliotecaCrista && typeof BibliotecaCrista.init === 'function') {
+        try { BibliotecaCrista.init(); } catch (e) { console.warn('BibliotecaCrista.init falhou:', e); }
     }
     
     // Verificar se é primeiro acesso ou usuário já cadastrado

@@ -275,6 +275,11 @@ function abrirModalMaisRecursos() {
             
             <div class="modal-mais-body">
                 <div class="modal-mais-grid">
+                    <button class="modal-mais-item" onclick="fecharModalMais(); if(window.BibliotecaCrista) BibliotecaCrista.abrir();">
+                        <div class="modal-mais-item-icon">📚</div>
+                        <span class="modal-mais-item-label">Biblioteca</span>
+                    </button>
+
                     <button class="modal-mais-item" onclick="fecharModalMais(); if(window.abrirConquistas) abrirConquistas();">
                         <div class="modal-mais-item-icon">🏅</div>
                         <span class="modal-mais-item-label">Conquistas</span>
