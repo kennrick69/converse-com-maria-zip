@@ -11,7 +11,7 @@
 // 5. Copie as credenciais e cole abaixo
 
 const firebaseConfig = {
-    apiKey: "AIzaSy8PHjPeMi3Vv9Eccml08uALLP-pSnGWAFQ",
+    apiKey: "AIzaSyBPHjPeMi3Vv9Eccml08uALLP-pSnGWAFQ",
     authDomain: "converse-com-maria.firebaseapp.com",
     projectId: "converse-com-maria",
     storageBucket: "converse-com-maria.firebasestorage.app",
@@ -91,6 +91,13 @@ const FirebaseService = {
         setTimeout(() => {
             UserDataService.syncLocalToCloud();
         }, 1000);
+        
+        // Restaurar dados do Firebase para local
+        setTimeout(() => {
+            if (window.restaurarDadosDoFirebase) {
+                restaurarDadosDoFirebase();
+            }
+        }, 2000);
     },
     
     // Callback quando usuário desloga

@@ -1,0 +1,52 @@
+<svg width="32" height="32" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ring1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="50%" style="stop-color:#FFA500"/>
+      <stop offset="100%" style="stop-color:#FFD700"/>
+    </linearGradient>
+    <linearGradient id="ring2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFEC8B"/>
+      <stop offset="50%" style="stop-color:#FFD700"/>
+      <stop offset="100%" style="stop-color:#FFEC8B"/>
+    </linearGradient>
+    <linearGradient id="casadoHeart" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF69B4"/>
+      <stop offset="100%" style="stop-color:#FF1493"/>
+    </linearGradient>
+    <filter id="ringGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Brilhos -->
+  <circle cx="8" cy="10" r="2.5" fill="#FFD700" opacity="0.6"/>
+  <circle cx="56" cy="8" r="2" fill="#FFD700" opacity="0.5"/>
+  <circle cx="10" cy="54" r="2" fill="#FF69B4" opacity="0.5"/>
+  <circle cx="54" cy="52" r="2.5" fill="#FF69B4" opacity="0.5"/>
+  
+  <!-- Estrelinhas -->
+  <path d="M6 30L8 34L6 38L10 36L14 38L12 34L14 30L10 32L6 30Z" fill="#FFD700"/>
+  <path d="M50 30L52 34L50 38L54 36L58 38L56 34L58 30L54 32L50 30Z" fill="#FFD700"/>
+  
+  <!-- Aliança 1 (esquerda) -->
+  <circle cx="24" cy="36" r="14" fill="none" stroke="url(#ring1)" stroke-width="6" filter="url(#ringGlow)"/>
+  <ellipse cx="18" cy="30" rx="3" ry="2" fill="white" opacity="0.4"/>
+  
+  <!-- Aliança 2 (direita, entrelaçada) -->
+  <circle cx="40" cy="36" r="14" fill="none" stroke="url(#ring2)" stroke-width="6" filter="url(#ringGlow)"/>
+  <ellipse cx="46" cy="30" rx="3" ry="2" fill="white" opacity="0.4"/>
+  
+  <!-- Coração no centro (união) -->
+  <path d="M28 14 Q28 8 32 8 Q35 8 35 12 Q35 8 38 8 Q42 8 42 14 Q42 20 35 26 Q28 20 28 14Z" 
+        fill="url(#casadoHeart)" filter="url(#ringGlow)"/>
+  <ellipse cx="30" cy="12" rx="2" ry="1.5" fill="white" opacity="0.4"/>
+  
+  <!-- Brilhos nas alianças -->
+  <circle cx="16" cy="32" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="48" cy="32" r="1.5" fill="white" opacity="0.7"/>
+  
+  <!-- Laço/fita embaixo -->
+  <path d="M26 54 Q32 50 38 54 Q32 58 26 54Z" fill="#FF69B4" opacity="0.6"/>
+</svg>

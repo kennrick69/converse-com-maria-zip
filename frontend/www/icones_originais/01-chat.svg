@@ -1,0 +1,44 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo com brilho suave -->
+  <defs>
+    <linearGradient id="chatBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFE4B5"/>
+      <stop offset="100%" style="stop-color:#FFD700"/>
+    </linearGradient>
+    <linearGradient id="chatHeart" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B9D"/>
+      <stop offset="100%" style="stop-color:#E91E63"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Brilhos de fundo -->
+  <circle cx="12" cy="12" r="3" fill="#FFD700" opacity="0.6"/>
+  <circle cx="52" cy="8" r="2" fill="#FFD700" opacity="0.5"/>
+  <circle cx="56" cy="48" r="2.5" fill="#FFD700" opacity="0.4"/>
+  
+  <!-- Balão de conversa principal -->
+  <path d="M10 18C10 13.5817 13.5817 10 18 10H46C50.4183 10 54 13.5817 54 18V36C54 40.4183 50.4183 44 46 44H30L18 54V44H18C13.5817 44 10 40.4183 10 36V18Z" 
+        fill="url(#chatBg)" 
+        stroke="#DAA520" 
+        stroke-width="2"
+        filter="url(#glow)"/>
+  
+  <!-- Coração no centro do balão -->
+  <path d="M32 38C32 38 22 31 22 24.5C22 21.5 24.5 19 27.5 19C29.5 19 31 20 32 21.5C33 20 34.5 19 36.5 19C39.5 19 42 21.5 42 24.5C42 31 32 38 32 38Z" 
+        fill="url(#chatHeart)"
+        filter="url(#glow)"/>
+  
+  <!-- Brilho no coração -->
+  <ellipse cx="27" cy="23" rx="2" ry="1.5" fill="white" opacity="0.6"/>
+  
+  <!-- Estrelinhas decorativas -->
+  <path d="M8 28L9.5 31L8 34L10.5 32.5L13 34L11.5 31L13 28L10.5 29.5L8 28Z" fill="#FFD700"/>
+  <path d="M51 16L52 18L51 20L53 19L55 20L54 18L55 16L53 17L51 16Z" fill="#FFD700"/>
+</svg>

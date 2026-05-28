@@ -89,13 +89,30 @@ const SantuarioVelas = {
 
     // Velas acesas pelo usuário
     velasAcesas: [],
+    
+    // Velas simuladas (sempre aparecem para dar vida ao santuário)
+    velasFake: [
+        { id: 'fake-1', tipo: 'simples', intencao: 'Pela paz mundial e conversão dos pecadores', oferecente: 'Maria S.', acesa: Date.now() - 2*60*60*1000, expira: Date.now() + 22*60*60*1000, fake: true },
+        { id: 'fake-2', tipo: 'devocao', intencao: 'Pela cura da minha mãe que está doente', oferecente: 'João P.', acesa: Date.now() - 5*60*60*1000, expira: Date.now() + 67*60*60*1000, fake: true },
+        { id: 'fake-3', tipo: 'gratidao', intencao: 'Agradeço pela graça alcançada!', oferecente: 'Ana L.', acesa: Date.now() - 8*60*60*1000, expira: Date.now() + 64*60*60*1000, fake: true },
+        { id: 'fake-4', tipo: 'simples', intencao: 'Pelo meu emprego e sustento da família', oferecente: 'Carlos M.', acesa: Date.now() - 12*60*60*1000, expira: Date.now() + 12*60*60*1000, fake: true },
+        { id: 'fake-5', tipo: 'rosa', intencao: 'Em honra à Nossa Senhora das Graças', oferecente: 'Teresa R.', acesa: Date.now() - 24*60*60*1000, expira: Date.now() + 144*60*60*1000, fake: true },
+        { id: 'fake-6', tipo: 'aparecida', intencao: 'Pela proteção do Brasil e de todas as famílias brasileiras', oferecente: 'Conceição A.', acesa: Date.now() - 4*60*60*1000, expira: Date.now() + 284*60*60*1000, fake: true },
+        { id: 'fake-7', tipo: 'fatima', intencao: 'Pelos segredos de Fátima e pela conversão da Rússia', oferecente: 'Lúcia F.', acesa: Date.now() - 6*60*60*1000, expira: Date.now() + 306*60*60*1000, fake: true },
+        { id: 'fake-8', tipo: 'devocao', intencao: 'Pelos meus filhos e netos', oferecente: 'José A.', acesa: Date.now() - 18*60*60*1000, expira: Date.now() + 54*60*60*1000, fake: true },
+        { id: 'fake-9', tipo: 'aparecida', intencao: 'Agradeço a Nossa Senhora Aparecida pela graça recebida!', oferecente: 'Benedita M.', acesa: Date.now() - 10*60*60*1000, expira: Date.now() + 278*60*60*1000, fake: true },
+        { id: 'fake-10', tipo: 'simples', intencao: 'Pela saúde de toda minha família', oferecente: 'Paula C.', acesa: Date.now() - 6*60*60*1000, expira: Date.now() + 18*60*60*1000, fake: true }
+    ],
+    
+    // Listener Firebase
+    unsubscribe: null,
 
     // Inicializar
     init() {
         this.carregarVelas();
     },
 
-    // Carregar velas salvas
+    // Carregar velas salvas (localStorage como fallback)
     carregarVelas() {
         const salvas = localStorage.getItem('mariaVelas');
         if (salvas) {
@@ -106,6 +123,89 @@ const SantuarioVelas = {
             this.salvarVelas();
         }
     },
+    
+    // Carregar velas do Firebase
+    async carregarVelasFirebase() {
+        if (typeof firebase === 'undefined' || !firebase.firestore) {
+            console.log('Firebase não disponível, usando localStorage');
+            return;
+        }
+        
+        try {
+            const db = firebase.firestore();
+            const agora = Date.now();
+            
+            const snapshot = await db.collection('velas')
+                .where('expira', '>', agora)
+                .orderBy('expira', 'desc')
+                .limit(50)
+                .get();
+            
+            const velasFirebase = [];
+            snapshot.forEach(doc => {
+                velasFirebase.push({ id: doc.id, ...doc.data() });
+            });
+            
+            // Mesclar com velas locais (evitar duplicatas)
+            const idsFirebase = new Set(velasFirebase.map(v => v.id));
+            const velasLocais = this.velasAcesas.filter(v => !idsFirebase.has(v.id));
+            this.velasAcesas = [...velasFirebase, ...velasLocais];
+            
+            console.log(`🕯️ ${this.velasAcesas.length} velas carregadas`);
+        } catch (error) {
+            console.error('Erro ao carregar velas Firebase:', error);
+        }
+    },
+    
+    // Escutar mudanças em tempo real
+    escutarVelas() {
+        if (typeof firebase === 'undefined' || !firebase.firestore) return;
+        
+        const db = firebase.firestore();
+        const agora = Date.now();
+        
+        this.unsubscribe = db.collection('velas')
+            .where('expira', '>', agora)
+            .orderBy('expira', 'desc')
+            .limit(50)
+            .onSnapshot(snapshot => {
+                const velasFirebase = [];
+                snapshot.forEach(doc => {
+                    velasFirebase.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Mesclar com locais
+                const idsFirebase = new Set(velasFirebase.map(v => v.id));
+                const velasLocais = this.velasAcesas.filter(v => !v.id || !idsFirebase.has(v.id));
+                this.velasAcesas = [...velasFirebase, ...velasLocais];
+                
+                this.atualizarContador();
+            }, error => {
+                console.error('Erro listener velas:', error);
+            });
+    },
+    
+    // Parar de escutar
+    pararEscuta() {
+        if (this.unsubscribe) {
+            this.unsubscribe();
+            this.unsubscribe = null;
+        }
+    },
+    
+    // Atualizar contador
+    atualizarContador() {
+        const total = this.velasAcesas.length + this.velasFake.length;
+        const contador = document.getElementById('contador-velas');
+        if (contador) {
+            contador.textContent = `${total} ${total === 1 ? 'vela acesa' : 'velas acesas'} neste santuário`;
+        }
+    },
+    
+    // Obter todas as velas (reais + fake)
+    obterTodasVelas() {
+        return [...this.velasAcesas, ...this.velasFake].sort((a, b) => b.acesa - a.acesa);
+    },
 
     // Salvar velas
     salvarVelas() {
@@ -113,8 +213,17 @@ const SantuarioVelas = {
     },
 
     // Abrir santuário
-    abrir() {
+    async abrir() {
         this.carregarVelas();
+        await this.carregarVelasFirebase();
+        this.escutarVelas();
+        
+        // Se já existe, só atualizar o conteúdo (sem piscar)
+        const existente = document.getElementById('santuario-velas');
+        if (existente) {
+            this.atualizarConteudoSantuario();
+            return;
+        }
         
         const modal = document.createElement('div');
         modal.id = 'santuario-velas';
@@ -129,9 +238,9 @@ const SantuarioVelas = {
             
             <!-- Conteúdo -->
             <div class="relative h-full flex flex-col">
-                <!-- Header -->
-                <div class="flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent">
-                    <button onclick="SantuarioVelas.fechar()" class="p-2 bg-white/10 backdrop-blur rounded-full hover:bg-white/20 transition-all">
+                <!-- Header com safe-area para notch -->
+                <div class="flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent" style="padding-top: calc(1rem + env(safe-area-inset-top, 0px));">
+                    <button onclick="SantuarioVelas.fechar()" class="p-2 bg-white/10  rounded-full hover:bg-white/20 transition-all">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                     <div class="text-center">
@@ -144,38 +253,41 @@ const SantuarioVelas = {
                 </div>
                 
                 <!-- Altar com velas acesas -->
-                <div class="flex-1 overflow-y-auto px-4 pb-4">
+                <div class="flex-1 overflow-y-auto px-4 pb-24">
                     <!-- Imagem de Nossa Senhora -->
                     <div class="relative flex justify-center mb-6">
                         <div class="relative">
-                            <div class="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-200/30 to-yellow-500/20 flex items-center justify-center backdrop-blur-sm border border-yellow-400/30 shadow-2xl maria-glow">
+                            <div class="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-200/30 to-yellow-500/20 flex items-center justify-center  border border-yellow-400/30 shadow-2xl maria-glow">
                                 <span class="text-7xl">👑</span>
                             </div>
-                            <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur px-3 py-1 rounded-full">
-                                <p class="text-yellow-300 text-xs font-semibold">Nossa Senhora</p>
+                            <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-black/60  px-3 py-1 rounded-full">
+                                <p class="text-yellow-300 text-xs font-semibold whitespace-nowrap">Nossa Senhora</p>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Velas acesas -->
-                    ${this.renderizarVelasAcesas()}
-                    
-                    <!-- Botão acender nova vela -->
-                    <button onclick="SantuarioVelas.abrirEscolhaVela()" class="w-full py-4 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 text-black font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 mb-6 acender-btn">
-                        <span class="text-2xl">🕯️</span>
-                        <span>Acender Nova Vela</span>
-                        <span class="text-2xl">✨</span>
-                    </button>
+                    <div id="velas-container">
+                        ${this.renderizarVelasAcesas()}
+                    </div>
                     
                     <!-- Intenções da comunidade -->
-                    <div class="bg-white/5 backdrop-blur rounded-2xl p-4 border border-white/10">
+                    <div class="bg-white/5  rounded-2xl p-4 border border-white/10">
                         <h3 class="text-white font-bold mb-3 flex items-center gap-2">
                             <span>🙏</span> Velas da Comunidade
                         </h3>
-                        <p class="text-white/60 text-sm text-center py-4">
-                            ${this.velasAcesas.length > 0 ? `${this.velasAcesas.length} ${this.velasAcesas.length === 1 ? 'vela acesa' : 'velas acesas'} neste santuário` : 'Seja o primeiro a acender uma vela hoje'}
+                        <p class="text-white/60 text-sm text-center py-4" id="contador-velas">
+                            ${this.obterTodasVelas().length} velas acesas neste santuário
                         </p>
                     </div>
+                </div>
+                
+                <!-- Botão fixo no bottom com safe-area -->
+                <div class="fixed left-1/2 -translate-x-1/2 z-20" style="bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));">
+                    <button onclick="SantuarioVelas.abrirEscolhaVela()" class="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black rounded-full font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 acender-btn whitespace-nowrap">
+                        <span>🕯️</span>
+                        <span>Acender Vela</span>
+                    </button>
                 </div>
             </div>
             
@@ -195,13 +307,12 @@ const SantuarioVelas = {
                 }
                 
                 .acender-btn {
-                    background-size: 200% 100%;
-                    animation: shimmer 3s linear infinite;
+                    animation: pulse-btn 2s ease-in-out infinite;
                 }
                 
-                @keyframes shimmer {
-                    0% { background-position: 200% 0; }
-                    100% { background-position: -200% 0; }
+                @keyframes pulse-btn {
+                    0%, 100% { box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4); }
+                    50% { box-shadow: 0 4px 25px rgba(251, 191, 36, 0.7); }
                 }
                 
                 .particles-container {
@@ -273,6 +384,7 @@ const SantuarioVelas = {
                     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
                     animation: chama-dance 0.5s ease-in-out infinite alternate;
                     filter: blur(1px);
+                    will-change: transform;
                 }
                 
                 .chama-inner {
@@ -285,6 +397,7 @@ const SantuarioVelas = {
                     background: linear-gradient(180deg, transparent 0%, #FFF 50%, #FFFEF0 100%);
                     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
                     animation: chama-inner-dance 0.3s ease-in-out infinite alternate;
+                    will-change: transform;
                 }
                 
                 .chama-glow {
@@ -297,11 +410,12 @@ const SantuarioVelas = {
                     background: radial-gradient(ellipse at center bottom, var(--cor-chama) 0%, transparent 70%);
                     opacity: 0.6;
                     animation: glow-pulse 2s ease-in-out infinite;
+                    will-change: transform, opacity;
                 }
                 
                 @keyframes chama-dance {
-                    0% { transform: translateX(-50%) scaleX(1) rotate(-2deg); height: 35px; }
-                    100% { transform: translateX(-50%) scaleX(0.9) rotate(2deg); height: 38px; }
+                    0% { transform: translateX(-50%) scaleX(1) scaleY(1) rotate(-2deg); }
+                    100% { transform: translateX(-50%) scaleX(0.9) scaleY(1.08) rotate(2deg); }
                 }
                 
                 @keyframes chama-inner-dance {
@@ -337,7 +451,8 @@ const SantuarioVelas = {
         const container = document.getElementById('particles');
         if (!container) return;
         
-        for (let i = 0; i < 20; i++) {
+        // Reduzido de 20 para 8 para melhor performance
+        for (let i = 0; i < 8; i++) {
             const particle = document.createElement('div');
             particle.className = 'particle';
             particle.style.left = Math.random() * 100 + '%';
@@ -349,7 +464,9 @@ const SantuarioVelas = {
 
     // Renderizar velas acesas
     renderizarVelasAcesas() {
-        if (this.velasAcesas.length === 0) {
+        const todasVelas = this.obterTodasVelas();
+        
+        if (todasVelas.length === 0) {
             return `
                 <div class="text-center py-8 mb-6">
                     <p class="text-white/40 text-sm">Nenhuma vela acesa ainda</p>
@@ -360,18 +477,20 @@ const SantuarioVelas = {
         
         return `
             <div class="grid grid-cols-3 gap-4 mb-6">
-                ${this.velasAcesas.map((vela, index) => this.renderizarVelaAcesa(vela, index)).join('')}
+                ${todasVelas.slice(0, 12).map((vela, index) => this.renderizarVelaAcesa(vela, index)).join('')}
             </div>
+            ${todasVelas.length > 12 ? `<p class="text-white/40 text-xs text-center mb-4">+${todasVelas.length - 12} outras velas acesas</p>` : ''}
         `;
     },
 
     // Renderizar uma vela acesa
     renderizarVelaAcesa(vela, index) {
-        const tipo = this.tiposVelas[vela.tipo];
+        const tipo = this.tiposVelas[vela.tipo] || this.tiposVelas.simples;
         const tempoRestante = this.calcularTempoRestante(vela.expira);
+        const velaId = vela.id || `local-${index}`;
         
         return `
-            <div class="vela-card flex flex-col items-center p-3 bg-white/5 rounded-xl backdrop-blur cursor-pointer hover:bg-white/10 transition-all" onclick="SantuarioVelas.verIntencao(${index})">
+            <div class="vela-card flex flex-col items-center p-3 bg-white/5 rounded-xl  cursor-pointer hover:bg-white/10 transition-all" onclick="SantuarioVelas.verIntencaoById('${velaId}')">
                 <div class="vela-container mb-2" style="--cor-vela: ${tipo.cor}; --cor-vela-dark: ${this.escurecerCor(tipo.cor)}; --cor-chama: ${tipo.corChama};">
                     <div class="chama-container">
                         <div class="chama-glow"></div>
@@ -387,6 +506,166 @@ const SantuarioVelas = {
                 <p class="text-yellow-400/60 text-[10px]">${tempoRestante}</p>
             </div>
         `;
+    },
+    
+    // Ver intenção por ID (suporta velas reais e fake)
+    verIntencaoById(id) {
+        // Buscar em todas as velas
+        const todasVelas = this.obterTodasVelas();
+        const vela = todasVelas.find(v => v.id === id || `local-${todasVelas.indexOf(v)}` === id);
+        
+        if (!vela) return;
+        
+        const tipo = this.tiposVelas[vela.tipo] || this.tiposVelas.simples;
+        
+        const modal = document.createElement('div');
+        modal.id = 'ver-intencao';
+        modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-4';
+        modal.style.background = 'rgba(0,0,0,0.9)';
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        
+        modal.innerHTML = `
+            <div class="bg-gradient-to-br from-gray-900 via-purple-900/30 to-gray-900 rounded-3xl w-full max-w-sm p-6">
+                <div class="flex justify-center mb-4">
+                    <div class="vela-container" style="--cor-vela: ${tipo.cor}; --cor-vela-dark: ${this.escurecerCor(tipo.cor)}; --cor-chama: ${tipo.corChama};">
+                        <div class="chama-container">
+                            <div class="chama-glow"></div>
+                            <div class="chama"></div>
+                            <div class="chama-inner"></div>
+                        </div>
+                        <div class="vela-corpo" style="width: 26px; height: ${tipo.altura * 0.6}px;">
+                            <div class="vela-pavio"></div>
+                        </div>
+                        <div class="vela-reflexo"></div>
+                    </div>
+                </div>
+                
+                <h3 class="text-white font-bold text-center mb-1">${tipo.nome}</h3>
+                <p class="text-yellow-400/80 text-xs text-center mb-4">${this.calcularTempoRestante(vela.expira)}</p>
+                
+                <div class="bg-white/10 rounded-xl p-4 mb-4">
+                    <p class="text-white/60 text-xs mb-1">Intenção:</p>
+                    <p class="text-white">"${vela.intencao}"</p>
+                </div>
+                
+                <p class="text-white/40 text-xs text-center mb-4">Oferecida por: ${vela.oferecente}</p>
+                
+                <button onclick="this.parentElement.parentElement.remove()" class="w-full py-3 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-all mb-2">
+                    Fechar
+                </button>
+                
+                ${!vela.fake ? `
+                <button onclick="SantuarioVelas.reportarVelaById('${id}')" class="w-full py-2 text-white/40 text-xs hover:text-white/60 transition-all">
+                    Reportar conteúdo
+                </button>
+                ` : ''}
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    },
+    
+    // Reportar vela por ID
+    reportarVelaById(id) {
+        const todasVelas = this.obterTodasVelas();
+        const vela = todasVelas.find(v => v.id === id);
+        
+        if (!vela) return;
+        
+        document.getElementById('ver-intencao')?.remove();
+        
+        const modal = document.createElement('div');
+        modal.id = 'modal-reportar-vela';
+        modal.className = 'fixed inset-0 z-[70] flex items-center justify-center p-4';
+        modal.style.background = 'rgba(0,0,0,0.85)';
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        
+        modal.innerHTML = `
+            <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-5 max-w-sm w-full">
+                <h3 class="text-white font-bold text-lg mb-3">🚩 Reportar conteúdo</h3>
+                <p class="text-white/60 text-sm mb-4">Esta intenção será enviada para moderação.</p>
+                
+                <div class="bg-white/5 rounded-xl p-3 mb-4">
+                    <p class="text-white/40 text-xs mb-1">Intenção:</p>
+                    <p class="text-white/80 text-sm">"${vela.intencao.substring(0, 100)}${vela.intencao.length > 100 ? '...' : ''}"</p>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="text-white/60 text-xs mb-2 block">Motivo:</label>
+                    <select id="motivo-denuncia-vela" class="w-full bg-white/10 text-white rounded-xl p-3 text-sm border border-white/20">
+                        <option value="conteudo_inapropriado">Conteúdo inapropriado</option>
+                        <option value="linguagem_ofensiva">Linguagem ofensiva</option>
+                        <option value="spam">Spam ou propaganda</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="text-white/60 text-xs mb-2 block">Descreva o problema: <span class="text-red-400">*</span></label>
+                    <textarea id="descricao-denuncia-vela" rows="3" maxlength="300" placeholder="Por favor, explique por que está reportando este conteúdo..." class="w-full bg-white/10 text-white rounded-xl p-3 text-sm border border-white/20 focus:border-red-400 focus:outline-none resize-none"></textarea>
+                    <p class="text-white/40 text-xs mt-1">Mínimo 10 caracteres</p>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="document.getElementById('modal-reportar-vela').remove()" class="flex-1 py-3 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-all">
+                        Cancelar
+                    </button>
+                    <button onclick="SantuarioVelas.enviarReportVelaById('${id}')" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-500 transition-all">
+                        Reportar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    },
+    
+    // Enviar denúncia por ID
+    async enviarReportVelaById(id) {
+        const todasVelas = this.obterTodasVelas();
+        const vela = todasVelas.find(v => v.id === id);
+        
+        if (!vela) return;
+        
+        const motivo = document.getElementById('motivo-denuncia-vela')?.value || 'Não especificado';
+        const descricao = document.getElementById('descricao-denuncia-vela')?.value?.trim() || '';
+        const denunciante = localStorage.getItem('mariaUserName') || 'Anônimo';
+        
+        // Validar descrição obrigatória
+        if (descricao.length < 10) {
+            if (window.showToast) showToast('⚠️ Por favor, descreva o problema (mínimo 10 caracteres)');
+            document.getElementById('descricao-denuncia-vela')?.focus();
+            return;
+        }
+        
+        try {
+            const response = await fetch('https://conversecommaria.com.br/enviar-denuncia.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tipo: 'vela',
+                    conteudo: vela.intencao,
+                    autor: vela.oferecente,
+                    motivo: motivo,
+                    descricao: descricao,
+                    denunciante: denunciante,
+                    velaId: id,
+                    isFake: vela.fake || false
+                })
+            });
+            
+            document.getElementById('modal-reportar-vela')?.remove();
+            
+            if (response.ok) {
+                if (window.showToast) showToast('✅ Denúncia enviada. Obrigado!');
+            } else {
+                if (window.showToast) showToast('❌ Erro ao enviar. Tente novamente.');
+            }
+        } catch (error) {
+            console.error('Erro ao enviar denúncia:', error);
+            document.getElementById('modal-reportar-vela')?.remove();
+            if (window.showToast) showToast('❌ Erro de conexão');
+        }
     },
 
     // Calcular tempo restante
@@ -414,6 +693,9 @@ const SantuarioVelas = {
 
     // Abrir escolha de vela
     abrirEscolhaVela() {
+        // Se já existe, não criar de novo
+        if (document.getElementById('escolha-vela')) return;
+        
         const modal = document.createElement('div');
         modal.id = 'escolha-vela';
         modal.className = 'fixed inset-0 z-[60] flex items-end justify-center';
@@ -423,7 +705,13 @@ const SantuarioVelas = {
         modal.innerHTML = `
             <div class="bg-gradient-to-br from-gray-900 via-purple-900/50 to-gray-900 rounded-t-3xl w-full max-w-lg max-h-[85vh] overflow-y-auto animate-slide-up">
                 <div class="sticky top-0 bg-gradient-to-b from-gray-900 to-transparent p-4 pb-6">
-                    <div class="w-12 h-1 bg-white/30 rounded-full mx-auto mb-4"></div>
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="w-10"></div>
+                        <div class="w-12 h-1 bg-white/30 rounded-full"></div>
+                        <button onclick="SantuarioVelas.fecharEscolhaVela()" class="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full hover:bg-white/20 transition-all">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
                     <h2 class="text-white text-xl font-bold text-center flex items-center justify-center gap-2">
                         <span>✨</span> Escolha sua Vela <span>✨</span>
                     </h2>
@@ -436,10 +724,10 @@ const SantuarioVelas = {
             
             <style>
                 @keyframes slide-up {
-                    from { transform: translateY(100%); }
-                    to { transform: translateY(0); }
+                    from { transform: translateY(20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
                 }
-                .animate-slide-up { animation: slide-up 0.3s ease-out; }
+                .animate-slide-up { animation: slide-up 0.2s ease-out; }
             </style>
         `;
         
@@ -654,7 +942,7 @@ const SantuarioVelas = {
     },
 
     // Acender vela
-    acenderVela(tipoKey) {
+    async acenderVela(tipoKey) {
         const intencao = document.getElementById('input-intencao').value.trim();
         const oferecente = document.getElementById('input-oferecente').value.trim();
         
@@ -690,8 +978,29 @@ const SantuarioVelas = {
             expira: Date.now() + duracaoMs
         };
         
-        this.velasAcesas.push(novaVela);
-        this.salvarVelas();
+        // Salvar no Firebase se disponível
+        let salvoNoFirebase = false;
+        if (typeof firebase !== 'undefined' && firebase.firestore) {
+            try {
+                const db = firebase.firestore();
+                const docRef = await db.collection('velas').add({
+                    ...novaVela,
+                    visivel: true
+                });
+                novaVela.id = docRef.id;
+                salvoNoFirebase = true;
+                console.log('🕯️ Vela salva no Firebase:', docRef.id);
+                // O listener onSnapshot vai adicionar automaticamente, não precisa adicionar manualmente
+            } catch (error) {
+                console.error('Erro ao salvar no Firebase:', error);
+            }
+        }
+        
+        // Só adiciona localmente se NÃO salvou no Firebase (o listener cuida)
+        if (!salvoNoFirebase) {
+            this.velasAcesas.push(novaVela);
+            this.salvarVelas();
+        }
         
         // Registrar vela nas estatísticas
         if (window.EstatisticasOracao) {
@@ -778,56 +1087,23 @@ const SantuarioVelas = {
         
         setTimeout(() => {
             modal.remove();
-            this.fechar();
-            this.abrir(); // Reabrir para mostrar vela nova
+            // Só atualizar conteúdo, sem piscar
+            this.atualizarConteudoSantuario();
             if (window.showToast) showToast('🕯️ Vela acesa! Maria recebeu sua intenção.');
         }, 2500);
     },
-
-    // Ver intenção de uma vela
-    verIntencao(index) {
-        const vela = this.velasAcesas[index];
-        const tipo = this.tiposVelas[vela.tipo];
+    
+    // Atualizar apenas o conteúdo do santuário (sem piscar)
+    atualizarConteudoSantuario() {
+        const velasContainer = document.getElementById('velas-container');
+        if (velasContainer) {
+            velasContainer.innerHTML = this.renderizarVelasAcesas();
+        }
         
-        const modal = document.createElement('div');
-        modal.id = 'ver-intencao';
-        modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-4';
-        modal.style.background = 'rgba(0,0,0,0.9)';
-        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-        
-        modal.innerHTML = `
-            <div class="bg-gradient-to-br from-gray-900 via-purple-900/30 to-gray-900 rounded-3xl w-full max-w-sm p-6">
-                <div class="flex justify-center mb-4">
-                    <div class="vela-container" style="--cor-vela: ${tipo.cor}; --cor-vela-dark: ${this.escurecerCor(tipo.cor)}; --cor-chama: ${tipo.corChama};">
-                        <div class="chama-container">
-                            <div class="chama-glow"></div>
-                            <div class="chama"></div>
-                            <div class="chama-inner"></div>
-                        </div>
-                        <div class="vela-corpo" style="width: 26px; height: ${tipo.altura * 0.6}px;">
-                            <div class="vela-pavio"></div>
-                        </div>
-                        <div class="vela-reflexo"></div>
-                    </div>
-                </div>
-                
-                <h3 class="text-white font-bold text-center mb-1">${tipo.nome}</h3>
-                <p class="text-yellow-400/80 text-xs text-center mb-4">${this.calcularTempoRestante(vela.expira)}</p>
-                
-                <div class="bg-white/10 rounded-xl p-4 mb-4">
-                    <p class="text-white/60 text-xs mb-1">Intenção:</p>
-                    <p class="text-white">"${vela.intencao}"</p>
-                </div>
-                
-                <p class="text-white/40 text-xs text-center mb-4">Oferecida por: ${vela.oferecente}</p>
-                
-                <button onclick="this.parentElement.parentElement.remove()" class="w-full py-3 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-all">
-                    Fechar
-                </button>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
+        const contador = document.getElementById('contador-velas');
+        if (contador) {
+            contador.textContent = `${this.obterTodasVelas().length} velas acesas neste santuário`;
+        }
     },
 
     // Fechar modais
@@ -842,6 +1118,7 @@ const SantuarioVelas = {
     },
 
     fechar() {
+        this.pararEscuta();
         const modal = document.getElementById('santuario-velas');
         if (modal) modal.remove();
     }

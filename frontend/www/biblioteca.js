@@ -43,7 +43,41 @@ const BibliotecaCrista = {
         localStorage.setItem('biblioConfig', JSON.stringify(this.config));
     },
 
+    // F1 (2026-05-25): tenta carregar do Firestore primeiro (controle JOs via
+    // painel admin). Se Firestore vazio/falha, fallback pro Hostinger (legado).
+    async carregarCatalogoDoFirestore() {
+        try {
+            if (!window.firebase || !firebase.firestore) return null;
+            const snap = await firebase.firestore().collection('conteudo_livros').orderBy('ordem', 'asc').get();
+            if (snap.empty) return null;
+            const livros = snap.docs.map(d => {
+                const data = d.data();
+                return {
+                    id: data.id || d.id,
+                    titulo: data.titulo,
+                    autor: data.autor,
+                    capa: data.capa || '📖',
+                    _fonteFirestore: true,
+                    _docId: d.id,
+                    _capitulos: data.capitulos || []
+                };
+            });
+            return livros;
+        } catch (e) {
+            console.warn('[biblioteca] Firestore catálogo falhou, fallback Hostinger:', e.message);
+            return null;
+        }
+    },
+
     async carregarCatalogo() {
+        // 1) Firestore (gerenciado pelo JOs via painel admin)
+        const fromFirestore = await this.carregarCatalogoDoFirestore();
+        if (fromFirestore && fromFirestore.length > 0) {
+            this.catalogo = fromFirestore;
+            localStorage.setItem('biblioCatalogo', JSON.stringify(this.catalogo));
+            return this.catalogo;
+        }
+        // 2) Fallback: Hostinger (legado — funciona mesmo se Firestore vazio)
         try {
             const r = await fetch(this.URL_BASE + '/catalogo.json?t=' + Date.now());
             const d = await r.json();
@@ -55,6 +89,21 @@ const BibliotecaCrista = {
 
     async carregarLivro(id) {
         if (this.livrosCache[id]) return this.livrosCache[id];
+        // 1) Firestore: vê se o item do catálogo veio do Firestore (tem _capitulos embedded)
+        const meta = (this.catalogo || []).find(x => x.id === id);
+        if (meta && meta._fonteFirestore && Array.isArray(meta._capitulos)) {
+            const livro = {
+                id: meta.id,
+                titulo: meta.titulo,
+                autor: meta.autor,
+                capa: meta.capa,
+                capitulos: meta._capitulos
+            };
+            this.livrosCache[id] = livro;
+            this.salvar();
+            return livro;
+        }
+        // 2) Fallback Hostinger
         const r = await fetch(this.URL_BASE + '/' + id + '.json');
         const livro = await r.json();
         this.livrosCache[id] = livro;

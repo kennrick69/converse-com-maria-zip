@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bgGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fcd34d"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
+    </linearGradient>
+    <linearGradient id="trophy" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#fef08a"/>
+      <stop offset="30%" style="stop-color:#fde047"/>
+      <stop offset="50%" style="stop-color:#fef9c3"/>
+      <stop offset="70%" style="stop-color:#fde047"/>
+      <stop offset="100%" style="stop-color:#eab308"/>
+    </linearGradient>
+    <linearGradient id="base" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#a16207"/>
+      <stop offset="100%" style="stop-color:#713f12"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <style>
+    .trofeu { animation: bounce-trofeu 2s ease-in-out infinite; transform-origin: 50px 50px; }
+    .estrela-trofeu { animation: brilhar-estrela 1s ease-in-out infinite alternate; }
+    .confete1 { animation: cair1 2s linear infinite; }
+    .confete2 { animation: cair2 2.5s linear infinite 0.3s; }
+    .confete3 { animation: cair3 1.8s linear infinite 0.6s; }
+    .confete4 { animation: cair4 2.2s linear infinite 0.9s; }
+    .confete5 { animation: cair5 2s linear infinite 1.2s; }
+    .confete6 { animation: cair6 1.9s linear infinite 0.4s; }
+    .brilho { animation: pulse-brilho 0.8s ease-in-out infinite alternate; }
+    
+    @keyframes bounce-trofeu {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-3px) scale(1.02); }
+    }
+    @keyframes brilhar-estrela {
+      0% { opacity: 0.7; transform: scale(1); }
+      100% { opacity: 1; transform: scale(1.1); }
+    }
+    @keyframes cair1 {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100px) rotate(360deg); opacity: 0; }
+    }
+    @keyframes cair2 {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100px) rotate(-360deg); opacity: 0; }
+    }
+    @keyframes cair3 {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100px) rotate(270deg); opacity: 0; }
+    }
+    @keyframes cair4 {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100px) rotate(-270deg); opacity: 0; }
+    }
+    @keyframes cair5 {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100px) rotate(180deg); opacity: 0; }
+    }
+    @keyframes cair6 {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100px) rotate(-180deg); opacity: 0; }
+    }
+    @keyframes pulse-brilho {
+      0% { opacity: 0.3; }
+      100% { opacity: 0.6; }
+    }
+  </style>
+  
+  <circle cx="50" cy="50" r="45" fill="url(#bgGold)" filter="url(#shadow)"/>
+  <circle cx="50" cy="50" r="42" fill="none" stroke="#fef9c3" stroke-width="3" opacity="0.5"/>
+  
+  <!-- Confetes caindo -->
+  <rect x="20" y="10" width="5" height="3" rx="1" fill="#fb7185" class="confete1"/>
+  <rect x="35" y="5" width="4" height="3" rx="1" fill="#60a5fa" class="confete2"/>
+  <rect x="55" y="8" width="5" height="3" rx="1" fill="#4ade80" class="confete3"/>
+  <rect x="70" y="12" width="4" height="3" rx="1" fill="#c084fc" class="confete4"/>
+  <rect x="80" y="6" width="5" height="3" rx="1" fill="#fbbf24" class="confete5"/>
+  <rect x="15" y="15" width="4" height="3" rx="1" fill="#f472b6" class="confete6"/>
+  
+  <g class="trofeu">
+    <!-- Corpo do troféu -->
+    <path d="M35,30 L35,50 Q35,62 50,65 Q65,62 65,50 L65,30 Z" fill="url(#trophy)"/>
+    
+    <!-- Alças do troféu -->
+    <path d="M35,35 Q22,35 22,45 Q22,55 35,55" fill="none" stroke="url(#trophy)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M65,35 Q78,35 78,45 Q78,55 65,55" fill="none" stroke="url(#trophy)" stroke-width="5" stroke-linecap="round"/>
+    
+    <!-- Borda superior do troféu -->
+    <ellipse cx="50" cy="30" rx="17" ry="5" fill="#fef9c3"/>
+    <ellipse cx="50" cy="30" rx="15" ry="4" fill="url(#trophy)"/>
+    
+    <!-- Haste -->
+    <rect x="46" y="65" width="8" height="10" fill="url(#trophy)"/>
+    
+    <!-- Base -->
+    <rect x="35" y="75" width="30" height="8" rx="2" fill="url(#base)"/>
+    <rect x="38" y="77" width="24" height="4" rx="1" fill="#92400e"/>
+    
+    <!-- Estrela no troféu -->
+    <polygon points="50,38 52,44 58,44 53,48 55,54 50,50 45,54 47,48 42,44 48,44" fill="#fff" opacity="0.9" class="estrela-trofeu"/>
+    
+    <!-- Brilhos -->
+    <ellipse cx="40" cy="40" rx="4" ry="8" fill="#fff" opacity="0.4" class="brilho"/>
+    <circle cx="38" cy="36" r="2" fill="#fff" opacity="0.7"/>
+  </g>
+</svg>

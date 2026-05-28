@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bgPurple" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#c084fc"/>
+      <stop offset="100%" style="stop-color:#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fde047"/>
+      <stop offset="50%" style="stop-color:#eab308"/>
+      <stop offset="100%" style="stop-color:#ca8a04"/>
+    </linearGradient>
+    <radialGradient id="perola" cx="30%" cy="30%">
+      <stop offset="0%" style="stop-color:#fff"/>
+      <stop offset="50%" style="stop-color:#f5f5f4"/>
+      <stop offset="100%" style="stop-color:#d6d3d1"/>
+    </radialGradient>
+    <radialGradient id="perola-brilho" cx="30%" cy="30%">
+      <stop offset="0%" style="stop-color:#fff"/>
+      <stop offset="30%" style="stop-color:#fef9c3"/>
+      <stop offset="100%" style="stop-color:#fde047"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    <filter id="glow-filter">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  
+  <style>
+    .conta1 { animation: brilhar 2.1s ease-in-out infinite; }
+    .conta2 { animation: brilhar 2.1s ease-in-out infinite 0.3s; }
+    .conta3 { animation: brilhar 2.1s ease-in-out infinite 0.6s; }
+    .conta4 { animation: brilhar 2.1s ease-in-out infinite 0.9s; }
+    .conta5 { animation: brilhar 2.1s ease-in-out infinite 1.2s; }
+    .conta6 { animation: brilhar 2.1s ease-in-out infinite 1.5s; }
+    .conta7 { animation: brilhar 2.1s ease-in-out infinite 1.8s; }
+    .cruz { animation: brilho-cruz 1.5s ease-in-out infinite alternate; }
+    .conta-pai { animation: pulsar 1s ease-in-out infinite alternate; }
+    
+    @keyframes brilhar {
+      0%, 100% { fill: url(#perola); filter: none; }
+      50% { fill: url(#perola-brilho); filter: url(#glow-filter); }
+    }
+    @keyframes brilho-cruz {
+      0% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+    @keyframes pulsar {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.1); }
+    }
+  </style>
+  
+  <circle cx="50" cy="50" r="45" fill="url(#bgPurple)" filter="url(#shadow)"/>
+  <circle cx="50" cy="50" r="42" fill="none" stroke="#e9d5ff" stroke-width="3" opacity="0.4"/>
+  
+  <!-- Cordão do terço -->
+  <circle cx="50" cy="45" r="22" fill="none" stroke="url(#gold)" stroke-width="3"/>
+  
+  <!-- Contas do terço (animadas em sequência) -->
+  <circle cx="28" cy="45" r="5" class="conta1"/>
+  <circle cx="35" cy="28" r="5" class="conta2"/>
+  <circle cx="50" cy="23" r="5" class="conta3"/>
+  <circle cx="65" cy="28" r="5" class="conta4"/>
+  <circle cx="72" cy="45" r="5" class="conta5"/>
+  <circle cx="65" cy="62" r="5" class="conta6"/>
+  <circle cx="35" cy="62" r="5" class="conta7"/>
+  
+  <!-- Conta maior (Pai Nosso) -->
+  <g class="conta-pai" style="transform-origin: 50px 67px;">
+    <circle cx="50" cy="67" r="6" fill="url(#gold)"/>
+    <circle cx="48" cy="65" r="2" fill="#fff" opacity="0.5"/>
+  </g>
+  
+  <!-- Cordão pendente -->
+  <line x1="50" y1="73" x2="50" y2="82" stroke="url(#gold)" stroke-width="2"/>
+  
+  <!-- Cruz -->
+  <g class="cruz">
+    <rect x="46" y="82" width="8" height="14" rx="1" fill="url(#gold)"/>
+    <rect x="42" y="86" width="16" height="6" rx="1" fill="url(#gold)"/>
+    <rect x="47" y="83" width="2" height="5" fill="#fff" opacity="0.5"/>
+  </g>
+  
+  <!-- Brilhos nas contas -->
+  <circle cx="26" cy="43" r="1.5" fill="#fff" opacity="0.8"/>
+  <circle cx="33" cy="26" r="1.5" fill="#fff" opacity="0.8"/>
+  <circle cx="48" cy="21" r="1.5" fill="#fff" opacity="0.8"/>
+</svg>

@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bgCyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#67e8f9"/>
+      <stop offset="100%" style="stop-color:#0891b2"/>
+    </linearGradient>
+    <linearGradient id="diamond" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0fdff"/>
+      <stop offset="30%" style="stop-color:#67e8f9"/>
+      <stop offset="50%" style="stop-color:#f0fdff"/>
+      <stop offset="70%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#0891b2"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  
+  <style>
+    .diamante { animation: brilhar-diamante 2s ease-in-out infinite; transform-origin: 50px 50px; }
+    .faceta1 { animation: faceta-brilho 1.5s ease-in-out infinite; }
+    .faceta2 { animation: faceta-brilho 1.5s ease-in-out infinite 0.5s; }
+    .faceta3 { animation: faceta-brilho 1.5s ease-in-out infinite 1s; }
+    .sparkle1 { animation: sparkle-move 2s ease-in-out infinite; }
+    .sparkle2 { animation: sparkle-move 2.5s ease-in-out infinite 0.5s; }
+    .sparkle3 { animation: sparkle-move 1.8s ease-in-out infinite 1s; }
+    .brilho-central { animation: pulse-brilho 0.8s ease-in-out infinite alternate; }
+    .raio { animation: raio-luz 1.5s ease-in-out infinite; }
+    
+    @keyframes brilhar-diamante {
+      0%, 100% { transform: scale(1); filter: url(#glow); }
+      50% { transform: scale(1.05); filter: url(#glow); }
+    }
+    @keyframes faceta-brilho {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.8; }
+    }
+    @keyframes sparkle-move {
+      0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+      50% { opacity: 1; transform: translate(-5px, -5px) scale(1.2); }
+      100% { opacity: 0; transform: translate(-10px, -10px) scale(0.5); }
+    }
+    @keyframes pulse-brilho {
+      0% { opacity: 0.6; r: 1.5; }
+      100% { opacity: 1; r: 2.5; }
+    }
+    @keyframes raio-luz {
+      0%, 100% { opacity: 0.3; stroke-width: 1; }
+      50% { opacity: 0.8; stroke-width: 2; }
+    }
+  </style>
+  
+  <circle cx="50" cy="50" r="45" fill="url(#bgCyan)" filter="url(#shadow)"/>
+  <circle cx="50" cy="50" r="42" fill="none" stroke="#a5f3fc" stroke-width="3" opacity="0.5"/>
+  
+  <!-- Raios de luz saindo do diamante -->
+  <line x1="50" y1="18" x2="50" y2="8" stroke="#fff" class="raio"/>
+  <line x1="75" y1="40" x2="85" y2="35" stroke="#fff" class="raio"/>
+  <line x1="25" y1="40" x2="15" y2="35" stroke="#fff" class="raio"/>
+  <line x1="65" y1="75" x2="75" y2="85" stroke="#fff" class="raio"/>
+  <line x1="35" y1="75" x2="25" y2="85" stroke="#fff" class="raio"/>
+  
+  <!-- Diamante principal -->
+  <g class="diamante">
+    <polygon points="50,18 75,40 50,82 25,40" fill="url(#diamond)"/>
+    
+    <!-- Facetas do diamante (brilham em sequência) -->
+    <polygon points="50,18 60,40 50,50 40,40" fill="#f0fdff" class="faceta1"/>
+    <polygon points="75,40 60,40 50,50 65,60" fill="#22d3ee" opacity="0.4" class="faceta2"/>
+    <polygon points="25,40 40,40 50,50 35,60" fill="#67e8f9" opacity="0.5" class="faceta3"/>
+    <line x1="50" y1="50" x2="50" y2="82" stroke="#0891b2" stroke-width="1" opacity="0.3"/>
+  </g>
+  
+  <!-- Brilhos principais -->
+  <polygon points="35,35 38,38 35,41 32,38" fill="#fff" class="brilho-central"/>
+  <circle cx="42" cy="30" r="2" fill="#fff" opacity="0.9" class="brilho-central"/>
+  <circle cx="60" cy="45" r="1.5" fill="#fff" opacity="0.7"/>
+  
+  <!-- Sparkles voando -->
+  <polygon points="20,25 22,28 25,28 22,30 23,33 20,31 17,33 18,30 15,28 18,28" fill="#fff" class="sparkle1"/>
+  <polygon points="80,30 81,32 83,32 81,33 82,35 80,34 78,35 79,33 77,32 79,32" fill="#fff" class="sparkle2"/>
+  <polygon points="25,70 26,72 28,72 26,73 27,75 25,74 23,75 24,73 22,72 24,72" fill="#fff" class="sparkle3"/>
+</svg>

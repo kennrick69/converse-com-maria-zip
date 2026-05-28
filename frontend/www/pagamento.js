@@ -7,8 +7,9 @@
 const PagamentoService = {
     // Configuração
     config: {
-        apiUrl: window.API_URL || '', // Será definido baseado no ambiente
-        stripePublicKey: 'pk_test_xxxxx', // Substituir pela chave pública real
+        // URL do backend no Railway
+        apiUrl: window.API_URL || 'https://converse-com-maria-production.up.railway.app',
+        stripePublicKey: 'pk_test_xxxxx', // Substituir pela chave pública real do Stripe
     },
     
     // Estado
@@ -27,15 +28,15 @@ const PagamentoService = {
             const email = this.getUserEmail();
             
             // Criar sessão no backend
-            const response = await fetch(`${this.config.apiUrl}/api/pagamento/stripe/criar-sessao`, {
+            const response = await fetch(`${this.config.apiUrl}/api/pagamento/criar-sessao`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     plano,
                     userId,
                     email,
-                    successUrl: `${window.location.origin}/pagamento-sucesso`,
-                    cancelUrl: `${window.location.origin}/premium`
+                    successUrl: `${window.location.origin}/?pagamento=sucesso&plano=${plano}`,
+                    cancelUrl: `${window.location.origin}/?pagamento=cancelado`
                 })
             });
             
@@ -72,7 +73,7 @@ const PagamentoService = {
             const nome = this.getUserNome();
             
             // Criar pagamento PIX no backend
-            const response = await fetch(`${this.config.apiUrl}/api/pagamento/pix/criar`, {
+            const response = await fetch(`${this.config.apiUrl}/api/pagamento/pix`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ plano, userId, email, nome })

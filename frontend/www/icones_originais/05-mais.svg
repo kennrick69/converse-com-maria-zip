@@ -1,0 +1,59 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="maisCenter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="100%" style="stop-color:#FFA500"/>
+    </linearGradient>
+    <linearGradient id="maisStar" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB"/>
+      <stop offset="100%" style="stop-color:#4169E1"/>
+    </linearGradient>
+    <linearGradient id="maisGlow" x1="50%" y1="50%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700" stop-opacity="0.3"/>
+      <stop offset="100%" style="stop-color:#FFD700" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="starGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Aura de luz -->
+  <circle cx="32" cy="32" r="28" fill="url(#maisGlow)"/>
+  
+  <!-- Brilhos decorativos -->
+  <circle cx="8" cy="8" r="2.5" fill="#FFD700" opacity="0.6"/>
+  <circle cx="56" cy="8" r="2" fill="#FFD700" opacity="0.5"/>
+  <circle cx="8" cy="56" r="2" fill="#FFD700" opacity="0.4"/>
+  <circle cx="56" cy="56" r="2.5" fill="#FFD700" opacity="0.5"/>
+  
+  <!-- Estrela de 4 pontas atrás (decorativa) -->
+  <path d="M32 6 L36 26 L56 32 L36 38 L32 58 L28 38 L8 32 L28 26 Z" 
+        fill="url(#maisStar)" 
+        opacity="0.3"/>
+  
+  <!-- Círculo central dourado -->
+  <circle cx="32" cy="32" r="14" fill="url(#maisCenter)" filter="url(#starGlow)"/>
+  
+  <!-- Cruz/Plus no centro -->
+  <rect x="29" y="22" width="6" height="20" rx="2" fill="white" opacity="0.9"/>
+  <rect x="22" y="29" width="20" height="6" rx="2" fill="white" opacity="0.9"/>
+  
+  <!-- Brilho no círculo -->
+  <ellipse cx="26" cy="26" rx="4" ry="3" fill="white" opacity="0.4"/>
+  
+  <!-- Pequenas estrelas ao redor -->
+  <path d="M14 16L16 20L14 24L18 22L22 24L20 20L22 16L18 18L14 16Z" fill="#FFD700"/>
+  <path d="M42 16L44 20L42 24L46 22L50 24L48 20L50 16L46 18L42 16Z" fill="#FFD700"/>
+  <path d="M14 40L16 44L14 48L18 46L22 48L20 44L22 40L18 42L14 40Z" fill="#FFD700"/>
+  <path d="M42 40L44 44L42 48L46 46L50 48L48 44L50 40L46 42L42 40Z" fill="#FFD700"/>
+  
+  <!-- Pontinhos decorativos -->
+  <circle cx="32" cy="10" r="2" fill="#FF69B4"/>
+  <circle cx="32" cy="54" r="2" fill="#FF69B4"/>
+  <circle cx="10" cy="32" r="2" fill="#FF69B4"/>
+  <circle cx="54" cy="32" r="2" fill="#FF69B4"/>
+</svg>

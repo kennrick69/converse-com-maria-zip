@@ -1,0 +1,26 @@
+{
+  "id": "confissoes-agostinho",
+  "titulo": "Confissões",
+  "autor": "Santo Agostinho",
+  "anoOriginal": 397,
+  "categoria": "espiritualidade",
+  "descricao": "Autobiografia espiritual de um dos maiores Padres da Igreja. Uma jornada de conversão. Linguagem modernizada para o português brasileiro contemporâneo, preservando o sentido teológico e a força poética das apóstrofes a Deus.",
+  "capa": "📗",
+  "modernizado": true,
+  "modernizadoEm": "2026-05-25",
+  "incompleto": true,
+  "completar": "Apenas excertos de 2 livros estão presentes (Livro I, cap. 1 — 'Infância'; e Livro X, cap. 27 — 'Tarde te amei'). A obra original tem 13 Livros completos. Faltam: Livro I (restante), Livros II–IX (juventude, conversão, morte de Mônica), Livro X (restante — memória), Livros XI–XIII (tempo, criação, exegese do Gênesis). JOs decide se completa em edições futuras.",
+  "observacao": "Modernização: mantidos 'Tu/Te/Teu' nas apóstrofes diretas a Deus (uso devocional ainda corrente na liturgia católica brasileira). Mesóclises desfeitas: 'encontrá-lo-ão' → 'vão encontrá-lo'. Ordem das palavras naturalizada. Termos teológicos preservados.",
+  "capitulos": [
+    {
+      "numero": 1,
+      "titulo": "Livro I - Infância",
+      "conteudo": "Grande és, Senhor, e infinitamente digno de louvor; grande é o Teu poder, e a Tua sabedoria não tem limite.\n\nE o homem, pequena parcela da Tua criação, quer Te louvar. Esse homem que, revestido da sua mortalidade, traz em si o testemunho do pecado e a prova de que Tu resistes aos soberbos.\n\nMesmo assim, o homem, essa pequena parcela da criação, quer Te louvar. És Tu que o estimulas a se deleitar no Teu louvor, porque nos fizeste para Ti, e o nosso coração permanece inquieto enquanto não encontrar descanso em Ti.\n\nConcede-me, Senhor, saber e compreender o que vem primeiro: invocar-Te ou louvar-Te; conhecer-Te ou invocar-Te. Mas como invocar Aquele que ainda não se conhece? Pois quem não conhece pode invocar uma coisa em vez de outra.\n\nOu, ao contrário: para que Te conheçamos, devemos invocar-Te? \"Mas como vão invocar Aquele em quem não creram? E como vão crer Nele sem ouvir falar Dele?\"\n\nVão louvar o Senhor os que O procuram, porque, ao procurá-Lo, vão encontrá-Lo; e, ao encontrá-Lo, vão louvá-Lo. Que eu Te procure, Senhor, invocando-Te; e que Te invoque crendo em Ti, porque já me foste pregado.\n\nInvoca-Te, Senhor, a minha fé — essa fé que Tu me deste, que me inspiraste pela humanidade do Teu Filho, pelo ministério do Teu pregador."
+    },
+    {
+      "numero": 2,
+      "titulo": "Livro X - A Memória",
+      "conteudo": "Tarde Te amei, ó Beleza tão antiga e tão nova, tarde Te amei! Eis que Tu habitavas dentro de mim, e eu Te procurava do lado de fora!\n\nDisforme, eu me lançava sobre a beleza das formas que Tu criaste. Estavas comigo, mas eu não estava contigo. Retinham-me longe de Ti as coisas que não existiriam se não existissem em Ti.\n\nChamaste, gritaste, rompeste a minha surdez. Brilhaste, resplandeceste, afugentaste a minha cegueira. Exalaste o Teu perfume, eu o respirei, e suspiro por Ti.\n\nProvei-Te, e tenho fome e sede de Ti. Tocaste-me, e ardo no desejo da Tua paz.\n\nQuando eu aderir a Ti com todo o meu ser, não vão mais existir para mim dor e trabalho. Minha vida será viva, toda cheia de Ti.\n\nMas, como Tu levantas aquele que enches, agora que não estou cheio de Ti, sou um peso para mim mesmo. Alegrias deploráveis combatem tristezas salutares, e eu não sei de que lado está a vitória.\n\nAi de mim! Senhor, tem piedade de mim! Eis as minhas feridas — não as escondo. Tu és médico, eu sou enfermo; Tu és misericordioso, eu sou miserável."
+    }
+  ]
+}

@@ -30,14 +30,14 @@ const SistemaTemas = {
             icone: '🇧🇷',
             premium: false,
             cores: {
-                primary: '#1E3A5F',
-                secondary: '#0D2137',
-                background: 'linear-gradient(180deg, #1E3A5F 0%, #152C4A 50%, #0D2137 100%)',
-                cardBg: 'rgba(255, 255, 255, 0.1)',
+                primary: '#0D47A1',
+                secondary: '#062654',
+                background: 'linear-gradient(180deg, #1565C0 0%, #0D47A1 40%, #062654 100%)',
+                cardBg: 'rgba(255, 215, 0, 0.12)',
                 text: '#FFFFFF',
-                textLight: 'rgba(255, 255, 255, 0.7)',
+                textLight: 'rgba(255, 255, 255, 0.8)',
                 accent: '#FFD700',
-                headerBg: 'linear-gradient(135deg, #1E3A5F 0%, #2A4A73 100%)'
+                headerBg: 'linear-gradient(135deg, #1565C0 0%, #0D47A1 100%)'
             }
         },
         fatima: {
@@ -145,13 +145,16 @@ const SistemaTemas = {
     },
 
     // Tema atual
-    temaAtual: 'padrao',
+    temaAtual: 'aparecida',
 
     // Inicializar
     init() {
         const salvo = localStorage.getItem('mariaTema');
         if (salvo && this.temas[salvo]) {
             this.aplicarTema(salvo, false);
+        } else {
+            // Tema padrão: Aparecida
+            this.aplicarTema('aparecida', false);
         }
     },
 
@@ -179,6 +182,58 @@ const SistemaTemas = {
         }
         
         const c = tema.cores;
+        
+        // Partículas flutuantes para tema Aparecida
+        const particulasCSS = (temaId === 'aparecida') ? `
+            /* Partículas douradas flutuantes */
+            .chat-shell::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 0;
+                background-image: 
+                    radial-gradient(2px 2px at 20% 30%, rgba(255, 215, 0, 0.8) 50%, transparent 100%),
+                    radial-gradient(2px 2px at 40% 70%, rgba(255, 215, 0, 0.6) 50%, transparent 100%),
+                    radial-gradient(1px 1px at 90% 40%, rgba(255, 215, 0, 0.7) 50%, transparent 100%),
+                    radial-gradient(2px 2px at 60% 20%, rgba(255, 215, 0, 0.5) 50%, transparent 100%),
+                    radial-gradient(1px 1px at 30% 80%, rgba(255, 215, 0, 0.6) 50%, transparent 100%),
+                    radial-gradient(2px 2px at 70% 60%, rgba(255, 215, 0, 0.7) 50%, transparent 100%),
+                    radial-gradient(1px 1px at 10% 50%, rgba(255, 215, 0, 0.5) 50%, transparent 100%),
+                    radial-gradient(2px 2px at 80% 90%, rgba(255, 215, 0, 0.6) 50%, transparent 100%),
+                    radial-gradient(1px 1px at 50% 10%, rgba(255, 215, 0, 0.8) 50%, transparent 100%),
+                    radial-gradient(2px 2px at 15% 65%, rgba(255, 215, 0, 0.5) 50%, transparent 100%),
+                    radial-gradient(1px 1px at 85% 25%, rgba(255, 215, 0, 0.7) 50%, transparent 100%),
+                    radial-gradient(2px 2px at 45% 85%, rgba(255, 215, 0, 0.6) 50%, transparent 100%),
+                    radial-gradient(1px 1px at 75% 45%, rgba(255, 215, 0, 0.5) 50%, transparent 100%),
+                    radial-gradient(2px 2px at 25% 15%, rgba(255, 215, 0, 0.7) 50%, transparent 100%),
+                    radial-gradient(1px 1px at 55% 55%, rgba(255, 215, 0, 0.6) 50%, transparent 100%);
+                background-size: 100% 100%;
+                animation: floatParticles 20s ease-in-out infinite;
+            }
+            
+            @keyframes floatParticles {
+                0%, 100% {
+                    transform: translateY(0) translateX(0);
+                    opacity: 0.6;
+                }
+                25% {
+                    transform: translateY(-15px) translateX(10px);
+                    opacity: 0.8;
+                }
+                50% {
+                    transform: translateY(-5px) translateX(-5px);
+                    opacity: 0.5;
+                }
+                75% {
+                    transform: translateY(-20px) translateX(5px);
+                    opacity: 0.7;
+                }
+            }
+        ` : '';
         
         style.textContent = `
             :root {
@@ -233,6 +288,8 @@ const SistemaTemas = {
             .chat-footer-note {
                 color: ${c.textLight} !important;
             }
+            
+            ${particulasCSS}
         `;
         
         if (salvar) {

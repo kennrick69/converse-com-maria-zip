@@ -226,16 +226,16 @@ const TelaPremium = {
                             
                             <div class="flex items-center gap-4">
                                 <div class="flex-shrink-0">
-                                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-600 flex items-center justify-center shadow-xl medalha-shine">
-                                        <span class="text-4xl">🏅</span>
+                                    <div class="w-24 h-24 rounded-2xl bg-white flex items-center justify-center shadow-xl border-2 border-yellow-500/50 medalha-shine p-2">
+                                        <img src="medalha.jpg" alt="Medalha Milagrosa" class="w-full h-full object-contain"/>
                                     </div>
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-1">
                                         <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">BRINDE EXCLUSIVO</span>
                                     </div>
-                                    <h3 class="text-white font-bold text-lg">Medalha de Nossa Senhora</h3>
-                                    <p class="text-white/70 text-sm">Receba em casa uma linda medalha benta para abençoar seu lar</p>
+                                    <h3 class="text-white font-bold text-lg">Medalha Milagrosa</h3>
+                                    <p class="text-white/70 text-sm">Medalha de Nossa Senhora das Graças banhada a ouro</p>
                                     <p class="text-yellow-400 text-xs mt-1 font-semibold">🎁 Grátis no plano Anual!</p>
                                 </div>
                             </div>
@@ -370,7 +370,7 @@ const TelaPremium = {
                             </div>
                             <div class="bg-white/5 rounded-xl p-4">
                                 <p class="text-white font-semibold text-sm mb-1">Como funciona o pagamento?</p>
-                                <p class="text-white/60 text-sm">Aceitamos cartão de crédito, PIX e boleto. Tudo seguro e criptografado.</p>
+                                <p class="text-white/60 text-sm">Aceitamos cartão de crédito e PIX. Tudo seguro e criptografado.</p>
                             </div>
                         </div>
                     </div>
@@ -531,7 +531,7 @@ const TelaPremium = {
                 <p class="text-white font-bold text-lg">${plano.nome}</p>
                 
                 <div class="flex items-baseline gap-1 mt-2">
-                    <span class="text-3xl font-bold ${selecionado ? 'text-yellow-400' : 'text-white'}">R$${plano.preco.toFixed(2).replace('.', ',')}</span>
+                    <span class="preco-valor text-3xl font-bold ${selecionado ? 'text-yellow-400' : 'text-white'}">R$${plano.preco.toFixed(2).replace('.', ',')}</span>
                     <span class="text-white/60 text-sm">${plano.periodo}</span>
                 </div>
                 
@@ -556,7 +556,7 @@ const TelaPremium = {
                 
                 <!-- Indicador de seleção -->
                 <div class="mt-3 flex justify-center">
-                    <div class="w-5 h-5 rounded-full border-2 ${selecionado ? 'border-yellow-400 bg-yellow-400' : 'border-white/30'} flex items-center justify-center">
+                    <div class="indicador-selecao w-5 h-5 rounded-full border-2 ${selecionado ? 'border-yellow-400 bg-yellow-400' : 'border-white/30'} flex items-center justify-center transition-all duration-300">
                         ${selecionado ? '<svg class="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>' : ''}
                     </div>
                 </div>
@@ -595,12 +595,41 @@ const TelaPremium = {
         Object.keys(this.planos).forEach(key => {
             const card = document.getElementById(`plano-${key}`);
             if (card) {
-                if (key === this.planoSelecionado) {
+                const selecionado = key === this.planoSelecionado;
+                
+                // Atualizar classes do card
+                if (selecionado) {
                     card.classList.add('selecionado', 'bg-gradient-to-br', 'from-yellow-500/20', 'to-orange-500/20', 'border-yellow-500/50');
                     card.classList.remove('bg-white/5', 'border-white/10');
                 } else {
                     card.classList.remove('selecionado', 'bg-gradient-to-br', 'from-yellow-500/20', 'to-orange-500/20', 'border-yellow-500/50');
                     card.classList.add('bg-white/5', 'border-white/10');
+                }
+                
+                // Atualizar indicador de seleção (check)
+                const indicador = card.querySelector('.indicador-selecao');
+                if (indicador) {
+                    if (selecionado) {
+                        indicador.classList.add('border-yellow-400', 'bg-yellow-400');
+                        indicador.classList.remove('border-white/30');
+                        indicador.innerHTML = '<svg class="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+                    } else {
+                        indicador.classList.remove('border-yellow-400', 'bg-yellow-400');
+                        indicador.classList.add('border-white/30');
+                        indicador.innerHTML = '';
+                    }
+                }
+                
+                // Atualizar cor do preço
+                const preco = card.querySelector('.preco-valor');
+                if (preco) {
+                    if (selecionado) {
+                        preco.classList.add('text-yellow-400');
+                        preco.classList.remove('text-white');
+                    } else {
+                        preco.classList.remove('text-yellow-400');
+                        preco.classList.add('text-white');
+                    }
                 }
             }
         });
@@ -634,11 +663,11 @@ const TelaPremium = {
         form.innerHTML = `
             <div class="bg-gradient-to-br from-gray-900 to-purple-900/50 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 animate-scale-in">
                 <div class="text-center mb-6">
-                    <div class="w-20 h-20 mx-auto bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mb-4 shadow-lg medalha-shine">
-                        <span class="text-4xl">🏅</span>
+                    <div class="w-24 h-24 mx-auto bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg border-2 border-yellow-500/50 medalha-shine p-2">
+                        <img src="medalha.jpg" alt="Medalha Milagrosa" class="w-full h-full object-contain"/>
                     </div>
                     <h2 class="text-white text-xl font-bold">Receba sua Medalha!</h2>
-                    <p class="text-white/60 text-sm mt-1">Informe o endereço para enviarmos sua medalha benta</p>
+                    <p class="text-white/60 text-sm mt-1">Informe o endereço para enviarmos sua Medalha Milagrosa</p>
                 </div>
                 
                 <!-- Formulário -->
@@ -743,6 +772,41 @@ const TelaPremium = {
         this.mostrarTelaCheckout(this.planos[this.planoSelecionado]);
     },
 
+    // Enviar dados do brinde por email (após pagamento confirmado)
+    async enviarDadosBrinde() {
+        if (!this.enderecoMedalha) return;
+        
+        const dados = {
+            tipo: 'brinde_medalha',
+            plano: this.planoSelecionado,
+            endereco: this.enderecoMedalha,
+            email_usuario: this.getUserEmail(),
+            data: new Date().toLocaleString('pt-BR')
+        };
+        
+        try {
+            // Enviar para o PHP na Hostinger
+            const response = await fetch('https://conversecommaria.com.br/api/enviar-brinde.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            
+            if (response.ok) {
+                console.log('📧 Dados do brinde enviados com sucesso!');
+            }
+        } catch (e) {
+            console.error('Erro ao enviar dados do brinde:', e);
+        }
+    },
+
+    getUserEmail() {
+        if (typeof FirebaseService !== 'undefined' && FirebaseService.getCurrentUser()) {
+            return FirebaseService.getCurrentUser().email;
+        }
+        return localStorage.getItem('maria_user_email') || 'não informado';
+    },
+
     // Mostrar tela de checkout
     mostrarTelaCheckout(plano) {
         const checkout = document.createElement('div');
@@ -771,20 +835,11 @@ const TelaPremium = {
                         <svg class="w-5 h-5 text-white/40 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                     
-                    <button onclick="TelaPremium.processarPagamento('pix')" class="w-full flex items-center gap-4 p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
+                    <button onclick="TelaPremium.processarPagamento('pix')" class="w-full flex items-center gap-4 p-4 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 rounded-xl transition-all">
                         <span class="text-2xl">🔑</span>
                         <div class="text-left">
                             <p class="text-white font-semibold">PIX</p>
-                            <p class="text-white/50 text-xs">Aprovação instantânea</p>
-                        </div>
-                        <svg class="w-5 h-5 text-white/40 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                    
-                    <button onclick="TelaPremium.processarPagamento('boleto')" class="w-full flex items-center gap-4 p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
-                        <span class="text-2xl">📄</span>
-                        <div class="text-left">
-                            <p class="text-white font-semibold">Boleto</p>
-                            <p class="text-white/50 text-xs">Aprovação em 1-3 dias úteis</p>
+                            <p class="text-emerald-400 text-xs">Aprovação instantânea</p>
                         </div>
                         <svg class="w-5 h-5 text-white/40 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
@@ -838,13 +893,6 @@ const TelaPremium = {
                 PagamentoService.pagarComPix(plano);
                 break;
                 
-            case 'boleto':
-                // TODO: Implementar boleto via Mercado Pago
-                if (window.showToast) {
-                    showToast('Boleto em breve! Use PIX por enquanto 🙏');
-                }
-                break;
-                
             default:
                 console.warn('Método de pagamento desconhecido:', metodo);
         }
@@ -881,6 +929,11 @@ const TelaPremium = {
     mostrarSucesso() {
         const plano = this.planos[this.planoSelecionado];
         const temMedalha = plano.medalha && this.enderecoMedalha;
+        
+        // Se tem medalha, enviar dados por email
+        if (temMedalha) {
+            this.enviarDadosBrinde();
+        }
         
         const sucesso = document.createElement('div');
         sucesso.id = 'sucesso-premium';
@@ -952,6 +1005,15 @@ const TelaPremium = {
             plano: this.planoSelecionado,
             enderecoMedalha: this.enderecoMedalha || null
         }));
+        
+        // 🔥 SINCRONIZAR PREMIUM COM FIREBASE
+        const duracaoDias = this.planoSelecionado === 'anual' ? 365 : 30;
+        if (window.sincronizarPremiumFirebase) {
+            sincronizarPremiumFirebase(this.planoSelecionado, duracaoDias);
+        } else if (window.PremiumService && window.FirebaseService?.isLoggedIn()) {
+            PremiumService.ativarPremium(this.planoSelecionado, duracaoDias);
+        }
+        console.log('💎 Premium ativado e sincronizado:', this.planoSelecionado);
     },
 
     // Criar confetes
