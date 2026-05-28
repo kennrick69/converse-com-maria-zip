@@ -1,7 +1,6 @@
 // ========================================
 // 🔐 TELA DE LOGIN/CADASTRO
 // Converse com Maria - Firebase Auth
-// ✅ CORRIGIDO: await no syncCloudToLocal
 // ========================================
 
 const TelaAuth = {
@@ -183,21 +182,25 @@ const TelaAuth = {
     },
     
     // Mostrar erro
-    mostrarErro(msg) {
+    mostrarErro(mensagem) {
         const erro = document.getElementById('auth-erro');
+        const sucesso = document.getElementById('auth-sucesso');
         if (erro) {
-            erro.textContent = msg;
+            erro.textContent = mensagem;
             erro.classList.remove('hidden');
         }
+        if (sucesso) sucesso.classList.add('hidden');
     },
     
     // Mostrar sucesso
-    mostrarSucesso(msg) {
+    mostrarSucesso(mensagem) {
         const sucesso = document.getElementById('auth-sucesso');
+        const erro = document.getElementById('auth-erro');
         if (sucesso) {
-            sucesso.textContent = msg;
+            sucesso.textContent = mensagem;
             sucesso.classList.remove('hidden');
         }
+        if (erro) erro.classList.add('hidden');
     },
     
     // Limpar mensagens
@@ -206,7 +209,7 @@ const TelaAuth = {
         document.getElementById('auth-sucesso')?.classList.add('hidden');
     },
     
-    // Loading
+    // Desabilitar botões durante loading
     setLoading(loading) {
         const btnLogin = document.getElementById('btn-login');
         const btnCadastro = document.getElementById('btn-cadastro');
@@ -343,80 +346,42 @@ const TelaAuth = {
         }
     },
     
-    // Callback após login MANUAL bem-sucedido (botão "Entrar" → modal TelaAuth).
-    // Responsável por: sync cloud→local, decidir entre chat/onboarding,
-    // e fazer upload do perfil local pro Firestore se Firebase estiver vazio.
-    async onLoginSuccess(user) {
+    // Callback de sucesso no login
+    onLoginSuccess(user) {
         console.log('✅ Login success:', user.displayName || user.email);
-
-        try {
-            await UserDataService.syncCloudToLocal();
-        } catch (e) {
-            console.error('syncCloudToLocal falhou:', e);
-        }
-
-        let userData = null;
-        try {
-            userData = await UserDataService.getUserData();
-        } catch (e) {
-            console.error('getUserData falhou:', e);
-        }
-
-        // Se Firebase não tem perfil mas o usuário JÁ tem perfil local (triagem feita offline),
-        // sobe o perfil local pro Firestore — preserva a triagem do usuário.
-        if (!userData?.perfil?.nome) {
-            let perfilLocal = null;
-            try {
-                const raw = localStorage.getItem('mariaPerfil');
-                if (raw) perfilLocal = JSON.parse(raw);
-            } catch (e) {
-                console.warn('perfilLocal corrompido:', e);
+        
+        // Carregar dados da nuvem
+        UserDataService.syncCloudToLocal();
+        
+        // Verificar se tem perfil completo
+        UserDataService.getUserData().then(userData => {
+            if (userData?.perfil?.nome && userData?.perfil?.genero) {
+                // Tem perfil completo - ir para chat
+                irParaChat();
+            } else {
+                // Precisa completar onboarding
+                document.getElementById('testimonials')?.classList.add('hidden');
+                document.getElementById('onboarding')?.classList.remove('hidden');
             }
-            if (perfilLocal?.nome) {
-                console.log('☁️ Subindo perfil local → Firestore (primeira sincronização)');
-                try {
-                    // Cria doc se não existir, ou faz merge
-                    await UserDataService.createUserDocument(user.uid, { nome: perfilLocal.nome });
-                    await UserDataService.updateProfile(perfilLocal);
-                } catch (e) {
-                    console.error('Upload perfil local falhou:', e);
-                }
-                window.irParaChat();
-                return;
-            }
-            console.log('⚠️ Sem perfil em nuvem nem local → onboarding');
-            document.getElementById('testimonials')?.classList.add('hidden');
-            document.getElementById('onboarding')?.classList.remove('hidden');
-            return;
-        }
-
-        console.log('✅ Perfil encontrado, indo para chat...');
-        window.irParaChat();
+        });
     }
 };
 
-// Função auxiliar para ir para o chat (global — usada por bootstrap e por login)
+// Função auxiliar para ir para o chat
 function irParaChat() {
     document.getElementById('testimonials')?.classList.add('hidden');
     document.getElementById('onboarding')?.classList.add('hidden');
     document.getElementById('chat')?.classList.remove('hidden');
-
-    try {
-        const perfil = localStorage.getItem('mariaPerfil');
-        if (perfil) {
-            const { nome } = JSON.parse(perfil);
-            const headerNome = document.getElementById('header-nome');
-            if (headerNome && nome) {
-                headerNome.textContent = `Conversando com ${nome}`;
-            }
-        }
-    } catch (e) {
-        console.warn('irParaChat: perfil corrompido', e);
+    
+    // Carregar nome do perfil
+    const perfil = localStorage.getItem('mariaPerfil');
+    if (perfil) {
+        const { nome } = JSON.parse(perfil);
+        document.getElementById('header-nome').textContent = `Conversando com ${nome}`;
     }
 }
 
 // Expor globalmente
 window.TelaAuth = TelaAuth;
-window.irParaChat = irParaChat;
 
 console.log('🔐 Tela de Auth carregada!');

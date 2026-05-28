@@ -11,7 +11,7 @@
 // 5. Copie as credenciais e cole abaixo
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBPHjPeMi3Vv9Eccml08uALLP-pSnGWAFQ",
+    apiKey: "AIzaSy8PHjPeMi3Vv9Eccml08uALLP-pSnGWAFQ",
     authDomain: "converse-com-maria.firebaseapp.com",
     projectId: "converse-com-maria",
     storageBucket: "converse-com-maria.firebasestorage.app",
@@ -73,10 +73,6 @@ const FirebaseService = {
                     console.log('❌ Usuário deslogado');
                     this.onUserLogout();
                 }
-                // Atualiza label do botão Entrar/Sair se modal Mais já existe
-                if (window.BottomNav && typeof window.BottomNav.atualizarBotaoAuth === 'function') {
-                    window.BottomNav.atualizarBotaoAuth();
-                }
             });
             
             this.initialized = true;
@@ -89,32 +85,12 @@ const FirebaseService = {
         }
     },
     
-    // Callback automático quando Firebase detecta sessão (login manual OU restauração de sessão persistida).
-    // - Sincroniza dados nuvem → local em background
-    // - Se UI está em testimonials/onboarding mas o usuário JÁ tem perfil em nuvem,
-    //   pula direto pro chat (resolve caso: sessão persistida + localStorage limpo).
-    // Decisão explícita de UI no login manual continua em TelaAuth.onLoginSuccess.
-    async onUserLogin(user) {
-        if (this._syncEmAndamento) return;
-        this._syncEmAndamento = true;
-        try {
-            await UserDataService.syncCloudToLocal();
-            const userData = await UserDataService.getUserData();
-            if (userData?.perfil?.nome) {
-                const onboarding = document.getElementById('onboarding');
-                const testimonials = document.getElementById('testimonials');
-                const onboardingVisivel = onboarding && !onboarding.classList.contains('hidden');
-                const testimonialsVisivel = testimonials && !testimonials.classList.contains('hidden');
-                if ((onboardingVisivel || testimonialsVisivel) && typeof window.irParaChat === 'function') {
-                    console.log('🔄 Perfil em nuvem detectado — indo pro chat');
-                    window.irParaChat();
-                }
-            }
-        } catch (e) {
-            console.error('onUserLogin falhou:', e);
-        } finally {
-            this._syncEmAndamento = false;
-        }
+    // Callback quando usuário loga
+    onUserLogin(user) {
+        // Sincronizar dados locais para nuvem
+        setTimeout(() => {
+            UserDataService.syncLocalToCloud();
+        }, 1000);
     },
     
     // Callback quando usuário desloga
@@ -497,17 +473,11 @@ const UserDataService = {
                 }));
             }
             
-            // Conquistas - MERGE (não sobrescrever)
-            if (userData.conquistas && userData.conquistas.length > 0) {
-                const idsFirebase = userData.conquistas.map(c => c.id || c);
-                const idsLocal = JSON.parse(localStorage.getItem('mariaConquistas') || '[]');
-                
-                // Merge: unir conquistas do Firebase com locais (sem duplicatas)
-                const idsMerged = [...new Set([...idsLocal, ...idsFirebase])];
-                localStorage.setItem('mariaConquistas', JSON.stringify(idsMerged));
-                console.log('🏆 Conquistas merged:', idsMerged.length, 'total');
+            // Conquistas
+            if (userData.conquistas) {
+                const ids = userData.conquistas.map(c => c.id);
+                localStorage.setItem('mariaConquistas', JSON.stringify(ids));
             }
-            // Se Firebase não tem conquistas, NÃO sobrescreve o localStorage
             
             // Preferências
             if (userData.preferencias) {

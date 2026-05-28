@@ -7,9 +7,8 @@
 const PagamentoService = {
     // Configuração
     config: {
-        // URL do backend no Railway
-        apiUrl: window.API_URL || 'https://converse-com-maria-production.up.railway.app',
-        stripePublicKey: 'pk_test_xxxxx', // Substituir pela chave pública real do Stripe
+        apiUrl: window.API_URL || '', // Será definido baseado no ambiente
+        stripePublicKey: 'pk_test_xxxxx', // Substituir pela chave pública real
     },
     
     // Estado
@@ -28,15 +27,15 @@ const PagamentoService = {
             const email = this.getUserEmail();
             
             // Criar sessão no backend
-            const response = await fetch(`${this.config.apiUrl}/api/pagamento/criar-sessao`, {
+            const response = await fetch(`${this.config.apiUrl}/api/pagamento/stripe/criar-sessao`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     plano,
                     userId,
                     email,
-                    successUrl: `${window.location.origin}/?pagamento=sucesso&plano=${plano}`,
-                    cancelUrl: `${window.location.origin}/?pagamento=cancelado`
+                    successUrl: `${window.location.origin}/pagamento-sucesso`,
+                    cancelUrl: `${window.location.origin}/premium`
                 })
             });
             
@@ -73,7 +72,7 @@ const PagamentoService = {
             const nome = this.getUserNome();
             
             // Criar pagamento PIX no backend
-            const response = await fetch(`${this.config.apiUrl}/api/pagamento/pix`, {
+            const response = await fetch(`${this.config.apiUrl}/api/pagamento/pix/criar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ plano, userId, email, nome })
@@ -442,13 +441,9 @@ const PagamentoService = {
     },
     
     getUserNome() {
-        try {
-            const profile = localStorage.getItem('mariaPerfil');
-            if (profile) {
-                return JSON.parse(profile).nome;
-            }
-        } catch (e) {
-            console.warn('pagamento.getUserNome: perfil corrompido', e);
+        const profile = localStorage.getItem('mariaUserProfile');
+        if (profile) {
+            return JSON.parse(profile).nome;
         }
         return null;
     }

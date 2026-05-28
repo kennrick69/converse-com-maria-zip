@@ -126,10 +126,6 @@
                 
                 <div class="modal-mais-body">
                     <div class="modal-mais-grid">
-                        <button class="modal-mais-item" onclick="window.BottomNav.fecharMais(); if(window.BibliotecaCrista) BibliotecaCrista.abrir();">
-                            <span class="modal-mais-item-icon">📚</span>
-                            <span class="modal-mais-item-label">Biblioteca</span>
-                        </button>
                         <button class="modal-mais-item" onclick="window.BottomNav.fecharMais(); if(window.SistemaMusicasFundo) SistemaMusicasFundo.abrir();">
                             <span class="modal-mais-item-icon">🎵</span>
                             <span class="modal-mais-item-label">Músicas</span>
@@ -162,12 +158,8 @@
                             <span class="modal-mais-item-icon">❓</span>
                             <span class="modal-mais-item-label">Ajuda</span>
                         </button>
-                        <button class="modal-mais-item" id="modal-mais-auth-btn" onclick="window.BottomNav.acionarAuth();">
-                            <span class="modal-mais-item-icon" id="modal-mais-auth-icon">🔐</span>
-                            <span class="modal-mais-item-label" id="modal-mais-auth-label">Entrar</span>
-                        </button>
                     </div>
-
+                    
                     <div class="modal-mais-separator"></div>
                     
                     <!-- Premium -->
@@ -197,36 +189,6 @@
             if (modal) {
                 modal.classList.add('active');
                 document.body.style.overflow = 'hidden';
-                this.atualizarBotaoAuth();
-            }
-        },
-
-        // Atualiza label "Entrar" / "Sair" conforme estado Firebase
-        atualizarBotaoAuth: function() {
-            const label = document.getElementById('modal-mais-auth-label');
-            const icon = document.getElementById('modal-mais-auth-icon');
-            if (!label || !icon) return;
-            const logado = !!(window.firebase && firebase.auth && firebase.auth().currentUser);
-            label.textContent = logado ? 'Sair' : 'Entrar';
-            icon.textContent = logado ? '🚪' : '🔐';
-        },
-
-        // Botão de login/logout do modal Mais
-        acionarAuth: function() {
-            this.fecharMais();
-            const logado = !!(window.firebase && firebase.auth && firebase.auth().currentUser);
-            if (logado) {
-                if (confirm('Deseja sair da sua conta? Seus dados ficarão salvos neste aparelho.')) {
-                    firebase.auth().signOut().then(() => {
-                        console.log('Logout realizado');
-                    }).catch(err => console.error('Erro logout:', err));
-                }
-            } else {
-                if (window.TelaAuth && typeof window.TelaAuth.abrir === 'function') {
-                    window.TelaAuth.abrir('login');
-                } else {
-                    alert('Login indisponível no momento. Tente novamente em instantes.');
-                }
             }
         },
         
