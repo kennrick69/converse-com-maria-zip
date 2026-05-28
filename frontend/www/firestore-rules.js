@@ -102,9 +102,41 @@ service cloud.firestore {
     match /estatisticas_globais/{docId} {
       // Qualquer um pode ler
       allow read: if true;
-      
+
       // Apenas servidor pode escrever
       allow write: if false;
+    }
+
+    // ========================================
+    // 📚 CONTEÚDO ADMINISTRATIVO (Livros / Músicas / Frases)
+    // ========================================
+    // Conteúdo editado pelo Painel Admin (kennrick@gmail.com).
+    // Leitura OPEN — qualquer um pode baixar catálogo + ler conteúdo.
+    // Decisão JOs: "ninguém entra no app sem passar pelo login no app
+    // instalado, mas open read facilita cache, splash, e PWA preview."
+    // Risco de vazar catálogo: baixíssimo (livros de domínio público).
+    // Escrita apenas pra admins listados.
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email in [
+          'kennrick@gmail.com',
+          'rickboypoke@gmail.com'
+        ];
+    }
+
+    match /conteudo_livros/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /conteudo_musicas/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /conteudo_frases/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

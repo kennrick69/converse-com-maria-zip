@@ -17,16 +17,113 @@ const PagamentoService = {
     currentPaymentId: null,
     
     // ========================================
+    // NOME COMPLETO — emissão de nota fiscal
+    // ========================================
+    // O cadastro pede só apelido (decisão JOs). Pra Premium precisamos
+    // do nome completo legal (Stripe NF + Mercado Pago dados do payer).
+    // garantirNomeCompleto resolve a Promise com o nome real OU rejeita
+    // se user cancelar. Salva em localStorage + Firestore pra próxima vez.
+
+    getNomeCompletoSalvo() {
+        return localStorage.getItem('maria_user_nome_completo') || '';
+    },
+
+    async garantirNomeCompleto() {
+        const salvo = this.getNomeCompletoSalvo();
+        if (salvo && salvo.length >= 3) return salvo;
+
+        return new Promise((resolve, reject) => {
+            // Remove modal anterior se existir
+            document.getElementById('modal-nome-nf')?.remove();
+
+            const modal = document.createElement('div');
+            modal.id = 'modal-nome-nf';
+            modal.className = 'fixed inset-0 z-[200] flex items-center justify-center p-4';
+            modal.style.background = 'rgba(0,0,0,0.9)';
+
+            modal.innerHTML = `
+                <div class="bg-gradient-to-br from-amber-900/95 to-yellow-900/95 rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-amber-500/30">
+                    <div class="text-center mb-5">
+                        <div class="text-5xl mb-3">📄</div>
+                        <h3 class="text-xl font-bold text-white mb-2">Falta só seu nome completo</h3>
+                        <p class="text-amber-200/80 text-sm">Pra emitir a nota fiscal do Maria Premium, precisamos do seu nome legal (CPF não necessário).</p>
+                    </div>
+                    <input
+                        type="text"
+                        id="nome-nf-input"
+                        placeholder="Ex: Maria da Silva Santos"
+                        autocomplete="name"
+                        class="w-full px-4 py-3 rounded-xl border-2 border-amber-300/40 bg-white/10 text-white placeholder-amber-300/40 focus:border-amber-300 focus:outline-none text-base mb-3"
+                    >
+                    <p id="nome-nf-erro" class="text-red-300 text-xs mb-3 hidden"></p>
+                    <button id="nome-nf-confirmar" class="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold rounded-xl shadow-lg transition-all mb-2">
+                        Continuar para pagamento →
+                    </button>
+                    <button id="nome-nf-cancelar" class="w-full py-2 text-amber-200/70 text-sm hover:text-amber-200">
+                        Cancelar
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            const input = document.getElementById('nome-nf-input');
+            const erro = document.getElementById('nome-nf-erro');
+            input.focus();
+
+            const confirmar = async () => {
+                const nome = input.value.trim();
+                if (!nome || nome.length < 3 || !nome.includes(' ')) {
+                    erro.textContent = 'Digite o nome completo (mínimo nome e sobrenome).';
+                    erro.classList.remove('hidden');
+                    return;
+                }
+                // Salva localmente
+                localStorage.setItem('maria_user_nome_completo', nome);
+                // Salva no Firestore (best-effort, não bloqueia o pagamento)
+                try {
+                    if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+                        const uid = firebase.auth().currentUser.uid;
+                        firebase.firestore().collection('usuarios').doc(uid).set(
+                            { nomeCompleto: nome, atualizadoEm: new Date().toISOString() },
+                            { merge: true }
+                        ).catch(e => console.warn('Salvar nomeCompleto no Firestore falhou:', e));
+                    }
+                } catch (e) {
+                    console.warn('Salvar nomeCompleto:', e);
+                }
+                modal.remove();
+                resolve(nome);
+            };
+
+            document.getElementById('nome-nf-confirmar').onclick = confirmar;
+            input.onkeydown = (e) => { if (e.key === 'Enter') confirmar(); };
+            document.getElementById('nome-nf-cancelar').onclick = () => {
+                modal.remove();
+                reject(new Error('cancelado-pelo-usuario'));
+            };
+        });
+    },
+
+    // ========================================
     // STRIPE - CARTÃO INTERNACIONAL
     // ========================================
-    
+
     async pagarComStripe(plano) {
         try {
+            // 1. Garante nome completo ANTES de iniciar checkout (NF)
+            let nome;
+            try {
+                nome = await this.garantirNomeCompleto();
+            } catch (e) {
+                console.log('Stripe cancelado: usuário não preencheu nome NF');
+                return;
+            }
+
             this.mostrarLoading('Preparando pagamento...');
-            
+
             const userId = this.getUserId();
             const email = this.getUserEmail();
-            
+
             // Criar sessão no backend
             const response = await fetch(`${this.config.apiUrl}/api/pagamento/criar-sessao`, {
                 method: 'POST',
@@ -35,6 +132,7 @@ const PagamentoService = {
                     plano,
                     userId,
                     email,
+                    nome,
                     successUrl: `${window.location.origin}/?pagamento=sucesso&plano=${plano}`,
                     cancelUrl: `${window.location.origin}/?pagamento=cancelado`
                 })
@@ -66,12 +164,20 @@ const PagamentoService = {
     
     async pagarComPix(plano) {
         try {
+            // 1. Garante nome completo (Mercado Pago precisa pra payer.first_name + last_name)
+            let nome;
+            try {
+                nome = await this.garantirNomeCompleto();
+            } catch (e) {
+                console.log('PIX cancelado: usuário não preencheu nome NF');
+                return;
+            }
+
             this.mostrarLoading('Gerando código PIX...');
-            
+
             const userId = this.getUserId();
             const email = this.getUserEmail();
-            const nome = this.getUserNome();
-            
+
             // Criar pagamento PIX no backend
             const response = await fetch(`${this.config.apiUrl}/api/pagamento/pix`, {
                 method: 'POST',
