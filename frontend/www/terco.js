@@ -257,10 +257,78 @@ const TercoGuiado = {
     // 🔊 SISTEMA DE ÁUDIO
     // ========================================
     
+    // Gera áudio via TTS do backend (mesma API do chat /api/voz).
+    // Usado em meditações dos mistérios — textos únicos que não têm MP3 fixo.
     async gerarAudio(texto, botaoId) {
-        // Sem MP3 pré-gravado pra esse texto (ex: meditações dos mistérios).
-        // Mostrar aviso de "em breve".
-        this.mostrarAvisoAudioEmBreve();
+        if (!texto || !texto.trim()) {
+            this.mostrarAvisoAudioEmBreve();
+            return;
+        }
+        const botao = document.getElementById(botaoId);
+
+        // Toggle pause/play se já tocando esse botão
+        if (this.estado.audioAtivo && this.estado.audioBotaoAtual === botaoId) {
+            if (this.estado.audioAtivo.paused) {
+                this.estado.audioAtivo.play();
+                this._setBotaoOuvir(botao, 'pausar');
+            } else {
+                this.estado.audioAtivo.pause();
+                this._setBotaoOuvir(botao, 'continuar');
+            }
+            return;
+        }
+
+        // Para áudio anterior, se houver
+        if (this.estado.audioAtivo) {
+            this.estado.audioAtivo.pause();
+            const btnAntigo = document.getElementById(this.estado.audioBotaoAtual);
+            if (btnAntigo) this._setBotaoOuvir(btnAntigo, 'ouvir');
+        }
+
+        this._setBotaoOuvir(botao, 'carregando');
+
+        try {
+            const response = await fetch(`${this.API_URL}/api/voz`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ texto })
+            });
+            if (!response.ok) throw new Error('API voz retornou ' + response.status);
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+
+            this.estado.audioAtivo = audio;
+            this.estado.audioBotaoAtual = botaoId;
+
+            audio.onplaying = () => this._setBotaoOuvir(botao, 'pausar');
+            audio.onpause = () => {
+                if (!audio.ended) this._setBotaoOuvir(botao, 'continuar');
+            };
+            audio.onended = () => {
+                this._setBotaoOuvir(botao, 'ouvir');
+                URL.revokeObjectURL(url);
+                if (this.estado.audioAtivo === audio) {
+                    this.estado.audioAtivo = null;
+                    this.estado.audioBotaoAtual = null;
+                }
+            };
+            audio.onerror = () => {
+                console.error('Erro tocando áudio TTS terço');
+                this._setBotaoOuvir(botao, 'ouvir');
+                URL.revokeObjectURL(url);
+                this.estado.audioAtivo = null;
+                this.estado.audioBotaoAtual = null;
+            };
+
+            await audio.play();
+        } catch (error) {
+            console.error('Erro gerarAudio terço:', error);
+            this._setBotaoOuvir(botao, 'ouvir');
+            // Fallback discreto: aviso "em breve" se backend off
+            this.mostrarAvisoAudioEmBreve();
+        }
     },
 
     // Tocar oração pré-gravada (MP3 em audio/terco/)
