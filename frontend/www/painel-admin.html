@@ -553,6 +553,9 @@
             <button class="tab-btn" onclick="trocarTab('usuarios')">👥 Usuários</button>
             <button class="tab-btn" onclick="trocarTab('intencoes')">🙏 Intenções</button>
             <button class="tab-btn" onclick="trocarTab('velas')">🕯️ Velas</button>
+            <button class="tab-btn" onclick="trocarTab('livros')">📚 Livros</button>
+            <button class="tab-btn" onclick="trocarTab('musicas')">🎵 Músicas</button>
+            <button class="tab-btn" onclick="trocarTab('frases')">💭 Frases</button>
         </nav>
 
         <div class="tab-content active" id="tab-dashboard">
@@ -627,6 +630,33 @@
             </div>
             <h2 class="section-title">🕯️ Velas <span id="velas-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
             <div class="intencoes-grid" id="velas-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
+        </div>
+
+        <div class="tab-content" id="tab-livros">
+            <div class="controls-bar">
+                <button class="btn-action green" onclick="abrirEditorConteudo('livros')">➕ Novo Livro</button>
+                <button class="btn-action blue" onclick="carregarConteudo('livros')">🔄 Atualizar</button>
+            </div>
+            <h2 class="section-title">📚 Livros <span id="conteudo-livros-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
+            <div class="intencoes-grid" id="conteudo-livros-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
+        </div>
+
+        <div class="tab-content" id="tab-musicas">
+            <div class="controls-bar">
+                <button class="btn-action green" onclick="abrirEditorConteudo('musicas')">➕ Nova Música</button>
+                <button class="btn-action blue" onclick="carregarConteudo('musicas')">🔄 Atualizar</button>
+            </div>
+            <h2 class="section-title">🎵 Músicas <span id="conteudo-musicas-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
+            <div class="intencoes-grid" id="conteudo-musicas-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
+        </div>
+
+        <div class="tab-content" id="tab-frases">
+            <div class="controls-bar">
+                <button class="btn-action green" onclick="abrirEditorConteudo('frases')">➕ Nova Frase</button>
+                <button class="btn-action blue" onclick="carregarConteudo('frases')">🔄 Atualizar</button>
+            </div>
+            <h2 class="section-title">💭 Frases <span id="conteudo-frases-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
+            <div class="intencoes-grid" id="conteudo-frases-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
         </div>
     </div>
 
@@ -706,6 +736,7 @@
             document.getElementById('tab-' + tabId).classList.add('active');
             if (tabId === 'intencoes' && todasIntencoes.length === 0) carregarIntencoes();
             if (tabId === 'velas' && todasVelas.length === 0) carregarVelas();
+            if (['livros','musicas','frases'].includes(tabId) && todoConteudo[tabId].length === 0) carregarConteudo(tabId);
         }
 
         async function carregarTudo() {
@@ -933,6 +964,173 @@
                 todasVelas = todasVelas.filter(v => v.id !== id);
                 renderizarVelas();
             } catch (e) { toast('Erro', 'error'); }
+        }
+
+        // ========== CONTEUDO ADMINISTRATIVO (livros/musicas/frases) ==========
+        // FASE 2.1: CRUD puro no painel. App cliente NAO depende dessas collections ainda.
+        const CONTEUDO_CONFIG = {
+            livros: {
+                coll: 'conteudo_livros', nomeS: 'Livro', emoji: '📚',
+                campos: [
+                    { key: 'titulo', label: 'Titulo', type: 'text', obrig: true },
+                    { key: 'autor', label: 'Autor', type: 'text' },
+                    { key: 'descricao', label: 'Descricao', type: 'textarea' },
+                    { key: 'capa', label: 'URL da capa (opcional)', type: 'text' },
+                    { key: 'conteudo', label: 'Conteudo completo', type: 'textarea-grande' }
+                ]
+            },
+            musicas: {
+                coll: 'conteudo_musicas', nomeS: 'Musica', emoji: '🎵',
+                campos: [
+                    { key: 'titulo', label: 'Titulo', type: 'text', obrig: true },
+                    { key: 'artista', label: 'Artista', type: 'text' },
+                    { key: 'urlAudio', label: 'URL do audio', type: 'text' },
+                    { key: 'duracao', label: 'Duracao (segundos)', type: 'number' }
+                ]
+            },
+            frases: {
+                coll: 'conteudo_frases', nomeS: 'Frase', emoji: '💭',
+                campos: [
+                    { key: 'texto', label: 'Texto', type: 'textarea', obrig: true },
+                    { key: 'referencia', label: 'Referencia (ex: Joao 14:1)', type: 'text' },
+                    { key: 'reflexao', label: 'Reflexao', type: 'textarea' }
+                ]
+            }
+        };
+        const todoConteudo = { livros: [], musicas: [], frases: [] };
+
+        function escapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        }
+
+        async function carregarConteudo(tipo) {
+            const cfg = CONTEUDO_CONFIG[tipo];
+            if (!cfg) return;
+            const grid = document.getElementById('conteudo-' + tipo + '-grid');
+            if (!grid) return;
+            grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando...</p></div>';
+            try {
+                let snap;
+                try {
+                    snap = await db.collection(cfg.coll).orderBy('atualizadoEm', 'desc').get();
+                } catch (e) {
+                    // Fallback se nao tiver atualizadoEm em todos os docs
+                    snap = await db.collection(cfg.coll).get();
+                }
+                todoConteudo[tipo] = [];
+                snap.forEach(doc => todoConteudo[tipo].push({ id: doc.id, ...doc.data() }));
+                document.getElementById('conteudo-' + tipo + '-count').textContent = '(' + todoConteudo[tipo].length + ')';
+                renderizarConteudo(tipo);
+            } catch (e) {
+                console.error('Erro carregar ' + tipo + ':', e);
+                grid.innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>Erro: ' + escapeHtml(e.message) + '</p></div>';
+            }
+        }
+
+        function renderizarConteudo(tipo) {
+            const cfg = CONTEUDO_CONFIG[tipo];
+            const grid = document.getElementById('conteudo-' + tipo + '-grid');
+            const itens = todoConteudo[tipo] || [];
+            if (!itens.length) {
+                grid.innerHTML = '<div class="empty-state"><div class="icon">' + cfg.emoji + '</div><p>Nenhum item ainda</p><button class="btn-action blue" style="margin-top:16px" onclick="abrirEditorConteudo(\'' + tipo + '\')">➕ Adicionar ' + cfg.nomeS + '</button></div>';
+                return;
+            }
+            grid.innerHTML = itens.map(i => {
+                const titulo = i.titulo || i.texto || '(sem titulo)';
+                const previewSrc = i.descricao || i.texto || i.artista || i.referencia || i.autor || '';
+                const preview = String(previewSrc).slice(0, 100);
+                return '<div class="intencao-card">' +
+                    '<div class="intencao-header">' +
+                        '<div class="intencao-avatar">' + cfg.emoji + '</div>' +
+                        '<div class="intencao-meta">' +
+                            '<h4>' + escapeHtml(String(titulo).slice(0, 60)) + '</h4>' +
+                            '<p>' + formatTimestamp(i.atualizadoEm || i.criadoEm) + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="intencao-texto">' + escapeHtml(preview) + (preview.length >= 100 ? '...' : '') + '</div>' +
+                    '<div class="intencao-footer">' +
+                        '<button class="btn-action blue" style="font-size:11px;padding:8px 14px" onclick="abrirEditorConteudo(\'' + tipo + '\', \'' + i.id + '\')">✏️ Editar</button>' +
+                        '<button class="btn-delete" onclick="deletarConteudo(\'' + tipo + '\', \'' + i.id + '\')">🗑️ Excluir</button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        function abrirEditorConteudo(tipo, id) {
+            const cfg = CONTEUDO_CONFIG[tipo];
+            const item = id ? (todoConteudo[tipo].find(x => x.id === id) || {}) : {};
+            const camposHtml = cfg.campos.map(c => {
+                const v = item[c.key] != null ? String(item[c.key]) : '';
+                const inputStyle = 'width:100%;padding:12px;background:var(--bg-dark);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-family:inherit;font-size:14px';
+                if (c.type === 'textarea' || c.type === 'textarea-grande') {
+                    const rows = c.type === 'textarea-grande' ? 10 : 3;
+                    return '<div style="margin-bottom:14px"><label style="display:block;color:var(--text-secondary);font-size:12px;margin-bottom:6px">' + escapeHtml(c.label) + (c.obrig ? ' *' : '') + '</label><textarea id="cont-' + c.key + '" rows="' + rows + '" style="' + inputStyle + ';resize:vertical">' + escapeHtml(v) + '</textarea></div>';
+                }
+                const inputType = c.type === 'number' ? 'number' : 'text';
+                return '<div style="margin-bottom:14px"><label style="display:block;color:var(--text-secondary);font-size:12px;margin-bottom:6px">' + escapeHtml(c.label) + (c.obrig ? ' *' : '') + '</label><input id="cont-' + c.key + '" type="' + inputType + '" value="' + escapeHtml(v) + '" style="' + inputStyle + '"></div>';
+            }).join('');
+
+            document.getElementById('modal-avatar').textContent = cfg.emoji;
+            document.getElementById('modal-avatar').className = 'modal-avatar';
+            document.getElementById('modal-email').textContent = id ? ('Editar ' + cfg.nomeS) : ('Novo ' + cfg.nomeS);
+            document.getElementById('modal-id').textContent = id ? ('ID: ' + id.slice(0, 24)) : 'Criando novo';
+
+            const idArg = id ? "'" + id + "'" : 'null';
+            document.getElementById('modal-body').innerHTML =
+                '<div class="detail-section">' +
+                    camposHtml +
+                    '<div style="display:flex;gap:10px;margin-top:20px">' +
+                        '<button class="btn-action green" style="flex:1" onclick="salvarConteudo(\'' + tipo + '\', ' + idArg + ')">💾 Salvar</button>' +
+                        '<button class="btn-action" style="flex:1;background:var(--bg-dark);border:1px solid var(--border);color:var(--text-secondary)" onclick="fecharModal()">Cancelar</button>' +
+                    '</div>' +
+                '</div>';
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        async function salvarConteudo(tipo, id) {
+            const cfg = CONTEUDO_CONFIG[tipo];
+            const dados = {};
+            for (const c of cfg.campos) {
+                const el = document.getElementById('cont-' + c.key);
+                if (!el) continue;
+                let v = el.value.trim();
+                if (c.obrig && !v) {
+                    toast(c.label + ' e obrigatorio', 'error');
+                    return;
+                }
+                if (c.type === 'number' && v !== '') v = Number(v);
+                dados[c.key] = v;
+            }
+            dados.atualizadoEm = firebase.firestore.FieldValue.serverTimestamp();
+            try {
+                if (id) {
+                    await db.collection(cfg.coll).doc(id).update(dados);
+                    toast('Salvo!', 'success');
+                } else {
+                    dados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection(cfg.coll).add(dados);
+                    toast('Criado!', 'success');
+                }
+                fecharModal();
+                await carregarConteudo(tipo);
+            } catch (e) {
+                console.error(e);
+                toast('Erro: ' + e.message, 'error');
+            }
+        }
+
+        async function deletarConteudo(tipo, id) {
+            if (!confirm('Deletar este item?')) return;
+            const cfg = CONTEUDO_CONFIG[tipo];
+            try {
+                await db.collection(cfg.coll).doc(id).delete();
+                toast('Excluido!', 'success');
+                todoConteudo[tipo] = todoConteudo[tipo].filter(i => i.id !== id);
+                renderizarConteudo(tipo);
+            } catch (e) {
+                console.error(e);
+                toast('Erro: ' + e.message, 'error');
+            }
         }
 
         function renderizarGraficos() {
