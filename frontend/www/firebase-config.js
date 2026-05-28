@@ -73,6 +73,10 @@ const FirebaseService = {
                     console.log('❌ Usuário deslogado');
                     this.onUserLogout();
                 }
+                // Atualiza label do botão Entrar/Sair se modal Mais já existe
+                if (window.BottomNav && typeof window.BottomNav.atualizarBotaoAuth === 'function') {
+                    window.BottomNav.atualizarBotaoAuth();
+                }
             });
             
             this.initialized = true;
@@ -85,24 +89,32 @@ const FirebaseService = {
         }
     },
     
-    // Callback quando usuário loga
-    // ✅ CORRIGIDO: BAIXAR primeiro, depois enviar (evita sobrescrever dados)
+    // Callback automático quando Firebase detecta sessão (login manual OU restauração de sessão persistida).
+    // - Sincroniza dados nuvem → local em background
+    // - Se UI está em testimonials/onboarding mas o usuário JÁ tem perfil em nuvem,
+    //   pula direto pro chat (resolve caso: sessão persistida + localStorage limpo).
+    // Decisão explícita de UI no login manual continua em TelaAuth.onLoginSuccess.
     async onUserLogin(user) {
-        console.log('🔄 onUserLogin - iniciando sincronização...');
-        
-        // 1. PRIMEIRO: Baixar dados do Firebase para local
-        setTimeout(async () => {
-            console.log('📥 Passo 1: Baixando dados do Firebase...');
+        if (this._syncEmAndamento) return;
+        this._syncEmAndamento = true;
+        try {
             await UserDataService.syncCloudToLocal();
-            console.log('✅ Dados baixados do Firebase!');
-            
-            // 2. Restaurar outros dados (perfil, etc)
-            if (window.restaurarDadosDoFirebase) {
-                restaurarDadosDoFirebase();
+            const userData = await UserDataService.getUserData();
+            if (userData?.perfil?.nome) {
+                const onboarding = document.getElementById('onboarding');
+                const testimonials = document.getElementById('testimonials');
+                const onboardingVisivel = onboarding && !onboarding.classList.contains('hidden');
+                const testimonialsVisivel = testimonials && !testimonials.classList.contains('hidden');
+                if ((onboardingVisivel || testimonialsVisivel) && typeof window.irParaChat === 'function') {
+                    console.log('🔄 Perfil em nuvem detectado — indo pro chat');
+                    window.irParaChat();
+                }
             }
-            
-            console.log('✅ Sincronização completa!');
-        }, 1000);
+        } catch (e) {
+            console.error('onUserLogin falhou:', e);
+        } finally {
+            this._syncEmAndamento = false;
+        }
     },
     
     // Callback quando usuário desloga

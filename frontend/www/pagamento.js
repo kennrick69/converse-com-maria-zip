@@ -442,9 +442,13 @@ const PagamentoService = {
     },
     
     getUserNome() {
-        const profile = localStorage.getItem('mariaUserProfile');
-        if (profile) {
-            return JSON.parse(profile).nome;
+        try {
+            const profile = localStorage.getItem('mariaPerfil');
+            if (profile) {
+                return JSON.parse(profile).nome;
+            }
+        } catch (e) {
+            console.warn('pagamento.getUserNome: perfil corrompido', e);
         }
         return null;
     }

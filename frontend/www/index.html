@@ -1594,13 +1594,28 @@
 const API_URL = 'https://converse-com-maria-production.up.railway.app';
 
 // ==================== SISTEMA DE PERFIL DO USUÁRIO ====================
+// Migration one-shot: chave antiga 'maria_user_profile' -> canonica 'mariaPerfil'
+(function migrateStorageKeys() {
+    try {
+        const legacy = localStorage.getItem('maria_user_profile');
+        if (legacy) {
+            if (!localStorage.getItem('mariaPerfil')) {
+                localStorage.setItem('mariaPerfil', legacy);
+                console.log('Perfil migrado: maria_user_profile -> mariaPerfil');
+            }
+            localStorage.removeItem('maria_user_profile');
+        }
+    } catch (e) {
+        console.warn('Migration de storage falhou:', e);
+    }
+})();
+
 const UserProfileManager = {
-    STORAGE_KEY: 'maria_user_profile',
-    
-    // Verifica se é o primeiro acesso
+    STORAGE_KEY: 'mariaPerfil',
+
     isPrimeiroAcesso: function() {
         const profile = this.getProfile();
-        return !profile || !profile.cadastroCompleto;
+        return !profile || !profile.nome;
     },
     
     // Obtém o perfil salvo
