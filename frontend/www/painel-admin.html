@@ -657,6 +657,7 @@
             <div class="controls-bar">
                 <button class="btn-action green" onclick="LivrosAdmin.abrirNovo()">➕ Novo Livro (pasta/ZIP)</button>
                 <button class="btn-action blue" onclick="LivrosAdmin.carregar()">🔄 Atualizar</button>
+                <button class="btn-action" style="background:var(--accent-purple);color:white" onclick="LivrosAdmin.copiarPromptIA()" title="Copia um prompt pronto pra enviar pra IA junto com o PDF/texto do livro novo. A IA monta o .zip no formato certo.">📋 Prompt pra IA</button>
             </div>
             <h2 class="section-title">📚 Livros <span id="conteudo-livros-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
             <div class="intencoes-grid" id="conteudo-livros-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
@@ -1774,6 +1775,61 @@
                     toast('✅ Dados gerais salvos', 'success');
                     this.renderizar();
                 } catch (e) { toast('Erro: ' + e.message, 'error'); }
+            },
+
+            copiarPromptIA() {
+                const prompt = `Recebi um PDF/texto de livro pra subir no app Converse com Maria.
+Preciso que você monte um arquivo .zip no formato exato do painel admin.
+
+ESTRUTURA OBRIGATÓRIA dentro do .zip:
+nome-do-livro/
+├── titulo.txt          (1 linha — título do livro)
+├── autor.txt           (1 linha — autor)
+├── descricao.txt       (sinopse curta, 1-3 parágrafos)
+├── capa.jpg            (opcional — .jpg/.png/.webp, <200KB)
+├── capitulo-01.txt
+├── capitulo-02.txt
+└── ...
+
+REGRAS DO PARSER:
+• 1ª linha de cada capitulo-NN.txt vira o TÍTULO do capítulo.
+• Linha em branco separa parágrafos no corpo.
+• Numeração SEQUENCIAL sem buracos (capitulo-01, capitulo-02, capitulo-03…).
+• Sem capítulos duplicados (não pode ter cap1.txt + capitulo-01.txt na mesma pasta).
+• Capítulo 1 DEVE ter menos de 800KB (vai embedded no doc Firestore; limite 1MB).
+• Encoding UTF-8 (sem BOM no início, ou strip antes).
+
+O QUE FAZER:
+1. Leia o conteúdo do PDF/texto que vou anexar.
+2. Identifique título, autor, divisão em capítulos.
+3. Se for um livro longo, mantenha a divisão natural por capítulos. Não invente subdivisões.
+4. Se o texto vier num bloco só, sugira uma divisão lógica antes de gerar.
+5. Modernize linguagem só se eu pedir. Por padrão, mantenha o original.
+6. Empacote tudo num .zip e salve em ~/.imp-bridge/outputs/livro-<slug>.zip.
+7. Me devolva o link de download no formato \`📥 [Baixar livro-X.zip](/api/download/livro-X.zip)\`.
+
+CASOS ESPECIAIS:
+• PDF com texto em colunas → extraia em ordem de leitura, não na ordem física.
+• PDF com OCR ruim → me avise antes de gerar; pode ter "lll" no lugar de "Ill" etc.
+• Livro com prefácio/posfácio → vira capitulo-00.txt? NÃO — usa capitulo-01.txt pro prefácio e renumera.
+• Capítulo gigante (>800KB) → divida em "Capítulo X — parte 1", "parte 2" como capítulos separados.
+
+Anexei o livro abaixo. Manda ver.`;
+
+                navigator.clipboard.writeText(prompt).then(() => {
+                    toast('📋 Prompt copiado! Cole na conversa com a IA junto com o PDF.', 'success');
+                }).catch(() => {
+                    // Fallback pra browsers sem clipboard API
+                    const ta = document.createElement('textarea');
+                    ta.value = prompt;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    try { document.execCommand('copy'); toast('📋 Prompt copiado!', 'success'); }
+                    catch (e) { toast('Erro ao copiar. Tente manual.', 'error'); }
+                    document.body.removeChild(ta);
+                });
             },
 
             async excluirLivro(id) {
