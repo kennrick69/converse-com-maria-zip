@@ -16,13 +16,15 @@ const BibliotecaCrista = {
     // CANETA
     canetaAtiva: null, // null = sem caneta, ou {nome, bg, texto}
 
+    // Reduzido pra 2 cores (JOs 2026-05-29): amarelo + verde (clássico de caderno)
     cores: [
         { nome: 'Amarelo', bg: '#FEF08A', texto: '#713F12' },
-        { nome: 'Verde', bg: '#BBF7D0', texto: '#14532D' },
-        { nome: 'Azul', bg: '#BFDBFE', texto: '#1E3A8A' },
-        { nome: 'Rosa', bg: '#FBCFE8', texto: '#831843' },
-        { nome: 'Laranja', bg: '#FED7AA', texto: '#7C2D12' }
+        { nome: 'Verde', bg: '#BBF7D0', texto: '#14532D' }
     ],
+
+    // Estado da régua de leitura e do modo "salvar onde parei"
+    _reguaAtiva: false,
+    _modoMarcadorAtivo: false,
 
     init() {
         try {
@@ -254,8 +256,12 @@ const BibliotecaCrista = {
 
     fechar() {
         document.getElementById('biblio-modal')?.remove();
+        document.getElementById('info-modal')?.remove();
         document.getElementById('leitor-modal')?.remove();
         this.canetaAtiva = null;
+        this._esconderRegua();
+        this.desativarModoMarcador();
+        this._reguaAtiva = false;
         document.body.style.overflow = '';
     },
 
@@ -422,8 +428,6 @@ const BibliotecaCrista = {
         modal.id = 'leitor-modal';
         modal.style.cssText = `position:fixed;inset:0;z-index:9999;background:${tema.bg};display:flex;flex-direction:column;`;
         
-        const marcadorAtual = this.config.marcadores && this.config.marcadores[livro.id];
-        const temMarcador = !!marcadorAtual;
         modal.innerHTML = `
             <div style="padding:10px 16px;background:${tema.header};display:flex;justify-content:space-between;align-items:center;">
                 <button onclick="BibliotecaCrista.voltar()" style="background:none;border:none;font-size:24px;">←</button>
@@ -432,7 +436,7 @@ const BibliotecaCrista = {
                     <div style="font-size:11px;opacity:0.6;">Cap ${cap.numero}/${livro.capitulos.length} <span id="biblio-progresso-pct" style="margin-left:4px;color:#b8860b;font-weight:600;">0%</span></div>
                 </div>
                 <div style="display:flex;gap:4px;">
-                    <button id="biblio-btn-marcador" onclick="BibliotecaCrista.marcarPagina()" title="Marcar esta página (como um bookmark de livro físico)" style="background:none;border:none;font-size:20px;cursor:pointer;opacity:${temMarcador ? '1' : '0.6'};">${temMarcador ? '🔖' : '📑'}</button>
+                    <button id="biblio-btn-regua" onclick="BibliotecaCrista.toggleRegua()" title="Régua de leitura — escurece embaixo, libera ao rolar" style="background:none;border:none;font-size:20px;cursor:pointer;opacity:${this._reguaAtiva ? '1' : '0.6'};">📏</button>
                     <button onclick="BibliotecaCrista.config()" style="background:none;border:none;font-size:20px;">⚙️</button>
                 </div>
             </div>
@@ -469,13 +473,13 @@ const BibliotecaCrista = {
                 <div id="instrucao" style="text-align:center;margin-bottom:10px;font-size:13px;color:${tema.cor};">
                     👆 Toque numa cor para pegar a caneta
                 </div>
-                
-                <!-- CANETAS -->
-                <div style="display:flex;justify-content:center;gap:10px;margin-bottom:12px;">
+
+                <!-- CANETAS (2 cores) + GUARDAR + SALVAR ONDE PAREI -->
+                <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
                     ${this.cores.map((c, i) => `
                         <button id="caneta-${i}" onclick="BibliotecaCrista.pegarCaneta(${i})" style="
-                            width:50px;
-                            height:50px;
+                            width:46px;
+                            height:46px;
                             border-radius:50%;
                             border:4px solid ${this.canetaAtiva?.nome === c.nome ? '#000' : 'transparent'};
                             background:${c.bg};
@@ -485,22 +489,38 @@ const BibliotecaCrista = {
                             transform: ${this.canetaAtiva?.nome === c.nome ? 'scale(1.15)' : 'scale(1)'};
                         "></button>
                     `).join('')}
-                    
-                    <!-- BOTÃO GUARDAR -->
+
+                    <!-- BOTÃO GUARDAR caneta -->
                     <button id="btn-guardar" onclick="BibliotecaCrista.guardarCaneta()" style="
-                        width:50px;
-                        height:50px;
+                        width:46px;
+                        height:46px;
                         border-radius:50%;
                         border:none;
                         background:${this.canetaAtiva ? '#ef4444' : '#e5e5e5'};
                         box-shadow:0 4px 12px rgba(0,0,0,0.15);
                         cursor:pointer;
-                        font-size:20px;
+                        font-size:18px;
                         display:${this.canetaAtiva ? 'flex' : 'none'};
                         align-items:center;
                         justify-content:center;
                         color:#fff;
                     ">✕</button>
+
+                    <!-- SALVAR ONDE PAREI (abre modo lápis pra apontar) -->
+                    <button onclick="BibliotecaCrista.ativarModoMarcador()" style="
+                        padding:10px 14px;
+                        background:linear-gradient(135deg,#ef4444,#dc2626);
+                        border:none;
+                        border-radius:22px;
+                        color:#fff;
+                        font-size:12px;
+                        font-weight:600;
+                        cursor:pointer;
+                        box-shadow:0 4px 12px rgba(239,68,68,0.3);
+                        display:flex;
+                        align-items:center;
+                        gap:5px;
+                    ">📍 Salvar onde parei</button>
                 </div>
                 
                 <!-- NAVEGAÇÃO -->
@@ -513,12 +533,15 @@ const BibliotecaCrista = {
         
         document.body.appendChild(modal);
         document.body.style.overflow = 'hidden';
-        
+
         // Restaurar grifos + posição salva (régua) + tracking de scroll
         setTimeout(() => this.restaurarGrifos(), 100);
         setTimeout(() => this._restaurarPosicaoLivro(), 250);
         this._iniciarTrackingScroll();
-        
+
+        // Restaurar régua se estava ativa
+        if (this._reguaAtiva) setTimeout(() => this._mostrarRegua(), 50);
+
         // Se caneta estava ativa, reativar
         if (this.canetaAtiva) {
             this.atualizarUICaneta();
@@ -958,45 +981,107 @@ const BibliotecaCrista = {
         setTimeout(() => this._atualizarReguaVisual(), 300);
     },
 
-    // ============ MARCADOR (bookmark manual — tipo fita de livro físico) ============
-    marcarPagina() {
-        if (!this.livroAtual) return;
-        const livroId = this.livroAtual.id;
+    // ============ MARCADOR (bookmark manual) — modo "tap pra apontar" ============
+    ativarModoMarcador() {
+        if (this._modoMarcadorAtivo) { this.desativarModoMarcador(); return; }
+        this._modoMarcadorAtivo = true;
+
+        // Banner instrução no topo
+        const banner = document.createElement('div');
+        banner.id = 'biblio-modo-marcador-banner';
+        banner.style.cssText = 'position:fixed;top:64px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:12px 22px;border-radius:24px;font-weight:600;font-size:14px;box-shadow:0 8px 24px rgba(239,68,68,0.45);z-index:10001;max-width:90vw;text-align:center;';
+        banner.innerHTML = '✏️ Toque onde você parou pra marcar';
+        document.body.appendChild(banner);
+
+        // Botão Cancelar acima do rodapé
+        const cancel = document.createElement('button');
+        cancel.id = 'biblio-cancelar-marcador';
+        cancel.style.cssText = 'position:fixed;bottom:180px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:#fff;border:none;padding:10px 22px;border-radius:22px;cursor:pointer;font-size:13px;z-index:10001;';
+        cancel.textContent = 'Cancelar';
+        cancel.onclick = () => this.desativarModoMarcador();
+        document.body.appendChild(cancel);
+
+        // Cursor de lápis no texto
+        const texto = document.getElementById('texto-leitura');
+        if (texto) texto.style.cursor = 'crosshair';
+
+        // Handler de tap (capture pra interceptar antes da caneta)
+        this._modoMarcadorHandler = (e) => this._marcarNoTap(e);
         const scroll = document.getElementById('leitor-scroll');
-        if (!scroll) return;
-        const denom = scroll.scrollHeight - scroll.clientHeight;
-        const ratio = denom > 0 ? scroll.scrollTop / denom : 0;
-
-        if (!this.config.marcadores) this.config.marcadores = {};
-        const m = this.config.marcadores[livroId];
-
-        // Se já há marcador no mesmo cap e ~mesmo lugar, remove (toggle)
-        if (m && m.capIdx === this.capituloAtual && Math.abs((m.ratio || 0) - ratio) < 0.05) {
-            delete this.config.marcadores[livroId];
-            this.toast('🗑️ Marcador removido');
-        } else {
-            this.config.marcadores[livroId] = {
-                capIdx: this.capituloAtual,
-                ratio: ratio,
-                ts: Date.now()
-            };
-            this.toast('🔖 Marcador colocado');
-        }
-        this.salvar();
-        this._atualizarBotaoMarcador();
+        if (scroll) scroll.addEventListener('click', this._modoMarcadorHandler, true);
     },
 
-    _atualizarBotaoMarcador() {
-        const btn = document.getElementById('biblio-btn-marcador');
-        if (!btn || !this.livroAtual) return;
-        const m = this.config.marcadores && this.config.marcadores[this.livroAtual.id];
-        if (m) {
-            btn.textContent = '🔖';
-            btn.style.opacity = '1';
-        } else {
-            btn.textContent = '📑';
-            btn.style.opacity = '0.6';
+    desativarModoMarcador() {
+        this._modoMarcadorAtivo = false;
+        document.getElementById('biblio-modo-marcador-banner')?.remove();
+        document.getElementById('biblio-cancelar-marcador')?.remove();
+        const texto = document.getElementById('texto-leitura');
+        if (texto) texto.style.cursor = '';
+        const scroll = document.getElementById('leitor-scroll');
+        if (scroll && this._modoMarcadorHandler) {
+            scroll.removeEventListener('click', this._modoMarcadorHandler, true);
         }
+        this._modoMarcadorHandler = null;
+    },
+
+    _marcarNoTap(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        if (!this.livroAtual) return;
+        const scroll = document.getElementById('leitor-scroll');
+        if (!scroll) return;
+        // Posição absoluta do tap dentro do scroll-content
+        const tapAbsY = scroll.scrollTop + (e.clientY - scroll.getBoundingClientRect().top);
+        // Ratio relativo ao total rolável (descontando viewport)
+        const denom = scroll.scrollHeight - scroll.clientHeight;
+        const ratio = denom > 0 ? Math.min(1, Math.max(0, (tapAbsY - scroll.clientHeight * 0.3) / denom)) : 0;
+
+        if (!this.config.marcadores) this.config.marcadores = {};
+        this.config.marcadores[this.livroAtual.id] = {
+            capIdx: this.capituloAtual,
+            ratio: ratio,
+            ts: Date.now()
+        };
+        this.salvar();
+        this.toast('🔖 Marcador colocado aqui!');
+        this.desativarModoMarcador();
+    },
+
+    // ============ RÉGUA DE LEITURA (linha + escurecido abaixo) ============
+    toggleRegua() {
+        this._reguaAtiva = !this._reguaAtiva;
+        if (this._reguaAtiva) this._mostrarRegua();
+        else this._esconderRegua();
+        this._atualizarBotaoRegua();
+    },
+
+    _mostrarRegua() {
+        document.getElementById('biblio-regua-linha')?.remove();
+        document.getElementById('biblio-regua-overlay')?.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'biblio-regua-overlay';
+        overlay.style.cssText = 'position:fixed;left:0;right:0;top:calc(28vh + 4px);bottom:0;background:rgba(0,0,0,0.62);pointer-events:none;z-index:9998;transition:top 0.2s ease-out;';
+        document.body.appendChild(overlay);
+
+        const linha = document.createElement('div');
+        linha.id = 'biblio-regua-linha';
+        linha.style.cssText = 'position:fixed;left:0;right:0;top:28vh;height:4px;background:linear-gradient(90deg,transparent 0%,#b8860b 12%,#fbbf24 50%,#b8860b 88%,transparent 100%);box-shadow:0 0 14px rgba(251,191,36,0.7),0 0 28px rgba(251,191,36,0.4);pointer-events:none;z-index:9999;';
+        document.body.appendChild(linha);
+
+        this.toast('📏 Régua ligada — rola o texto pra ver o resto');
+    },
+
+    _esconderRegua() {
+        document.getElementById('biblio-regua-linha')?.remove();
+        document.getElementById('biblio-regua-overlay')?.remove();
+    },
+
+    _atualizarBotaoRegua() {
+        const btn = document.getElementById('biblio-btn-regua');
+        if (!btn) return;
+        btn.style.opacity = this._reguaAtiva ? '1' : '0.6';
+        btn.style.transform = this._reguaAtiva ? 'scale(1.15)' : 'scale(1)';
     },
 
     _atualizarReguaVisual() {
