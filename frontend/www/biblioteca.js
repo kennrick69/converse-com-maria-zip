@@ -6,7 +6,7 @@
 const BibliotecaCrista = {
     URL_BASE: 'https://conversecommaria.com.br/livros',
     
-    config: { tamanhoFonte: 20, temaLeitor: 'sepia' },
+    config: { tamanhoFonte: 22, temaLeitor: 'sepia' },
     catalogo: [],
     livrosCache: {},
     grifos: [],
@@ -188,7 +188,7 @@ const BibliotecaCrista = {
             
             <!-- BARRA DA CANETA -->
             <div id="barra-caneta" style="display:none;padding:10px;text-align:center;font-weight:bold;">
-                🖍️ Caneta ativa! Selecione o texto
+                ✨ Toque no trecho que quer marcar
             </div>
             
             <div id="leitor-scroll" style="flex:1;overflow-y:auto;padding:20px 20px 180px 20px;">
@@ -297,7 +297,7 @@ const BibliotecaCrista = {
         // Ativa eventos de seleção
         this.ativarEventosSelecao();
         
-        this.toast('🖍️ Caneta ' + cor.nome + '! Agora selecione o texto');
+        this.toast('🖍️ Caneta ' + cor.nome + '! Toque no trecho pra marcar ✨');
     },
 
     guardarCaneta() {
@@ -338,7 +338,7 @@ const BibliotecaCrista = {
                 barra.style.display = 'block';
                 barra.style.background = this.canetaAtiva.bg;
                 barra.style.color = this.canetaAtiva.texto;
-                barra.textContent = '🖍️ Caneta ' + this.canetaAtiva.nome + '! Selecione o texto';
+                barra.textContent = '🖍️ Caneta ' + this.canetaAtiva.nome + '! Toque no trecho pra marcar ✨';
             } else {
                 barra.style.display = 'none';
             }

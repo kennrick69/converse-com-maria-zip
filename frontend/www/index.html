@@ -734,7 +734,7 @@
         }
         
         .acesso-input-group input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.65);
         }
         
         .acesso-input-group input:focus {
@@ -1552,6 +1552,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     padding: 4px 10px;
     border-radius: 10px;
     transition: all 0.2s ease;
@@ -1559,6 +1560,7 @@
     background: transparent;
     border: none;
     min-width: 54px;
+    min-height: 44px;
 }
 
 .bottom-nav-item:hover {
@@ -1740,12 +1742,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     padding: 16px 8px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 214, 150, 0.08);
     cursor: pointer;
     transition: all 0.2s ease;
+    min-height: 80px;
 }
 
 .modal-mais-item:hover {
@@ -2111,29 +2115,29 @@
                 <div id="acesso-erro" class="acesso-erro"></div>
                 
                 <div class="acesso-input-group">
-                    <label>💛 Como gostaria que eu te chame?</label>
+                    <label for="acesso-nome">💛 Como gostaria que eu te chame?</label>
                     <input type="text" id="acesso-nome" placeholder="Ex: Leda, Cris, Dudu..." maxlength="30" autocomplete="nickname">
                     <p style="font-size:12px; color:rgba(255,255,255,0.55); margin-top:6px; font-style:italic;">Jesus chamava pelo nome do coração ✨</p>
                 </div>
                 
                 <div class="acesso-input-group">
-                    <label>Telefone (com DDD)</label>
-                    <input type="tel" id="acesso-telefone" placeholder="(11) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)">
+                    <label for="acesso-telefone">Telefone (com DDD)</label>
+                    <input type="tel" id="acesso-telefone" placeholder="(11) 99999-9999" maxlength="15" autocomplete="tel" inputmode="tel" oninput="mascaraTelefone(this)">
                 </div>
                 
                 <div class="acesso-input-group">
-                    <label>Email</label>
-                    <input type="email" id="acesso-email" placeholder="seu@email.com">
+                    <label for="acesso-email">Email</label>
+                    <input type="email" id="acesso-email" placeholder="seu@email.com" autocomplete="email" inputmode="email">
                 </div>
                 
                 <div class="acesso-input-group">
-                    <label>Senha</label>
-                    <input type="password" id="acesso-senha" placeholder="Mínimo 6 caracteres">
+                    <label for="acesso-senha">Senha</label>
+                    <input type="password" id="acesso-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
                 </div>
                 
                 <div class="acesso-input-group">
-                    <label>Confirmar senha</label>
-                    <input type="password" id="acesso-senha-confirma" placeholder="Digite novamente">
+                    <label for="acesso-senha-confirma">Confirmar senha</label>
+                    <input type="password" id="acesso-senha-confirma" placeholder="Digite novamente" autocomplete="new-password">
                 </div>
                 
                 <button class="acesso-btn-cadastrar" onclick="criarConta()" id="btn-criar-conta">
@@ -2144,11 +2148,11 @@
     </div>
 
     <!-- ==================== MODAL DE LOGIN ==================== -->
-    <div id="modal-login" class="modal-login-overlay" style="display: none;">
+    <div id="modal-login" class="modal-login-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-login-titulo" style="display: none;">
         <div class="modal-login-content">
             <div class="modal-login-header">
-                <h2>🔐 Entrar</h2>
-                <button class="modal-login-close" onclick="fecharModalLogin()">
+                <h2 id="modal-login-titulo">🔐 Entrar</h2>
+                <button class="modal-login-close" aria-label="Fechar" onclick="fecharModalLogin()">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -2158,13 +2162,13 @@
             <div id="login-erro" class="acesso-erro"></div>
             
             <div class="acesso-input-group">
-                <label>Email</label>
-                <input type="email" id="login-email" placeholder="seu@email.com">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email" inputmode="email">
             </div>
             
             <div class="acesso-input-group">
-                <label>Senha</label>
-                <input type="password" id="login-senha" placeholder="Sua senha">
+                <label for="login-senha">Senha</label>
+                <input type="password" id="login-senha" placeholder="Sua senha" autocomplete="current-password">
             </div>
             
             <button class="modal-login-btn" onclick="fazerLogin()" id="btn-fazer-login">
@@ -2178,11 +2182,11 @@
     </div>
 
     <!-- ==================== MODAL ESQUECI SENHA ==================== -->
-    <div id="modal-esqueci" class="modal-login-overlay" style="display: none;">
+    <div id="modal-esqueci" class="modal-login-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-esqueci-titulo" style="display: none;">
         <div class="modal-login-content">
             <div class="modal-login-header">
-                <h2>📧 Recuperar senha</h2>
-                <button class="modal-login-close" onclick="fecharEsqueciSenha()">
+                <h2 id="modal-esqueci-titulo">📧 Recuperar senha</h2>
+                <button class="modal-login-close" aria-label="Fechar" onclick="fecharEsqueciSenha()">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -2197,8 +2201,8 @@
             <div id="esqueci-sucesso" class="acesso-erro" style="background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.3); color: #86EFAC;"></div>
             
             <div class="acesso-input-group">
-                <label>Email</label>
-                <input type="email" id="esqueci-email" placeholder="seu@email.com">
+                <label for="esqueci-email">Email</label>
+                <input type="email" id="esqueci-email" placeholder="seu@email.com" autocomplete="email" inputmode="email">
             </div>
             
             <button class="modal-login-btn" onclick="enviarRecuperacao()" id="btn-enviar-recuperacao">
