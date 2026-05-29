@@ -236,8 +236,10 @@ const BibliotecaCrista = {
         
         document.getElementById('biblio-lista').innerHTML = this.catalogo.map(l => {
             const ehImg = l.capa && (String(l.capa).startsWith('data:') || String(l.capa).startsWith('http'));
+            const capaAttr = (l.capa || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const tituloAttr = (l.titulo || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
             const capaHtml = ehImg
-                ? `<img src="${l.capa}" style="width:56px;height:80px;object-fit:cover;border-radius:6px;flex-shrink:0;box-shadow:0 4px 10px rgba(0,0,0,0.3);">`
+                ? `<img src="${l.capa}" onclick="event.stopPropagation();BibliotecaCrista.verCapaGrande('${capaAttr}','${tituloAttr}')" title="Toque pra ver maior" style="width:56px;height:80px;object-fit:cover;border-radius:6px;flex-shrink:0;box-shadow:0 4px 10px rgba(0,0,0,0.3);cursor:zoom-in;">`
                 : `<span style="font-size:46px;width:56px;text-align:center;flex-shrink:0;">${l.capa || '📖'}</span>`;
             const desc = String(l.descricao || '').slice(0, 110);
             const totalCaps = l._totalCapitulos || (l._capitulos ? l._capitulos.length : 0);
@@ -301,8 +303,10 @@ const BibliotecaCrista = {
         const livro = this.livroAtual;
         const total = livro.capitulos.length;
         const ehImg = livro.capa && (String(livro.capa).startsWith('data:') || String(livro.capa).startsWith('http'));
+        const capaAttr = (livro.capa || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const tituloAttr = (livro.titulo || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         const capaHtml = ehImg
-            ? `<img src="${livro.capa}" style="width:140px;height:200px;object-fit:cover;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.4);">`
+            ? `<img src="${livro.capa}" onclick="BibliotecaCrista.verCapaGrande('${capaAttr}','${tituloAttr}')" title="Toque pra ver maior" style="width:140px;height:200px;object-fit:cover;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.4);cursor:zoom-in;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">`
             : `<div style="width:140px;height:200px;background:rgba(255,255,255,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:80px;box-shadow:0 12px 30px rgba(0,0,0,0.4);">${livro.capa || '📖'}</div>`;
 
         // Marcador manual (bookmark) — diferente da régua automática
@@ -397,6 +401,29 @@ const BibliotecaCrista = {
     voltarParaCatalogo() {
         document.getElementById('info-modal')?.remove();
         this.abrir();
+    },
+
+    // Lightbox da capa: mostra imagem em tamanho grande sobre fundo escuro
+    verCapaGrande(capa, titulo) {
+        document.getElementById('biblio-capa-lightbox')?.remove();
+        if (!capa) return;
+        const ehImg = String(capa).startsWith('data:') || String(capa).startsWith('http');
+        if (!ehImg) return; // emoji não precisa lightbox
+        const box = document.createElement('div');
+        box.id = 'biblio-capa-lightbox';
+        box.onclick = () => box.remove();
+        box.style.cssText = 'position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;animation:bibFadeIn 0.2s ease-out;';
+        box.innerHTML = `
+            <style>
+                @keyframes bibFadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes bibZoomIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+            </style>
+            <button onclick="event.stopPropagation();this.parentElement.remove();" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:44px;height:44px;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+            <img src="${capa}" alt="${titulo || 'Capa do livro'}" style="max-width:90vw;max-height:78vh;object-fit:contain;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:bibZoomIn 0.25s ease-out;">
+            ${titulo ? `<div style="color:#fff;font-size:15px;margin-top:18px;text-align:center;max-width:90vw;opacity:0.85;font-style:italic;">${titulo}</div>` : ''}
+            <div style="color:rgba(255,255,255,0.5);font-size:11px;margin-top:8px;">Toque fora pra fechar</div>
+        `;
+        document.body.appendChild(box);
     },
 
     // Inicia leitura num capítulo específico (idx 0-based).
