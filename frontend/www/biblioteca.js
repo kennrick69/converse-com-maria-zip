@@ -6,7 +6,7 @@
 const BibliotecaCrista = {
     URL_BASE: 'https://conversecommaria.com.br/livros',
     
-    config: { tamanhoFonte: 22, temaLeitor: 'sepia', posicoes: {} },
+    config: { tamanhoFonte: 22, temaLeitor: 'sepia', posicoes: {}, marcadores: {} },
     catalogo: [],
     livrosCache: {},
     grifos: [],
@@ -299,7 +299,18 @@ const BibliotecaCrista = {
             ? `<img src="${livro.capa}" style="width:140px;height:200px;object-fit:cover;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.4);">`
             : `<div style="width:140px;height:200px;background:rgba(255,255,255,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:80px;box-shadow:0 12px 30px rgba(0,0,0,0.4);">${livro.capa || '📖'}</div>`;
 
-        // Régua: onde o leitor parou
+        // Marcador manual (bookmark) — diferente da régua automática
+        const marcador = this.config.marcadores && this.config.marcadores[livro.id];
+        const capMarcador = marcador ? livro.capitulos[marcador.capIdx] : null;
+        const marcadorHtml = (marcador && capMarcador) ? `
+            <div style="background:linear-gradient(135deg,rgba(239,68,68,0.18),rgba(220,38,38,0.12));border:1px solid rgba(239,68,68,0.4);border-radius:14px;padding:14px 16px;margin-bottom:14px;">
+                <div style="color:#fca5a5;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;font-weight:bold;margin-bottom:8px;">🔖 Seu marcador</div>
+                <div style="color:#fff;font-size:14px;margin-bottom:10px;font-weight:600;">Capítulo ${capMarcador.numero}${capMarcador.titulo ? ' — ' + capMarcador.titulo : ''} • ${Math.round((marcador.ratio||0)*100)}%</div>
+                <button onclick="BibliotecaCrista.iniciarLeitura(${marcador.capIdx})" style="width:100%;padding:12px;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;border-radius:10px;color:#fff;font-weight:bold;font-size:14px;cursor:pointer;">Ir pro marcador →</button>
+            </div>
+        ` : '';
+
+        // Régua: onde o leitor parou (tracking automático)
         const ult = this._ultimaPosicaoLivro(livro.id);
         const temProgresso = ult && ult.ratio > 0.02;
         const capProgresso = temProgresso ? livro.capitulos[ult.capIdx] : null;
@@ -354,6 +365,7 @@ const BibliotecaCrista = {
                     <div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px;">${total} capítulo${total !== 1 ? 's' : ''}</div>
                 </div>
 
+                ${marcadorHtml}
                 ${continuarHtml}
 
                 ${livro.descricao ? `
@@ -410,6 +422,8 @@ const BibliotecaCrista = {
         modal.id = 'leitor-modal';
         modal.style.cssText = `position:fixed;inset:0;z-index:9999;background:${tema.bg};display:flex;flex-direction:column;`;
         
+        const marcadorAtual = this.config.marcadores && this.config.marcadores[livro.id];
+        const temMarcador = !!marcadorAtual;
         modal.innerHTML = `
             <div style="padding:10px 16px;background:${tema.header};display:flex;justify-content:space-between;align-items:center;">
                 <button onclick="BibliotecaCrista.voltar()" style="background:none;border:none;font-size:24px;">←</button>
@@ -417,7 +431,10 @@ const BibliotecaCrista = {
                     <div style="font-weight:bold;font-size:14px;">${livro.titulo}</div>
                     <div style="font-size:11px;opacity:0.6;">Cap ${cap.numero}/${livro.capitulos.length} <span id="biblio-progresso-pct" style="margin-left:4px;color:#b8860b;font-weight:600;">0%</span></div>
                 </div>
-                <button onclick="BibliotecaCrista.config()" style="background:none;border:none;font-size:20px;">⚙️</button>
+                <div style="display:flex;gap:4px;">
+                    <button id="biblio-btn-marcador" onclick="BibliotecaCrista.marcarPagina()" title="Marcar esta página (como um bookmark de livro físico)" style="background:none;border:none;font-size:20px;cursor:pointer;opacity:${temMarcador ? '1' : '0.6'};">${temMarcador ? '🔖' : '📑'}</button>
+                    <button onclick="BibliotecaCrista.config()" style="background:none;border:none;font-size:20px;">⚙️</button>
+                </div>
             </div>
 
             <!-- RÉGUA DE LEITURA (atualiza em tempo real conforme scroll) -->
@@ -939,6 +956,47 @@ const BibliotecaCrista = {
         scroll.addEventListener('scroll', this._scrollHandler, { passive: true });
         // Atualiza visual logo no abrir (caso restauração já tenha posicionado)
         setTimeout(() => this._atualizarReguaVisual(), 300);
+    },
+
+    // ============ MARCADOR (bookmark manual — tipo fita de livro físico) ============
+    marcarPagina() {
+        if (!this.livroAtual) return;
+        const livroId = this.livroAtual.id;
+        const scroll = document.getElementById('leitor-scroll');
+        if (!scroll) return;
+        const denom = scroll.scrollHeight - scroll.clientHeight;
+        const ratio = denom > 0 ? scroll.scrollTop / denom : 0;
+
+        if (!this.config.marcadores) this.config.marcadores = {};
+        const m = this.config.marcadores[livroId];
+
+        // Se já há marcador no mesmo cap e ~mesmo lugar, remove (toggle)
+        if (m && m.capIdx === this.capituloAtual && Math.abs((m.ratio || 0) - ratio) < 0.05) {
+            delete this.config.marcadores[livroId];
+            this.toast('🗑️ Marcador removido');
+        } else {
+            this.config.marcadores[livroId] = {
+                capIdx: this.capituloAtual,
+                ratio: ratio,
+                ts: Date.now()
+            };
+            this.toast('🔖 Marcador colocado');
+        }
+        this.salvar();
+        this._atualizarBotaoMarcador();
+    },
+
+    _atualizarBotaoMarcador() {
+        const btn = document.getElementById('biblio-btn-marcador');
+        if (!btn || !this.livroAtual) return;
+        const m = this.config.marcadores && this.config.marcadores[this.livroAtual.id];
+        if (m) {
+            btn.textContent = '🔖';
+            btn.style.opacity = '1';
+        } else {
+            btn.textContent = '📑';
+            btn.style.opacity = '0.6';
+        }
     },
 
     _atualizarReguaVisual() {
