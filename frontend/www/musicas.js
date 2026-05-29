@@ -150,6 +150,7 @@ Pappelallee 78/79, 10437 Berlin, Germany`
     volume: 0.3,
     tocando: false,
     carregando: false,
+    _musicasReady: false,
 
     // Pool com músicas administradas pelo painel (Firestore: conteudo_musicas)
     // Concatenadas às hardcoded. Estrutura esperada no Firestore:
@@ -166,6 +167,7 @@ Pappelallee 78/79, 10437 Berlin, Germany`
                 if (cache && cache.timestamp && (Date.now() - cache.timestamp < 24 * 60 * 60 * 1000)) {
                     this._musicasFirestore = cache.lista || [];
                     this._mergeFirestoreMusicas();
+                    this._musicasReady = true;
                     return;
                 }
             }
@@ -199,6 +201,7 @@ Pappelallee 78/79, 10437 Berlin, Germany`
         } catch (e) {
             console.warn('🎵 Falha lendo conteudo_musicas:', e.message);
         }
+        this._musicasReady = true;
     },
 
     // Mescla músicas do Firestore com as hardcoded (sem duplicar nomes)

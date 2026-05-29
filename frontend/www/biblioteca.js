@@ -446,40 +446,67 @@ const BibliotecaCrista = {
         }
     },
 
+    // M6 (Eduardo): TreeWalker percorre nodes de TEXTO (não HTML), então
+    // & < > acentos e caracteres especiais funcionam OK. Antes usava
+    // innerHTML.replace(regex) que destruía HTML quando o texto tinha
+    // entidades ou era escapado de jeito diferente. Bonus: não destrói
+    // listeners de seleção (não substitui innerHTML inteiro).
     marcarFallback(texto, cor) {
         const container = document.getElementById('texto-leitura');
         if (!container) return;
-        
-        const escaped = texto.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`(${escaped})`, 'i');
+        const alvo = (texto || '').trim();
+        if (alvo.length < 3) return;
         const grifoId = Date.now().toString();
-        
-        container.innerHTML = container.innerHTML.replace(regex, 
-            `<mark data-grifo-id="${grifoId}" onclick="event.stopPropagation();BibliotecaCrista.clicarGrifo('${grifoId}')" style="background:${cor.bg};color:${cor.texto};padding:2px 4px;border-radius:4px;cursor:pointer;">$1</mark>`
-        );
-        
+
+        // Percorre TODOS os text nodes procurando primeiro match case-insensitive
+        const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
+        let node, achouEm = null, achouIdx = -1;
+        const alvoLower = alvo.toLowerCase();
+        while ((node = walker.nextNode())) {
+            const idx = node.nodeValue.toLowerCase().indexOf(alvoLower);
+            if (idx >= 0) { achouEm = node; achouIdx = idx; break; }
+        }
+
+        if (!achouEm) {
+            console.warn('marcarFallback: texto não encontrado, salvando grifo mesmo assim');
+        } else {
+            // Eduardo: surroundContents() lança InvalidStateError se range cruza
+            // múltiplos nós (texto interrompido por <br>, <span>, etc). Trocamos
+            // por extractContents()+insertNode() que funciona com qualquer DOM.
+            const range = document.createRange();
+            range.setStart(achouEm, achouIdx);
+            range.setEnd(achouEm, achouIdx + alvo.length);
+            const mark = document.createElement('mark');
+            mark.setAttribute('data-grifo-id', grifoId);
+            mark.style.cssText = `background:${cor.bg};color:${cor.texto};padding:2px 4px;border-radius:4px;cursor:pointer;`;
+            mark.onclick = (e) => { e.stopPropagation(); this.clicarGrifo(grifoId); };
+            try {
+                const fragment = range.extractContents();
+                mark.appendChild(fragment);
+                range.insertNode(mark);
+            } catch (e) {
+                console.warn('marcarFallback: range manipulation falhou:', e.message);
+                // Grifo continua salvo em this.grifos abaixo, aparece em Marcações
+            }
+        }
+
         const grifo = {
             id: grifoId,
             livroId: this.livroAtual.id,
             livroTitulo: this.livroAtual.titulo,
             autor: this.livroAtual.autor,
             capitulo: this.capituloAtual + 1,
-            texto: texto.substring(0, 500),
+            texto: alvo.substring(0, 500),
             corBg: cor.bg,
             corTexto: cor.texto,
             corNome: cor.nome,
             data: new Date().toISOString()
         };
-        
         this.grifos.push(grifo);
         this.salvar();
         this.salvarFirebase();
-        
         window.getSelection()?.removeAllRanges();
-        
-        // Reativa eventos (innerHTML destruiu os listeners)
-        this.ativarEventosSelecao();
-
+        // Listeners de seleção continuam vivos (não destruímos innerHTML)
         this.toastComAcao('✅ Marcado!', '📤 Compartilhar', () => this.compartilharComoImagem(grifoId));
     },
 
@@ -575,6 +602,43 @@ const BibliotecaCrista = {
         }
     },
 
+    // M7: paleta dinâmica do card de compartilhar baseada no tema do leitor.
+    _paletteCardCompartilhar() {
+        const tema = this.config.temaLeitor || 'sepia';
+        const paletas = {
+            sepia: {
+                gradient: 'linear-gradient(135deg,#5b2206 0%,#a34b10 50%,#5b2206 100%)',
+                glow: 'rgba(255,224,153,0.35)',
+                accent: '#FFE08C',
+                text: '#FFF8E7',
+                titulo: '#FFE699',
+                quote: 'rgba(255,215,0,0.6)',
+                muted: 'rgba(255,248,231,0.65)'
+            },
+            claro: {
+                // Eduardo: texto escuro sobre fundo dourado fica ilegível em sol direto.
+                // Trocado pra branco com sombra escura (contraste WCAG AAA).
+                gradient: 'linear-gradient(135deg,#fbbf24 0%,#f59e0b 50%,#b45309 100%)',
+                glow: 'rgba(0,0,0,0.15)',
+                accent: '#FFFFFF',
+                text: '#FFFFFF',
+                titulo: '#FFFFFF',
+                quote: 'rgba(255,255,255,0.85)',
+                muted: 'rgba(255,255,255,0.75)'
+            },
+            escuro: {
+                gradient: 'linear-gradient(135deg,#3b1a52 0%,#2d1247 50%,#1a0a2e 100%)',
+                glow: 'rgba(255,215,0,0.25)',
+                accent: '#FFD700',
+                text: '#fff',
+                titulo: '#FFE699',
+                quote: 'rgba(255,215,0,0.6)',
+                muted: 'rgba(255,255,255,0.6)'
+            }
+        };
+        return paletas[tema] || paletas.sepia;
+    },
+
     // Premium check robusto. Eduardo apontou que pagamento.js salva como string
     // 'true' enquanto premium.js salva como JSON {ativo:true} — temos que aceitar
     // ambos sem explodir com TypeError no JSON.parse.
@@ -605,8 +669,10 @@ const BibliotecaCrista = {
     _restaurarPosicaoLivro() {
         const chave = this._chaveLivroAtual();
         if (!chave) return;
-        const ratio = this.config.posicoes && this.config.posicoes[chave];
-        // Só restaura se tem progresso REAL (> 5%) — evita toast em livro novo
+        const entry = this.config.posicoes && this.config.posicoes[chave];
+        if (!entry) return;
+        // Compat: pode ser shape antigo (number) OU novo ({ratio, ts})
+        const ratio = (typeof entry === 'number') ? entry : entry.ratio;
         if (!ratio || ratio < 0.05) return;
         const scroll = document.getElementById('leitor-scroll');
         if (!scroll) return;
@@ -638,10 +704,38 @@ const BibliotecaCrista = {
         const denom = (scroll.scrollHeight - scroll.clientHeight);
         const ratio = denom > 0 ? scroll.scrollTop / denom : 0;
         if (!this.config.posicoes) this.config.posicoes = {};
-        this.config.posicoes[chave] = ratio;
+        // M8: posições agora guardam timestamp pra LRU cleanup
+        this.config.posicoes[chave] = { ratio: ratio, ts: Date.now() };
+        this._trimPosicoes();
         this.salvar();
-        // Premium: também na nuvem
         if (this._isPremium()) this._sincronizarPosicoesFirebase();
+    },
+
+    // M8: mantém só as últimas 50 posições (LRU por timestamp).
+    // Evita o localStorage crescer indefinidamente com livros que o user
+    // abriu uma única vez e nunca mais voltou.
+    _trimPosicoes() {
+        const MAX = 50;
+        const p = this.config.posicoes || {};
+        const keys = Object.keys(p);
+        if (keys.length <= MAX) return;
+        // Eduardo apontou bug: entradas em formato antigo (number puro) tinham
+        // ts:0 e eram removidas PRIMEIRO — user perdia progresso de livros lidos
+        // antes do upgrade. Fix: migra entradas legadas pra Date.now() antes de
+        // ordenar, assim ficam preservadas e são tratadas como "recentes".
+        const agora = Date.now();
+        const ordenadas = keys.map(k => {
+            const entry = p[k];
+            if (entry == null) return { k: k, ts: 0 };
+            if (typeof entry === 'number') {
+                // Migra in-place pra novo formato
+                p[k] = { ratio: entry, ts: agora };
+                return { k: k, ts: agora };
+            }
+            return { k: k, ts: entry.ts || agora };
+        }).sort((a, b) => a.ts - b.ts);
+        const remover = ordenadas.slice(0, keys.length - MAX);
+        remover.forEach(item => delete p[item.k]);
     },
 
     async _sincronizarPosicoesFirebase() {
@@ -764,21 +858,25 @@ const BibliotecaCrista = {
         document.body.appendChild(spinner);
 
         // Cria card escondido com manto Maria de fundo
+        // M7 (Camila/Eduardo): cores do card seguem o tema atual da biblioteca
+        // pra ficar coerente com o que o user está vendo (sépia/claro/escuro).
+        const palette = this._paletteCardCompartilhar();
+
         const card = document.createElement('div');
         card.style.cssText = 'position:fixed;left:-99999px;top:0;width:540px;padding:0;background:#000;font-family:Georgia,serif;';
         card.innerHTML =
-            '<div style="position:relative;width:540px;height:720px;background:linear-gradient(135deg,#3b1a52 0%,#2d1247 50%,#1a0a2e 100%);overflow:hidden;">'
-            + '<div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%, rgba(255,215,0,0.25), transparent 60%);"></div>'
+            '<div style="position:relative;width:540px;height:720px;background:' + palette.gradient + ';overflow:hidden;">'
+            + '<div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%, ' + palette.glow + ', transparent 60%);"></div>'
             + '<div style="position:absolute;top:32px;left:50%;transform:translateX(-50%);font-size:38px;">✨</div>'
-            + '<div style="position:absolute;top:80px;left:30px;right:30px;text-align:center;color:#FFD700;font-style:italic;font-size:14px;letter-spacing:2px;">CONVERSE COM MARIA</div>'
-            + '<div style="position:absolute;top:140px;left:48px;right:48px;color:#fff;font-size:22px;line-height:1.6;text-align:center;text-shadow:0 2px 16px rgba(0,0,0,0.4);">'
-            + '<div style="font-size:60px;color:rgba(255,215,0,0.6);line-height:1;margin-bottom:8px;">“</div>'
+            + '<div style="position:absolute;top:80px;left:30px;right:30px;text-align:center;color:' + palette.accent + ';font-style:italic;font-size:14px;letter-spacing:2px;">CONVERSE COM MARIA</div>'
+            + '<div style="position:absolute;top:140px;left:48px;right:48px;color:' + palette.text + ';font-size:22px;line-height:1.6;text-align:center;text-shadow:0 2px 16px rgba(0,0,0,0.4);">'
+            + '<div style="font-size:60px;color:' + palette.quote + ';line-height:1;margin-bottom:8px;">“</div>'
             + grifo.texto
-            + '<div style="font-size:60px;color:rgba(255,215,0,0.6);line-height:1;margin-top:8px;">”</div>'
+            + '<div style="font-size:60px;color:' + palette.quote + ';line-height:1;margin-top:8px;">”</div>'
             + '</div>'
-            + '<div style="position:absolute;bottom:90px;left:30px;right:30px;text-align:center;color:#FFE699;font-size:16px;font-weight:bold;">' + grifo.livroTitulo + '</div>'
-            + '<div style="position:absolute;bottom:60px;left:30px;right:30px;text-align:center;color:rgba(255,255,255,0.6);font-size:12px;">Capítulo ' + (grifo.capitulo || '') + '</div>'
-            + '<div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.5);font-size:11px;">www.conversecommaria.com.br</div>'
+            + '<div style="position:absolute;bottom:90px;left:30px;right:30px;text-align:center;color:' + palette.titulo + ';font-size:16px;font-weight:bold;">' + grifo.livroTitulo + '</div>'
+            + '<div style="position:absolute;bottom:60px;left:30px;right:30px;text-align:center;color:' + palette.muted + ';font-size:12px;">Capítulo ' + (grifo.capitulo || '') + '</div>'
+            + '<div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;color:' + palette.muted + ';font-size:11px;">www.conversecommaria.com.br</div>'
             + '</div>';
         document.body.appendChild(card);
 
