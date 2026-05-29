@@ -151,6 +151,67 @@ Pappelallee 78/79, 10437 Berlin, Germany`
     tocando: false,
     carregando: false,
 
+    // Pool com músicas administradas pelo painel (Firestore: conteudo_musicas)
+    // Concatenadas às hardcoded. Estrutura esperada no Firestore:
+    //   titulo, artista, urlAudio, duracao (esses campos do painel-admin.html)
+    // Convertidos pra formato local {id, nome, descricao, icone, url, ...}
+    _musicasFirestore: [],
+
+    async _loadMusicasFromFirestore() {
+        // Cache 24h
+        try {
+            const raw = localStorage.getItem('maria_musicas_pool');
+            if (raw) {
+                const cache = JSON.parse(raw);
+                if (cache && cache.timestamp && (Date.now() - cache.timestamp < 24 * 60 * 60 * 1000)) {
+                    this._musicasFirestore = cache.lista || [];
+                    this._mergeFirestoreMusicas();
+                    return;
+                }
+            }
+        } catch (e) {}
+
+        if (!window.firebase || !firebase.firestore) return;
+        try {
+            const snap = await firebase.firestore().collection('conteudo_musicas').get();
+            const lista = [];
+            snap.forEach(doc => {
+                const d = doc.data();
+                if (!d.titulo || !d.urlAudio) return; // ignora docs incompletos
+                lista.push({
+                    id: 'fs_' + doc.id,
+                    nome: d.titulo,
+                    descricao: d.artista ? ('Por ' + d.artista) : '',
+                    icone: '🎵',
+                    url: d.urlAudio,
+                    urlFallback: null,
+                    categoria: d.categoria || 'sacra',
+                    autor: d.artista || '',
+                    autorUrl: d.autorUrl || '',
+                    duracao: d.duracao || null,
+                    _fromFirestore: true
+                });
+            });
+            this._musicasFirestore = lista;
+            localStorage.setItem('maria_musicas_pool', JSON.stringify({ timestamp: Date.now(), lista }));
+            console.log('🎵 Músicas do painel carregadas:', lista.length);
+            this._mergeFirestoreMusicas();
+        } catch (e) {
+            console.warn('🎵 Falha lendo conteudo_musicas:', e.message);
+        }
+    },
+
+    // Mescla músicas do Firestore com as hardcoded (sem duplicar nomes)
+    _mergeFirestoreMusicas() {
+        if (!this._musicasFirestore || this._musicasFirestore.length === 0) return;
+        // Remove qualquer entrada anterior do Firestore (idempotente)
+        this.musicas = this.musicas.filter(m => !m._fromFirestore);
+        // Adiciona logo após "Silêncio" pra dar destaque às curadas pelo JOs
+        const idxSilencio = this.musicas.findIndex(m => m.id === 'silencio');
+        const insertAt = idxSilencio >= 0 ? idxSilencio + 1 : 0;
+        this.musicas.splice(insertAt, 0, ...this._musicasFirestore);
+    },
+
     // Inicializar
     init() {
         const salvo = localStorage.getItem('mariaMusicaFundo');
@@ -161,9 +222,12 @@ Pappelallee 78/79, 10437 Berlin, Germany`
                 this.musicaAtual = config.musicaId;
             }
         }
-        
+
         // Injetar CSS da animação
         this.injetarCSS();
+
+        // Carrega músicas do painel admin em background (não bloqueia init)
+        this._loadMusicasFromFirestore().catch(e => console.warn('Músicas FS falhou:', e.message));
     },
     
     // Injetar CSS necessário
