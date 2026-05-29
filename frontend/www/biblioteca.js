@@ -196,6 +196,7 @@ const BibliotecaCrista = {
                 titulo: meta.titulo,
                 autor: meta.autor,
                 capa: meta.capa,
+                descricao: meta.descricao || '',
                 capitulos: meta._capitulos
             };
             this.livrosCache[id] = livro;
@@ -231,15 +232,24 @@ const BibliotecaCrista = {
         
         await this.carregarCatalogo();
         
-        document.getElementById('biblio-lista').innerHTML = this.catalogo.map(l => `
-            <div onclick="BibliotecaCrista.abrirLivro('${l.id}')" style="background:rgba(255,255,255,0.1);border-radius:16px;padding:16px;margin-bottom:12px;display:flex;gap:12px;align-items:center;">
-                <span style="font-size:40px;">${l.capa}</span>
-                <div>
-                    <div style="color:#fff;font-weight:bold;">${l.titulo}</div>
-                    <div style="color:#a5b4fc;font-size:14px;">${l.autor}</div>
+        document.getElementById('biblio-lista').innerHTML = this.catalogo.map(l => {
+            const ehImg = l.capa && (String(l.capa).startsWith('data:') || String(l.capa).startsWith('http'));
+            const capaHtml = ehImg
+                ? `<img src="${l.capa}" style="width:56px;height:80px;object-fit:cover;border-radius:6px;flex-shrink:0;box-shadow:0 4px 10px rgba(0,0,0,0.3);">`
+                : `<span style="font-size:46px;width:56px;text-align:center;flex-shrink:0;">${l.capa || '📖'}</span>`;
+            const desc = String(l.descricao || '').slice(0, 110);
+            const totalCaps = l._totalCapitulos || (l._capitulos ? l._capitulos.length : 0);
+            return `
+                <div onclick="BibliotecaCrista.abrirLivro('${l.id}')" style="background:rgba(255,255,255,0.1);border-radius:16px;padding:14px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                    ${capaHtml}
+                    <div style="flex:1;min-width:0;">
+                        <div style="color:#fff;font-weight:bold;font-size:15px;line-height:1.3;">${l.titulo}</div>
+                        <div style="color:#a5b4fc;font-size:13px;margin-top:2px;">${l.autor || ''}${totalCaps ? ` • ${totalCaps} cap${totalCaps !== 1 ? 's' : ''}` : ''}</div>
+                        ${desc ? `<div style="color:rgba(255,255,255,0.7);font-size:12px;line-height:1.4;margin-top:6px;">${desc}${l.descricao && l.descricao.length > 110 ? '…' : ''}</div>` : ''}
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     },
 
     fechar() {
@@ -251,9 +261,88 @@ const BibliotecaCrista = {
 
     async abrirLivro(id) {
         this.livroAtual = await this.carregarLivro(id);
-        this.capituloAtual = 0;
         this.canetaAtiva = null;
-        await this._garantirCapitulo(0);
+        this.renderInfoLivro();
+    },
+
+    // Tela intermediária: capa + descrição + lista de capítulos clicável.
+    // Substitui o comportamento antigo de ir direto pro cap 1.
+    renderInfoLivro() {
+        document.getElementById('biblio-modal')?.remove();
+        document.getElementById('info-modal')?.remove();
+        document.getElementById('leitor-modal')?.remove();
+
+        const livro = this.livroAtual;
+        const total = livro.capitulos.length;
+        const ehImg = livro.capa && (String(livro.capa).startsWith('data:') || String(livro.capa).startsWith('http'));
+        const capaHtml = ehImg
+            ? `<img src="${livro.capa}" style="width:140px;height:200px;object-fit:cover;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.4);">`
+            : `<div style="width:140px;height:200px;background:rgba(255,255,255,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:80px;box-shadow:0 12px 30px rgba(0,0,0,0.4);">${livro.capa || '📖'}</div>`;
+
+        // Lista de capítulos (renderiza nomes; placeholders mostram nº só)
+        const capsHtml = livro.capitulos.map((cap, idx) => {
+            const ehLazy = cap._lazy;
+            const tit = ehLazy ? '<span style="opacity:0.55;font-style:italic;">capítulo ' + cap.numero + '</span>' : (cap.titulo || ('Capítulo ' + cap.numero));
+            return `
+                <div onclick="BibliotecaCrista.iniciarLeitura(${idx})" style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,0.06);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+                    <div style="width:32px;height:32px;border-radius:50%;background:rgba(165,180,252,0.2);color:#a5b4fc;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0;">${cap.numero}</div>
+                    <div style="flex:1;color:#fff;font-size:14px;line-height:1.3;">${tit}</div>
+                    <div style="color:rgba(255,255,255,0.4);font-size:18px;">›</div>
+                </div>
+            `;
+        }).join('');
+
+        const modal = document.createElement('div');
+        modal.id = 'info-modal';
+        modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);display:flex;flex-direction:column;';
+
+        modal.innerHTML = `
+            <div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.2);">
+                <button onclick="BibliotecaCrista.voltarParaCatalogo()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:42px;height:42px;color:#fff;font-size:18px;cursor:pointer;">←</button>
+                <span style="color:#fff;font-size:15px;font-weight:600;opacity:0.85;">Detalhes do livro</span>
+                <div style="width:42px;"></div>
+            </div>
+            <div style="flex:1;overflow-y:auto;padding:24px 20px 80px;">
+                <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:24px;">
+                    ${capaHtml}
+                    <h2 style="color:#fff;font-size:22px;font-weight:bold;margin-top:18px;line-height:1.3;max-width:90%;">${livro.titulo}</h2>
+                    <div style="color:#a5b4fc;font-size:14px;margin-top:6px;">${livro.autor || ''}</div>
+                    <div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px;">${total} capítulo${total !== 1 ? 's' : ''}</div>
+                </div>
+
+                ${livro.descricao ? `
+                    <div style="background:rgba(255,255,255,0.06);border-radius:14px;padding:16px;margin-bottom:24px;">
+                        <div style="color:#a5b4fc;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:bold;">Sobre o livro</div>
+                        <div style="color:rgba(255,255,255,0.85);font-size:14px;line-height:1.6;">${livro.descricao}</div>
+                    </div>
+                ` : ''}
+
+                <button onclick="BibliotecaCrista.iniciarLeitura(0)" style="width:100%;padding:16px;background:linear-gradient(135deg,#fbbf24,#f59e0b);border:none;border-radius:14px;color:#1e1b4b;font-size:16px;font-weight:bold;cursor:pointer;box-shadow:0 8px 20px rgba(251,191,36,0.3);margin-bottom:24px;">
+                    📖 Começar a ler
+                </button>
+
+                <div style="color:#a5b4fc;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:bold;padding-left:4px;">Capítulos</div>
+                ${capsHtml}
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.style.overflow = 'hidden';
+    },
+
+    voltarParaCatalogo() {
+        document.getElementById('info-modal')?.remove();
+        this.abrir();
+    },
+
+    // Inicia leitura num capítulo específico (idx 0-based).
+    // Substitui o que o antigo abrirLivro fazia depois de carregar o livro.
+    async iniciarLeitura(idx) {
+        if (!this.livroAtual) return;
+        this.capituloAtual = Math.max(0, Math.min(idx, this.livroAtual.capitulos.length - 1));
+        this.canetaAtiva = null;
+        const ok = await this._garantirCapitulo(this.capituloAtual);
+        if (!ok) { this._avisoOffline(); return; }
         this.renderLeitor();
     },
 
