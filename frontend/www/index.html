@@ -2306,6 +2306,11 @@
 
         <div class="space-y-2">
             <div>
+                <label class="onb-label" for="onb-apelido">Como gostaria de ser chamado(a)?</label>
+                <input type="text" id="onb-apelido" class="onb-input" placeholder="Ex: Cris, Dudu, Leda…" maxlength="40" autocomplete="given-name" autocapitalize="words">
+                <small style="display:block;color:rgba(120,90,40,0.7);font-size:11px;margin-top:4px;font-style:italic">É como Maria vai te chamar — pode ser o apelido do coração ✨</small>
+            </div>
+            <div>
                 <label class="onb-label">Gênero:</label>
                 <div class="grid grid-cols-2 gap-2 mt-1">
                     <button onclick="selecionarGenero('masculino')" id="btn-masculino" class="choice-btn" type="button">
@@ -2599,7 +2604,12 @@ function irParaOnboarding() {
 // Mostrar onboarding e personalizar título
 function mostrarOnboarding() {
     document.getElementById('onboarding').classList.remove('hidden');
-    
+
+    // Pré-preencher campo apelido se já tem (veio da #tela-acesso ou de cadastro anterior)
+    const apelidoSalvo = localStorage.getItem('maria_user_apelido') || localStorage.getItem('maria_user_nome') || '';
+    const inputApelido = document.getElementById('onb-apelido');
+    if (inputApelido) inputApelido.value = apelidoSalvo;
+
     // Personalizar título com nome do usuário
     const nome = localStorage.getItem('maria_user_nome');
     if (nome) {
@@ -3387,20 +3397,35 @@ function selecionarFilhos(temFilhos) {
 
 // ==================== FINALIZAR CADASTRO ====================
 function finalizarCadastro() {
-    // Cadastro agora pede APELIDO (nome do coração) direto — não há mais nome completo
-    // O apelido fica em 'maria_user_nome' (compat) e em 'maria_user_apelido'
+    // Cadastro pede APELIDO direto (nome do coração) — também no #onboarding agora,
+    // pra cobrir o caso de usuário já logado no Firebase que pula a #tela-acesso.
+    const apelidoInput = document.getElementById('onb-apelido');
+    const apelidoDigitado = apelidoInput ? apelidoInput.value.trim() : '';
+    if (apelidoDigitado) {
+        localStorage.setItem('maria_user_apelido', apelidoDigitado);
+        localStorage.setItem('maria_user_nome', apelidoDigitado);
+    }
+
     const apelido = localStorage.getItem('maria_user_apelido')
                  || localStorage.getItem('maria_user_nome')
-                 || 'Devoto(a)';
-    userProfile.nome = apelido;
-    userProfile.apelido = apelido;
-    // Nome usado nas saudações = apelido (sem split — já é uma palavra)
-    userProfile.primeiroNome = apelido;
+                 || '';
 
+    const faltandoApelido = !apelido;
     const faltandoGenero = !userProfile.genero;
     const faltandoEstado = !userProfile.estadoCivil;
     const faltandoFilhos = (userProfile.temFilhos === null || userProfile.temFilhos === undefined);
     const faltandoPrivacidade = !privacyAccepted;
+
+    // Apelido obrigatório — sem ele a Maria fica chamando "Devoto(a)" pra sempre
+    if (faltandoApelido) {
+        _showOnbError('Como gostaria de ser chamado(a)? Preenche o apelido pra Maria saber seu nome 💛');
+        if (apelidoInput) apelidoInput.focus();
+        return;
+    }
+
+    userProfile.nome = apelido;
+    userProfile.apelido = apelido;
+    userProfile.primeiroNome = apelido;
 
     // Verificar campos obrigatórios
     if (faltandoGenero || faltandoEstado || faltandoFilhos) {
