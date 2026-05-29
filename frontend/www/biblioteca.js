@@ -6,7 +6,7 @@
 const BibliotecaCrista = {
     URL_BASE: 'https://conversecommaria.com.br/livros',
     
-    config: { tamanhoFonte: 22, temaLeitor: 'sepia' },
+    config: { tamanhoFonte: 22, temaLeitor: 'sepia', posicoes: {} },
     catalogo: [],
     livrosCache: {},
     grifos: [],
@@ -258,8 +258,10 @@ const BibliotecaCrista = {
         document.body.appendChild(modal);
         document.body.style.overflow = 'hidden';
         
-        // Restaurar grifos
+        // Restaurar grifos + posição salva (régua) + tracking de scroll
         setTimeout(() => this.restaurarGrifos(), 100);
+        setTimeout(() => this._restaurarPosicaoLivro(), 250);
+        this._iniciarTrackingScroll();
         
         // Se caneta estava ativa, reativar
         if (this.canetaAtiva) {
@@ -436,7 +438,7 @@ const BibliotecaCrista = {
             this.salvarFirebase();
 
             console.log('✅ MARCADO!');
-            this.toastComAcao('✅ Marcado!', '📤 Compartilhar', () => this.compartilharGrifo(grifoId));
+            this.toastComAcao('✅ Marcado!', '📤 Compartilhar', () => this.compartilharComoImagem(grifoId));
 
         } catch (e) {
             console.log('Usando fallback...');
@@ -478,7 +480,7 @@ const BibliotecaCrista = {
         // Reativa eventos (innerHTML destruiu os listeners)
         this.ativarEventosSelecao();
 
-        this.toastComAcao('✅ Marcado!', '📤 Compartilhar', () => this.compartilharGrifo(grifoId));
+        this.toastComAcao('✅ Marcado!', '📤 Compartilhar', () => this.compartilharComoImagem(grifoId));
     },
 
     restaurarGrifos() {
@@ -514,7 +516,7 @@ const BibliotecaCrista = {
                 <div style="background:${grifo.corBg};color:${grifo.corTexto};padding:16px;border-radius:12px;margin-bottom:16px;">
                     <p style="margin:0;font-size:14px;line-height:1.5;">"${grifo.texto}"</p>
                 </div>
-                <button onclick="BibliotecaCrista.compartilharGrifo('${id}')" style="width:100%;padding:14px;background:#4f46e5;color:#fff;border:none;border-radius:12px;font-weight:bold;margin-bottom:10px;">📤 Compartilhar</button>
+                <button onclick="BibliotecaCrista.compartilharComoImagem('${id}')" style="width:100%;padding:14px;background:#4f46e5;color:#fff;border:none;border-radius:12px;font-weight:bold;margin-bottom:10px;">📤 Compartilhar</button>
                 <button onclick="BibliotecaCrista.removerGrifo('${id}')" style="width:100%;padding:14px;background:#fee2e2;color:#dc2626;border:none;border-radius:12px;font-weight:bold;margin-bottom:10px;">🗑️ Remover</button>
                 <button onclick="document.getElementById('grifo-modal').remove()" style="width:100%;padding:12px;background:#f3f4f6;color:#666;border:none;border-radius:12px;">Cancelar</button>
             </div>
@@ -544,13 +546,265 @@ const BibliotecaCrista = {
         this.toast('🗑️ Removido!');
     },
 
-    async salvarFirebase() {
+    // Premium-only sync na nuvem. Debounce 3s — se user marca 10 grifos
+    // em sequência, só dispara UMA write batched ao final.
+    salvarFirebase() {
+        if (!this._isPremium()) return;
+        if (this._saveTimer) clearTimeout(this._saveTimer);
+        this._saveTimer = setTimeout(() => this._doSalvarFirebase(), 3000);
+    },
+
+    async _doSalvarFirebase() {
+        if (!this._isPremium()) return;
         try {
-            if (!firebase?.auth) return;
+            if (!window.firebase || !firebase.auth) return;
             const user = firebase.auth().currentUser;
             if (!user) return;
-            await firebase.firestore().collection('usuarios').doc(user.uid).collection('biblioteca').doc('grifos').set({ lista: this.grifos });
-        } catch(e) {}
+            await firebase.firestore()
+                .collection('usuarios').doc(user.uid)
+                .collection('biblioteca').doc('grifos')
+                .set({ lista: this.grifos, atualizadoEm: new Date().toISOString() });
+            this._retryCount = 0;
+        } catch (e) {
+            console.warn('[biblioteca] salvarFirebase falhou:', e.message);
+            this._retryCount = (this._retryCount || 0) + 1;
+            if (this._retryCount <= 3) {
+                const delay = Math.pow(3, this._retryCount) * 5000; // 15s, 45s, 135s
+                setTimeout(() => this._doSalvarFirebase(), delay);
+            }
+        }
+    },
+
+    // Premium check robusto. Eduardo apontou que pagamento.js salva como string
+    // 'true' enquanto premium.js salva como JSON {ativo:true} — temos que aceitar
+    // ambos sem explodir com TypeError no JSON.parse.
+    _isPremium() {
+        try {
+            // Caminho preferido: API de TelaPremium
+            if (window.TelaPremium && typeof TelaPremium.isPremium === 'function') {
+                const r = TelaPremium.isPremium();
+                if (r === true) return true;
+                if (r === false) return false; // não cai pro fallback se função disse não
+            }
+            const p = localStorage.getItem('mariaPremium');
+            if (!p) return false;
+            if (p === 'true') return true;
+            try {
+                const obj = JSON.parse(p);
+                return obj && obj.ativo === true;
+            } catch (e) { return false; }
+        } catch (e) { return false; }
+    },
+
+    // ============ RÉGUA (posição de leitura) ============
+    _chaveLivroAtual() {
+        if (!this.livroAtual) return null;
+        return (this.livroAtual.id || this.livroAtual.titulo) + '::cap' + this.capituloAtual;
+    },
+
+    _restaurarPosicaoLivro() {
+        const chave = this._chaveLivroAtual();
+        if (!chave) return;
+        const ratio = this.config.posicoes && this.config.posicoes[chave];
+        // Só restaura se tem progresso REAL (> 5%) — evita toast em livro novo
+        if (!ratio || ratio < 0.05) return;
+        const scroll = document.getElementById('leitor-scroll');
+        if (!scroll) return;
+        const targetTop = (scroll.scrollHeight - scroll.clientHeight) * ratio;
+        scroll.scrollTop = targetTop;
+        this.toast('📖 Voltei pra onde você parou');
+    },
+
+    _iniciarTrackingScroll() {
+        const scroll = document.getElementById('leitor-scroll');
+        if (!scroll) return;
+        // Remove listener anterior se existir (evita stacking)
+        if (this._scrollHandler && this._scrollEl) {
+            try { this._scrollEl.removeEventListener('scroll', this._scrollHandler); } catch(e) {}
+        }
+        let timer = null;
+        this._scrollHandler = () => {
+            if (timer) clearTimeout(timer);
+            timer = setTimeout(() => this._salvarPosicaoAtual(), 1000);
+        };
+        this._scrollEl = scroll;
+        scroll.addEventListener('scroll', this._scrollHandler, { passive: true });
+    },
+
+    _salvarPosicaoAtual() {
+        const scroll = document.getElementById('leitor-scroll');
+        const chave = this._chaveLivroAtual();
+        if (!scroll || !chave) return;
+        const denom = (scroll.scrollHeight - scroll.clientHeight);
+        const ratio = denom > 0 ? scroll.scrollTop / denom : 0;
+        if (!this.config.posicoes) this.config.posicoes = {};
+        this.config.posicoes[chave] = ratio;
+        this.salvar();
+        // Premium: também na nuvem
+        if (this._isPremium()) this._sincronizarPosicoesFirebase();
+    },
+
+    async _sincronizarPosicoesFirebase() {
+        if (!this._isPremium()) return;
+        try {
+            if (!window.firebase || !firebase.auth) return;
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+            await firebase.firestore()
+                .collection('usuarios').doc(user.uid)
+                .collection('biblioteca').doc('posicoes')
+                .set({ mapa: this.config.posicoes, atualizadoEm: new Date().toISOString() });
+        } catch (e) {
+            console.warn('[biblioteca] sync posições falhou:', e.message);
+        }
+    },
+
+    // ============ PDF CADERNO ESPIRITUAL (Premium) ============
+    exportarCadernoPDF() {
+        if (!this._isPremium()) {
+            this.toast('👑 Caderno em PDF é exclusivo Premium');
+            setTimeout(() => {
+                if (window.TelaPremium) TelaPremium.abrir('📒 Exporte seu Caderno Espiritual em PDF');
+            }, 1200);
+            return;
+        }
+        if (this.grifos.length === 0) {
+            this.toast('Você ainda não fez marcações pra exportar');
+            return;
+        }
+
+        // Agrupa grifos por livro
+        const porLivro = {};
+        this.grifos.forEach(g => {
+            if (!porLivro[g.livroId]) porLivro[g.livroId] = { titulo: g.livroTitulo, lista: [] };
+            porLivro[g.livroId].lista.push(g);
+        });
+
+        const dataFmt = new Date().toLocaleDateString('pt-BR', { year:'numeric', month:'long', day:'numeric' });
+        const nomeUsuario = (() => {
+            try {
+                const p = JSON.parse(localStorage.getItem('maria_user_profile') || '{}');
+                return p.apelido || p.nome || 'Devoto(a)';
+            } catch(e) { return 'Devoto(a)'; }
+        })();
+
+        const html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Caderno Espiritual — ' + nomeUsuario + '</title>'
+            + '<style>'
+            + '@page { margin: 2cm 1.5cm; }'
+            + 'body { font-family: Georgia, serif; max-width: 820px; margin: 0 auto; padding: 20px; line-height: 1.7; color: #2b1b12; background: #fef8eb; }'
+            + 'h1 { color: #6b2d06; text-align: center; border-bottom: 3px double #d48a00; padding-bottom: 14px; margin-bottom: 4px; font-size: 28px; }'
+            + '.sub { text-align: center; color: #8b6914; font-style: italic; margin-bottom: 30px; }'
+            + 'h2 { color: #8b4513; margin-top: 36px; padding: 8px 14px; background: rgba(245, 201, 122, 0.4); border-radius: 8px; border-left: 5px solid #d48a00; }'
+            + '.grifo { padding: 14px 16px; border-radius: 10px; margin: 10px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }'
+            + '.cap { font-size: 12px; color: #8b6914; margin-top: 6px; font-style: italic; }'
+            + '.rodape { text-align: center; margin-top: 50px; padding-top: 14px; border-top: 1px dashed #d4a574; color: #8b6914; font-size: 12px; }'
+            + '@media print { body { background: white; } }'
+            + '</style></head><body>'
+            + '<h1>📒 Caderno Espiritual</h1>'
+            + '<p class="sub">de <strong>' + nomeUsuario + '</strong> — ' + dataFmt + '</p>';
+
+        let secoes = '';
+        Object.values(porLivro).forEach(l => {
+            secoes += '<h2>📖 ' + l.titulo + '</h2>';
+            l.lista.forEach(g => {
+                secoes += '<div class="grifo" style="background:' + (g.corBg || '#FEF08A') + ';color:' + (g.corTexto || '#713F12') + ';">'
+                       + '"' + g.texto + '"'
+                       + '<div class="cap">Capítulo ' + (g.capitulo || '?') + '</div>'
+                       + '</div>';
+            });
+        });
+
+        const finalHtml = html + secoes
+            + '<div class="rodape">Marcações feitas no app <strong>Converse com Maria</strong><br>www.conversecommaria.com.br</div>'
+            + '</body></html>';
+
+        // Pop-up bloqueado em iOS PWA. Usa same-window overlay + iframe + botão claro.
+        const overlay = document.createElement('div');
+        overlay.id = 'biblio-pdf-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:1000000;background:#000;display:flex;flex-direction:column;';
+        overlay.innerHTML =
+            '<div style="background:linear-gradient(135deg,#5b2206,#a34b10);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;color:#fff;">'
+            + '  <button onclick="document.getElementById(\'biblio-pdf-overlay\').remove()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px;">✕</button>'
+            + '  <span style="font-weight:bold;">📒 Seu Caderno Espiritual</span>'
+            + '  <button id="btn-imprimir-pdf" style="background:linear-gradient(135deg,#fbbf24,#d97706);border:none;color:#000;padding:10px 16px;border-radius:30px;font-weight:bold;font-size:14px;">🖨️ Salvar PDF</button>'
+            + '</div>'
+            + '<iframe id="iframe-pdf" style="flex:1;border:none;width:100%;background:#fef8eb;"></iframe>';
+        document.body.appendChild(overlay);
+        const iframe = document.getElementById('iframe-pdf');
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(finalHtml);
+        iframe.contentDocument.close();
+        document.getElementById('btn-imprimir-pdf').onclick = () => {
+            try { iframe.contentWindow.print(); } catch (e) { console.error(e); }
+        };
+        // Banner instruindo
+        setTimeout(() => this.toast('🖨️ Toque em "Salvar PDF" no topo →'), 600);
+    },
+
+    // ============ COMPARTILHAR GRIFO COMO IMAGEM ============
+    async compartilharComoImagem(grifoId) {
+        // Bloqueia cliques múltiplos (html2canvas é pesado, leva 2-5s)
+        if (this._compartilhando) return;
+        this._compartilhando = true;
+
+        const grifo = this.grifos.find(g => g.id === grifoId);
+        if (!grifo) { this._compartilhando = false; return; }
+
+        if (typeof html2canvas === 'undefined') {
+            this._compartilhando = false;
+            this.compartilharGrifo(grifoId);
+            return;
+        }
+
+        // Spinner visual
+        const spinner = document.createElement('div');
+        spinner.id = 'biblio-spinner';
+        spinner.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;';
+        spinner.innerHTML = '<div style="width:48px;height:48px;border:4px solid rgba(255,255,255,0.2);border-top-color:#FFD700;border-radius:50%;animation:spin 1s linear infinite;"></div><p style="color:#fff;font-size:14px;">Preparando imagem...</p><style>@keyframes spin{to{transform:rotate(360deg);}}</style>';
+        document.body.appendChild(spinner);
+
+        // Cria card escondido com manto Maria de fundo
+        const card = document.createElement('div');
+        card.style.cssText = 'position:fixed;left:-99999px;top:0;width:540px;padding:0;background:#000;font-family:Georgia,serif;';
+        card.innerHTML =
+            '<div style="position:relative;width:540px;height:720px;background:linear-gradient(135deg,#3b1a52 0%,#2d1247 50%,#1a0a2e 100%);overflow:hidden;">'
+            + '<div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%, rgba(255,215,0,0.25), transparent 60%);"></div>'
+            + '<div style="position:absolute;top:32px;left:50%;transform:translateX(-50%);font-size:38px;">✨</div>'
+            + '<div style="position:absolute;top:80px;left:30px;right:30px;text-align:center;color:#FFD700;font-style:italic;font-size:14px;letter-spacing:2px;">CONVERSE COM MARIA</div>'
+            + '<div style="position:absolute;top:140px;left:48px;right:48px;color:#fff;font-size:22px;line-height:1.6;text-align:center;text-shadow:0 2px 16px rgba(0,0,0,0.4);">'
+            + '<div style="font-size:60px;color:rgba(255,215,0,0.6);line-height:1;margin-bottom:8px;">“</div>'
+            + grifo.texto
+            + '<div style="font-size:60px;color:rgba(255,215,0,0.6);line-height:1;margin-top:8px;">”</div>'
+            + '</div>'
+            + '<div style="position:absolute;bottom:90px;left:30px;right:30px;text-align:center;color:#FFE699;font-size:16px;font-weight:bold;">' + grifo.livroTitulo + '</div>'
+            + '<div style="position:absolute;bottom:60px;left:30px;right:30px;text-align:center;color:rgba(255,255,255,0.6);font-size:12px;">Capítulo ' + (grifo.capitulo || '') + '</div>'
+            + '<div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.5);font-size:11px;">www.conversecommaria.com.br</div>'
+            + '</div>';
+        document.body.appendChild(card);
+
+        try {
+            const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
+            document.body.removeChild(card);
+            document.getElementById('biblio-spinner')?.remove();
+
+            if (window.CompartilharService) {
+                await CompartilharService.compartilharComImagem(canvas, 'Grifo de Maria', '"' + grifo.texto + '" — ' + grifo.livroTitulo);
+            } else {
+                const url = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'grifo-maria.png';
+                a.click();
+                this.toast('💾 Imagem baixada');
+            }
+        } catch (e) {
+            console.error('compartilharComoImagem:', e);
+            try { document.body.removeChild(card); } catch(_) {}
+            document.getElementById('biblio-spinner')?.remove();
+            this.toast('Erro ao gerar imagem');
+        } finally {
+            this._compartilhando = false;
+        }
     },
 
     voltar() {
@@ -590,7 +844,7 @@ const BibliotecaCrista = {
             <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
                 <button onclick="BibliotecaCrista.abrir()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:44px;height:44px;color:#fff;font-size:20px;">←</button>
                 <span style="color:#fff;font-size:18px;font-weight:bold;">🖍️ Marcações</span>
-                <div style="width:44px;"></div>
+                <button onclick="BibliotecaCrista.exportarCadernoPDF()" aria-label="Exportar PDF" title="Exportar caderno em PDF (Premium)" style="background:linear-gradient(135deg,#fbbf24,#d97706);border:none;border-radius:50%;width:44px;height:44px;color:#000;font-size:18px;font-weight:bold;">📒</button>
             </div>
             <div style="flex:1;overflow-y:auto;padding:16px;">
                 ${this.grifos.length === 0 ? '<p style="color:#fff;text-align:center;opacity:0.6;">Nenhuma marcação</p>' : 
@@ -600,7 +854,7 @@ const BibliotecaCrista = {
                         ${l.lista.map(g => `
                             <div onclick="BibliotecaCrista.clicarGrifo('${g.id}')" style="background:${g.corBg};color:${g.corTexto};padding:12px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;cursor:pointer;">
                                 <p style="margin:0;font-size:14px;flex:1;">"${g.texto}"</p>
-                                <button onclick="event.stopPropagation();BibliotecaCrista.compartilharGrifo('${g.id}')" style="background:rgba(0,0,0,0.15);border:none;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:${g.corTexto};flex-shrink:0;">📤</button>
+                                <button onclick="event.stopPropagation();BibliotecaCrista.compartilharComoImagem('${g.id}')" style="background:rgba(0,0,0,0.15);border:none;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:${g.corTexto};flex-shrink:0;">📤</button>
                             </div>
                         `).join('')}
                     </div>
