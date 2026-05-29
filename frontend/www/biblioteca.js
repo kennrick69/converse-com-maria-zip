@@ -415,11 +415,16 @@ const BibliotecaCrista = {
                 <button onclick="BibliotecaCrista.voltar()" style="background:none;border:none;font-size:24px;">←</button>
                 <div style="text-align:center;color:${tema.cor};">
                     <div style="font-weight:bold;font-size:14px;">${livro.titulo}</div>
-                    <div style="font-size:11px;opacity:0.6;">Cap ${cap.numero}/${livro.capitulos.length}</div>
+                    <div style="font-size:11px;opacity:0.6;">Cap ${cap.numero}/${livro.capitulos.length} <span id="biblio-progresso-pct" style="margin-left:4px;color:#b8860b;font-weight:600;">0%</span></div>
                 </div>
                 <button onclick="BibliotecaCrista.config()" style="background:none;border:none;font-size:20px;">⚙️</button>
             </div>
-            
+
+            <!-- RÉGUA DE LEITURA (atualiza em tempo real conforme scroll) -->
+            <div style="height:3px;background:rgba(0,0,0,0.08);position:relative;">
+                <div id="biblio-progresso-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#fbbf24,#f59e0b);transition:width 0.15s ease-out;box-shadow:0 0 6px rgba(251,191,36,0.6);"></div>
+            </div>
+
             <!-- BARRA DA CANETA -->
             <div id="barra-caneta" style="display:none;padding:10px;text-align:center;font-weight:bold;">
                 ✨ Toque no trecho que quer marcar
@@ -924,11 +929,28 @@ const BibliotecaCrista = {
         }
         let timer = null;
         this._scrollHandler = () => {
+            // Atualização visual da régua é imediata (cada scroll event)
+            this._atualizarReguaVisual();
+            // Salvamento debounced em 1s (evita escrita excessiva no localStorage)
             if (timer) clearTimeout(timer);
             timer = setTimeout(() => this._salvarPosicaoAtual(), 1000);
         };
         this._scrollEl = scroll;
         scroll.addEventListener('scroll', this._scrollHandler, { passive: true });
+        // Atualiza visual logo no abrir (caso restauração já tenha posicionado)
+        setTimeout(() => this._atualizarReguaVisual(), 300);
+    },
+
+    _atualizarReguaVisual() {
+        const scroll = document.getElementById('leitor-scroll');
+        const fill = document.getElementById('biblio-progresso-fill');
+        const pct = document.getElementById('biblio-progresso-pct');
+        if (!scroll) return;
+        const denom = scroll.scrollHeight - scroll.clientHeight;
+        const ratio = denom > 0 ? scroll.scrollTop / denom : 0;
+        const p = Math.round(ratio * 100);
+        if (fill) fill.style.width = p + '%';
+        if (pct) pct.textContent = p + '%';
     },
 
     _salvarPosicaoAtual() {
