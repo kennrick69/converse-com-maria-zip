@@ -1553,13 +1553,30 @@
                         '<input id="liv-autor" type="text" value="' + escapeHtml(livro.autor || '') + '" style="' + inputStyle + '">' +
                         '<label style="' + labelStyle + '">Descrição</label>' +
                         '<textarea id="liv-descricao" rows="3" style="' + inputStyle + ';resize:vertical">' + escapeHtml(livro.descricao || '') + '</textarea>' +
-                        '<label style="' + labelStyle + '">Capa (emoji, URL ou data:base64)</label>' +
-                        '<input id="liv-capa" type="text" value="' + escapeHtml(livro.capa || '') + '" style="' + inputStyle + '">' +
+                        '<label style="' + labelStyle + '">Capa (emoji, URL, data:base64 ou upload)</label>' +
+                        '<input id="liv-capa" type="text" value="' + escapeHtml(livro.capa || '') + '" style="' + inputStyle + '" placeholder="Ex: 📕 ou https://... ou cole base64">' +
+                        '<div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap">' +
+                            '<input type="file" id="liv-capa-file" accept="image/*" style="display:none">' +
+                            '<button type="button" class="btn-action blue" style="padding:8px 14px;font-size:12px" onclick="document.getElementById(\'liv-capa-file\').click()">📁 Upload imagem</button>' +
+                            '<span id="liv-capa-status" style="font-size:11px;color:var(--text-secondary)">redimensiona pra max 400×600 e comprime JPEG 0.85</span>' +
+                        '</div>' +
+                        '<div id="liv-capa-preview" style="margin-top:10px"></div>' +
                         '<label style="' + labelStyle + '">Ordem (menor = aparece primeiro)</label>' +
                         '<input id="liv-ordem" type="number" value="' + (livro.ordem != null ? livro.ordem : 999) + '" style="' + inputStyle + '">' +
                         '<div style="display:flex;gap:10px;margin-top:20px">' +
                             '<button class="btn-action green" style="flex:1" onclick="LivrosAdmin._salvarMeta()">💾 Salvar dados gerais</button>' +
                         '</div>';
+                    // Bind do upload + preview inicial
+                    const fileInput = document.getElementById('liv-capa-file');
+                    if (fileInput) {
+                        fileInput.addEventListener('change', e => {
+                            if (e.target.files[0]) this._processarCapaUpload(e.target.files[0]);
+                        });
+                    }
+                    if (livro.capa && (String(livro.capa).startsWith('data:') || String(livro.capa).startsWith('http'))) {
+                        const prev = document.getElementById('liv-capa-preview');
+                        if (prev) prev.innerHTML = '<img src="' + escapeHtml(livro.capa) + '" style="max-width:120px;max-height:180px;border-radius:8px;border:1px solid var(--border);background:var(--bg-dark)">';
+                    }
                 } else {
                     const total = livro.totalCapitulos || (livro.cap1 ? 1 : 0);
                     const linhas = [];
@@ -1775,6 +1792,55 @@
                     toast('✅ Dados gerais salvos', 'success');
                     this.renderizar();
                 } catch (e) { toast('Erro: ' + e.message, 'error'); }
+            },
+
+            async _processarCapaUpload(file) {
+                const status = document.getElementById('liv-capa-status');
+                const preview = document.getElementById('liv-capa-preview');
+                if (!file) return;
+                if (!/^image\//.test(file.type)) {
+                    status.textContent = '❌ Não é uma imagem';
+                    return;
+                }
+                status.textContent = 'Processando...';
+                try {
+                    const dataUrl = await new Promise((res, rej) => {
+                        const r = new FileReader();
+                        r.onload = () => res(r.result);
+                        r.onerror = rej;
+                        r.readAsDataURL(file);
+                    });
+                    const img = new Image();
+                    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = dataUrl; });
+                    const maxW = 400, maxH = 600;
+                    let w = img.width, h = img.height;
+                    if (w > maxW || h > maxH) {
+                        const ratio = Math.min(maxW / w, maxH / h);
+                        w = Math.round(w * ratio);
+                        h = Math.round(h * ratio);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    // Fundo branco pra PNGs com transparência
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.drawImage(img, 0, 0, w, h);
+                    // Tenta qualidade 0.85; se > 150KB, baixa pra 0.7
+                    let out = canvas.toDataURL('image/jpeg', 0.85);
+                    let kb = Math.round(out.length / 1024);
+                    if (kb > 150) {
+                        out = canvas.toDataURL('image/jpeg', 0.7);
+                        kb = Math.round(out.length / 1024);
+                    }
+                    document.getElementById('liv-capa').value = out;
+                    status.textContent = '✅ ' + w + '×' + h + 'px • ~' + kb + ' KB (clica Salvar)';
+                    preview.innerHTML = '<img src="' + out + '" style="max-width:120px;max-height:180px;border-radius:8px;border:1px solid var(--border)">';
+                } catch (e) {
+                    status.textContent = '❌ Erro: ' + e.message;
+                    console.error(e);
+                }
             },
 
             copiarPromptIA() {
