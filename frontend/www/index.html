@@ -307,6 +307,37 @@
             }
         }
         
+        /* Feedback inline 👍/👎 nas mensagens da Maria */
+        .bubble-feedback {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            opacity: 0.45;
+            transition: opacity 0.2s;
+        }
+        .bubble-feedback:hover { opacity: 1; }
+        .bubble-feedback button {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px;
+            padding: 4px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .bubble-feedback button:hover { background: rgba(255,255,255,0.18); transform: scale(1.05); }
+        .bubble-feedback button:disabled { cursor: default; transform: none; }
+        .bubble-feedback button.fb-active-positivo {
+            background: rgba(34, 197, 94, 0.35);
+            border-color: rgba(34, 197, 94, 0.7);
+            opacity: 1;
+        }
+        .bubble-feedback button.fb-active-negativo {
+            background: rgba(239, 68, 68, 0.35);
+            border-color: rgba(239, 68, 68, 0.7);
+            opacity: 1;
+        }
+
         /* SPLASH SCREEN */
         #splash {
             position: fixed;
@@ -3972,6 +4003,57 @@ function initChatExtras() {
 // ==================== MENSAGENS ====================
 let mensagemId = 0;
 
+// ==================== FEEDBACK INLINE (👍 / 👎 em mensagens da Maria) ====================
+// Coleta sinal de qualidade pra refinar prompt. Salva em Firestore:
+// feedbacks_maria/{auto-id} → { userId, tipo, mensagemMaria, mensagemUser, ts }
+window.enviarFeedbackMaria = async function(messageId, tipo, btnEl) {
+    try {
+        const container = document.getElementById('fb-' + messageId);
+        if (!container) return;
+        if (container.dataset.enviado === 'true') return;
+        container.dataset.enviado = 'true';
+
+        // Marca visualmente o botão clicado
+        container.querySelectorAll('button').forEach(b => {
+            b.classList.remove('fb-active-positivo', 'fb-active-negativo');
+            b.disabled = true;
+        });
+        btnEl.classList.add(tipo === 'positivo' ? 'fb-active-positivo' : 'fb-active-negativo');
+
+        // Texto da mensagem da Maria
+        const textoMaria = document.getElementById('texto-' + messageId)?.innerText || '';
+
+        // Última mensagem do user (a que gerou esta resposta)
+        const todasRows = document.querySelectorAll('.msg-row');
+        let mensagemUser = '';
+        for (let i = todasRows.length - 1; i >= 0; i--) {
+            if (todasRows[i].classList.contains('is-user')) {
+                mensagemUser = todasRows[i].querySelector('.bubble-text')?.innerText || '';
+                break;
+            }
+        }
+
+        if (window.firebase && firebase.firestore) {
+            const user = firebase.auth && firebase.auth().currentUser;
+            await firebase.firestore().collection('feedbacks_maria').add({
+                userId: user?.uid || 'anonimo',
+                email: user?.email || null,
+                tipo: tipo,
+                mensagemMaria: String(textoMaria).slice(0, 4000),
+                mensagemUser: String(mensagemUser).slice(0, 2000),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                userAgent: navigator.userAgent.slice(0, 200)
+            });
+        }
+
+        if (window.showToast) {
+            showToast(tipo === 'positivo' ? '💛 Obrigada pelo feedback!' : '🙏 Anotado, vou rezar por isso');
+        }
+    } catch (e) {
+        console.warn('[feedback] não salvou:', e.message);
+    }
+};
+
 function adicionarMensagem(role, content) {
     const container = document.getElementById('mensagens-container');
     const row = document.createElement('div');
@@ -3984,6 +4066,12 @@ function adicionarMensagem(role, content) {
             ${getIconeAudio()}
         </button>` : '';
 
+    const botoesFeedback = role === 'assistant' ? `
+        <div class="bubble-feedback" id="fb-${idAtual}" title="Essa resposta te ajudou?">
+            <button type="button" onclick="enviarFeedbackMaria(${idAtual}, 'positivo', this)" aria-label="Resposta útil">👍</button>
+            <button type="button" onclick="enviarFeedbackMaria(${idAtual}, 'negativo', this)" aria-label="Resposta não ajudou">👎</button>
+        </div>` : '';
+
     row.innerHTML = `
         <div class="bubble ${role === 'user' ? 'bubble-user' : 'bubble-bot'}">
             ${role === 'assistant' ? `
@@ -3993,6 +4081,7 @@ function adicionarMensagem(role, content) {
               </div>` : ''}
             <p id="texto-${idAtual}" class="bubble-text">${content}</p>
             ${botaoAudio}
+            ${botoesFeedback}
         </div>`;
 
     container.appendChild(row);

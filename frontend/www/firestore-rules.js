@@ -85,6 +85,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // FEEDBACKS da Maria — qualquer logado pode CRIAR (👍/👎), só admin lê.
+    // Não permite update/delete pelo user (evita manipulação retroativa).
+    match /feedbacks_maria/{docId} {
+      allow read: if isAdmin();
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+
     // DEFAULT DENY — qualquer collection futura sem regra fica BLOQUEADA
     match /{document=**} {
       allow read, write: if false;
