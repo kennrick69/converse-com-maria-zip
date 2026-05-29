@@ -265,6 +265,26 @@ const BibliotecaCrista = {
         this.renderInfoLivro();
     },
 
+    // Encontra última posição salva pra esse livro (régua automática).
+    // Retorna {capIdx, ratio, ts} ou null.
+    _ultimaPosicaoLivro(livroId) {
+        const p = this.config.posicoes || {};
+        const prefixo = livroId + '::cap';
+        let melhor = null;
+        for (const chave of Object.keys(p)) {
+            if (!chave.startsWith(prefixo)) continue;
+            const capIdx = parseInt(chave.slice(prefixo.length), 10);
+            if (isNaN(capIdx)) continue;
+            const entry = p[chave];
+            const ts = (typeof entry === 'number') ? 0 : (entry.ts || 0);
+            const ratio = (typeof entry === 'number') ? entry : (entry.ratio || 0);
+            if (!melhor || ts > melhor.ts) {
+                melhor = { capIdx, ratio, ts };
+            }
+        }
+        return melhor;
+    },
+
     // Tela intermediária: capa + descrição + lista de capítulos clicável.
     // Substitui o comportamento antigo de ir direto pro cap 1.
     renderInfoLivro() {
@@ -279,14 +299,38 @@ const BibliotecaCrista = {
             ? `<img src="${livro.capa}" style="width:140px;height:200px;object-fit:cover;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.4);">`
             : `<div style="width:140px;height:200px;background:rgba(255,255,255,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:80px;box-shadow:0 12px 30px rgba(0,0,0,0.4);">${livro.capa || '📖'}</div>`;
 
+        // Régua: onde o leitor parou
+        const ult = this._ultimaPosicaoLivro(livro.id);
+        const temProgresso = ult && ult.ratio > 0.02;
+        const capProgresso = temProgresso ? livro.capitulos[ult.capIdx] : null;
+        const continuarHtml = (temProgresso && capProgresso) ? `
+            <div style="background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(245,158,11,0.12));border:1px solid rgba(251,191,36,0.4);border-radius:14px;padding:14px 16px;margin-bottom:20px;">
+                <div style="color:#fbbf24;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;font-weight:bold;margin-bottom:8px;">📍 Continuar de onde parou</div>
+                <div style="color:#fff;font-size:14px;margin-bottom:4px;font-weight:600;">Capítulo ${capProgresso.numero}${capProgresso.titulo ? ' — ' + capProgresso.titulo : ''}</div>
+                <div style="display:flex;align-items:center;gap:10px;margin:10px 0 12px;">
+                    <div style="flex:1;height:6px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;">
+                        <div style="width:${Math.round(ult.ratio*100)}%;height:100%;background:linear-gradient(90deg,#fbbf24,#f59e0b);border-radius:3px;"></div>
+                    </div>
+                    <span style="color:#fbbf24;font-size:12px;font-weight:bold;min-width:38px;text-align:right;">${Math.round(ult.ratio*100)}%</span>
+                </div>
+                <button onclick="BibliotecaCrista.iniciarLeitura(${ult.capIdx})" style="width:100%;padding:13px;background:linear-gradient(135deg,#fbbf24,#f59e0b);border:none;border-radius:10px;color:#1e1b4b;font-weight:bold;font-size:14px;cursor:pointer;">Continuar lendo →</button>
+            </div>
+        ` : '';
+
         // Lista de capítulos (renderiza nomes; placeholders mostram nº só)
         const capsHtml = livro.capitulos.map((cap, idx) => {
             const ehLazy = cap._lazy;
+            const ehAtual = ult && ult.capIdx === idx && ult.ratio > 0.02;
             const tit = ehLazy ? '<span style="opacity:0.55;font-style:italic;">capítulo ' + cap.numero + '</span>' : (cap.titulo || ('Capítulo ' + cap.numero));
+            const bg = ehAtual ? 'rgba(251,191,36,0.12)' : 'rgba(255,255,255,0.06)';
+            const bgHover = ehAtual ? 'rgba(251,191,36,0.20)' : 'rgba(255,255,255,0.12)';
+            const numBg = ehAtual ? 'rgba(251,191,36,0.35)' : 'rgba(165,180,252,0.2)';
+            const numCor = ehAtual ? '#fbbf24' : '#a5b4fc';
+            const marcador = ehAtual ? `<span style="color:#fbbf24;font-size:11px;font-weight:bold;margin-left:6px;">📍 ${Math.round(ult.ratio*100)}%</span>` : '';
             return `
-                <div onclick="BibliotecaCrista.iniciarLeitura(${idx})" style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,0.06);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
-                    <div style="width:32px;height:32px;border-radius:50%;background:rgba(165,180,252,0.2);color:#a5b4fc;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0;">${cap.numero}</div>
-                    <div style="flex:1;color:#fff;font-size:14px;line-height:1.3;">${tit}</div>
+                <div onclick="BibliotecaCrista.iniciarLeitura(${idx})" style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:${bg};border-radius:12px;margin-bottom:8px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='${bgHover}'" onmouseout="this.style.background='${bg}'">
+                    <div style="width:32px;height:32px;border-radius:50%;background:${numBg};color:${numCor};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0;">${cap.numero}</div>
+                    <div style="flex:1;color:#fff;font-size:14px;line-height:1.3;">${tit}${marcador}</div>
                     <div style="color:rgba(255,255,255,0.4);font-size:18px;">›</div>
                 </div>
             `;
@@ -310,15 +354,17 @@ const BibliotecaCrista = {
                     <div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px;">${total} capítulo${total !== 1 ? 's' : ''}</div>
                 </div>
 
+                ${continuarHtml}
+
                 ${livro.descricao ? `
-                    <div style="background:rgba(255,255,255,0.06);border-radius:14px;padding:16px;margin-bottom:24px;">
+                    <div style="background:rgba(255,255,255,0.06);border-radius:14px;padding:16px;margin-bottom:20px;">
                         <div style="color:#a5b4fc;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:bold;">Sobre o livro</div>
                         <div style="color:rgba(255,255,255,0.85);font-size:14px;line-height:1.6;">${livro.descricao}</div>
                     </div>
                 ` : ''}
 
-                <button onclick="BibliotecaCrista.iniciarLeitura(0)" style="width:100%;padding:16px;background:linear-gradient(135deg,#fbbf24,#f59e0b);border:none;border-radius:14px;color:#1e1b4b;font-size:16px;font-weight:bold;cursor:pointer;box-shadow:0 8px 20px rgba(251,191,36,0.3);margin-bottom:24px;">
-                    📖 Começar a ler
+                <button onclick="BibliotecaCrista.iniciarLeitura(0)" style="width:100%;padding:16px;background:${temProgresso ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg,#fbbf24,#f59e0b)'};border:${temProgresso ? '1px solid rgba(255,255,255,0.2)' : 'none'};border-radius:14px;color:${temProgresso ? '#fff' : '#1e1b4b'};font-size:15px;font-weight:bold;cursor:pointer;${temProgresso ? '' : 'box-shadow:0 8px 20px rgba(251,191,36,0.3);'}margin-bottom:24px;">
+                    ${temProgresso ? '🔄 Começar do início' : '📖 Começar a ler'}
                 </button>
 
                 <div style="color:#a5b4fc;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:bold;padding-left:4px;">Capítulos</div>
