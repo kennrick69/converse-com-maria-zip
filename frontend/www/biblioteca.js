@@ -564,6 +564,7 @@ const BibliotecaCrista = {
         // Restaurar grifos + posição salva (régua) + tracking de scroll
         setTimeout(() => this.restaurarGrifos(), 100);
         setTimeout(() => this._restaurarPosicaoLivro(), 250);
+        setTimeout(() => this._mostrarFitaMarcador(), 300);
         this._iniciarTrackingScroll();
 
         // Restaurar régua se estava ativa
@@ -1057,21 +1058,83 @@ const BibliotecaCrista = {
         if (!this.livroAtual) return;
         const scroll = document.getElementById('leitor-scroll');
         if (!scroll) return;
-        // Posição absoluta do tap dentro do scroll-content
-        const tapAbsY = scroll.scrollTop + (e.clientY - scroll.getBoundingClientRect().top);
-        // Ratio relativo ao total rolável (descontando viewport)
+        // Posição absoluta do tap dentro do conteúdo rolável
+        const scrollRect = scroll.getBoundingClientRect();
+        const tapAbsY = scroll.scrollTop + (e.clientY - scrollRect.top);
+        // Ratio relativo ao conteúdo total (pra que a fita fique exatamente onde clicou)
+        const ratioAbs = scroll.scrollHeight > 0 ? tapAbsY / scroll.scrollHeight : 0;
+        // Ratio relativo ao scroll-rolável (pra restaurar posição de leitura)
         const denom = scroll.scrollHeight - scroll.clientHeight;
-        const ratio = denom > 0 ? Math.min(1, Math.max(0, (tapAbsY - scroll.clientHeight * 0.3) / denom)) : 0;
+        const ratioScroll = denom > 0 ? Math.min(1, Math.max(0, (tapAbsY - scroll.clientHeight * 0.3) / denom)) : 0;
 
         if (!this.config.marcadores) this.config.marcadores = {};
+        const antigo = this.config.marcadores[this.livroAtual.id];
         this.config.marcadores[this.livroAtual.id] = {
             capIdx: this.capituloAtual,
-            ratio: ratio,
+            ratio: ratioScroll,     // usado pra "ir pro marcador" na tela info
+            ratioAbs: ratioAbs,     // usado pra posicionar a fita visualmente
             ts: Date.now()
         };
         this.salvar();
-        this.toast('🔖 Marcador colocado aqui!');
+        if (antigo && (antigo.capIdx !== this.capituloAtual || Math.abs((antigo.ratio||0) - ratioScroll) > 0.05)) {
+            this.toast('🔖 Marcador movido pra cá (o antigo foi substituído)');
+        } else {
+            this.toast('🔖 Marcador colocado aqui!');
+        }
         this.desativarModoMarcador();
+        this._mostrarFitaMarcador();
+    },
+
+    // Fita lateral vermelha que mostra VISUALMENTE onde está o marcador.
+    // Aparece só no capítulo onde o marcador foi colocado.
+    _mostrarFitaMarcador() {
+        document.getElementById('biblio-fita-marcador')?.remove();
+        const scroll = document.getElementById('leitor-scroll');
+        if (!scroll || !this.livroAtual) return;
+        const m = this.config.marcadores && this.config.marcadores[this.livroAtual.id];
+        if (!m || m.capIdx !== this.capituloAtual) return;
+
+        // Usa ratioAbs (posição absoluta no conteúdo) ou fallback pra ratio
+        const ratio = (m.ratioAbs != null) ? m.ratioAbs : (m.ratio || 0);
+        const top = Math.max(0, ratio * scroll.scrollHeight - 18);
+
+        const fita = document.createElement('div');
+        fita.id = 'biblio-fita-marcador';
+        fita.title = 'Seu marcador — toque pra ir até aqui';
+        fita.style.cssText = `
+            position: absolute;
+            right: -2px;
+            top: ${top}px;
+            width: 32px;
+            height: 56px;
+            background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+            color: #fff;
+            font-size: 18px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 6px;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+            box-shadow: -3px 4px 10px rgba(0,0,0,0.35);
+            cursor: pointer;
+            z-index: 50;
+            animation: bibFitaIn 0.3s ease-out;
+        `;
+        fita.innerHTML = '🔖';
+        fita.onclick = () => {
+            const denom = scroll.scrollHeight - scroll.clientHeight;
+            const targetTop = denom > 0 ? Math.max(0, ratio * scroll.scrollHeight - scroll.clientHeight * 0.3) : 0;
+            scroll.scrollTo({ top: targetTop, behavior: 'smooth' });
+        };
+
+        if (!document.getElementById('bib-fita-anim-style')) {
+            const st = document.createElement('style');
+            st.id = 'bib-fita-anim-style';
+            st.textContent = '@keyframes bibFitaIn { from { transform: translateX(40px); opacity:0; } to { transform: translateX(0); opacity:1; } }';
+            document.head.appendChild(st);
+        }
+        scroll.style.position = 'relative';
+        scroll.appendChild(fita);
     },
 
     // ============ RÉGUA DE LEITURA (linha + escurecido abaixo) ============
