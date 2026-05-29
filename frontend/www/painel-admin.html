@@ -1791,6 +1791,8 @@
                     if (livro) Object.assign(livro, dados);
                     toast('✅ Dados gerais salvos', 'success');
                     this.renderizar();
+                    fecharModal();
+                    this._editandoLivroId = null;
                 } catch (e) { toast('Erro: ' + e.message, 'error'); }
             },
 
