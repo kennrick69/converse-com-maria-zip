@@ -173,6 +173,11 @@ const BibliotecaCrista = {
         if (fromFirestore && fromFirestore.length > 0) {
             this.catalogo = fromFirestore;
             localStorage.setItem('biblioCatalogo', JSON.stringify(this.catalogo));
+            // Limpa marcadores/posições de livros que não estão mais publicados.
+            // SÓ roda quando o catálogo veio do Firestore com sucesso — se cair no
+            // fallback Hostinger (ou erro de rede), NÃO mexe pra evitar apagar
+            // marcador de livro existente só porque a conexão falhou.
+            this._limparDadosOrfaos();
             return this.catalogo;
         }
         // 2) Fallback: Hostinger (legado — funciona mesmo se Firestore vazio)
@@ -183,6 +188,42 @@ const BibliotecaCrista = {
             localStorage.setItem('biblioCatalogo', JSON.stringify(this.catalogo));
         } catch(e) {}
         return this.catalogo;
+    },
+
+    // Remove marcadores e posições (régua automática) de livros que não estão
+    // mais no catálogo. Chamado SÓ após carregamento Firestore bem-sucedido.
+    _limparDadosOrfaos() {
+        if (!Array.isArray(this.catalogo) || this.catalogo.length === 0) return;
+        const idsValidos = new Set(this.catalogo.map(l => l.id).filter(Boolean));
+        let mudou = false;
+        let removidos = 0;
+
+        // Marcadores manuais (1 por livro)
+        if (this.config.marcadores && typeof this.config.marcadores === 'object') {
+            for (const id of Object.keys(this.config.marcadores)) {
+                if (!idsValidos.has(id)) {
+                    delete this.config.marcadores[id];
+                    mudou = true;
+                    removidos++;
+                }
+            }
+        }
+
+        // Posições da régua automática — chave é "<livroId>::cap<N>"
+        if (this.config.posicoes && typeof this.config.posicoes === 'object') {
+            for (const chave of Object.keys(this.config.posicoes)) {
+                const livroId = chave.split('::cap')[0];
+                if (livroId && !idsValidos.has(livroId)) {
+                    delete this.config.posicoes[chave];
+                    mudou = true;
+                }
+            }
+        }
+
+        if (mudou) {
+            this.salvar();
+            if (removidos > 0) console.log('[biblioteca] removidos ' + removidos + ' marcador(es) de livros não publicados');
+        }
     },
 
     async carregarLivro(id) {
