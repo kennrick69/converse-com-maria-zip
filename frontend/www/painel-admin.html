@@ -12,6 +12,9 @@
     
     <!-- Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- JSZip para upload de livros (pasta zipada) -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -652,8 +655,8 @@
 
         <div class="tab-content" id="tab-livros">
             <div class="controls-bar">
-                <button class="btn-action green" onclick="abrirEditorConteudo('livros')">➕ Novo Livro</button>
-                <button class="btn-action blue" onclick="carregarConteudo('livros')">🔄 Atualizar</button>
+                <button class="btn-action green" onclick="LivrosAdmin.abrirNovo()">➕ Novo Livro (pasta/ZIP)</button>
+                <button class="btn-action blue" onclick="LivrosAdmin.carregar()">🔄 Atualizar</button>
             </div>
             <h2 class="section-title">📚 Livros <span id="conteudo-livros-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
             <div class="intencoes-grid" id="conteudo-livros-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
@@ -767,7 +770,8 @@
             document.getElementById('tab-' + tabId).classList.add('active');
             if (tabId === 'intencoes' && todasIntencoes.length === 0) carregarIntencoes();
             if (tabId === 'velas' && todasVelas.length === 0) carregarVelas();
-            if (['livros','musicas','frases'].includes(tabId) && todoConteudo[tabId].length === 0) carregarConteudo(tabId);
+            if (tabId === 'livros') { if (typeof LivrosAdmin !== 'undefined') LivrosAdmin.carregar(); return; }
+            if (['musicas','frases'].includes(tabId) && todoConteudo[tabId].length === 0) carregarConteudo(tabId);
         }
         
         // Carregar
@@ -1003,16 +1007,6 @@
 
         // ========== CONTEUDO ADMINISTRATIVO (livros/musicas/frases) ==========
         const CONTEUDO_CONFIG = {
-            livros: {
-                coll: 'conteudo_livros', nomeS: 'Livro', emoji: '📚',
-                campos: [
-                    { key: 'titulo', label: 'Titulo', type: 'text', obrig: true },
-                    { key: 'autor', label: 'Autor', type: 'text' },
-                    { key: 'descricao', label: 'Descricao', type: 'textarea' },
-                    { key: 'capa', label: 'URL da capa (opcional)', type: 'text' },
-                    { key: 'conteudo', label: 'Conteudo completo', type: 'textarea-grande' }
-                ]
-            },
             musicas: {
                 coll: 'conteudo_musicas', nomeS: 'Musica', emoji: '🎵',
                 campos: [
@@ -1165,6 +1159,645 @@
                 toast('Erro: ' + e.message, 'error');
             }
         }
+
+        // ========== LIVROS — fluxo dedicado (upload pasta/ZIP + edição granular) ==========
+        // Schema Firestore v2: doc principal embarca cap1 (1 read pra abrir o livro),
+        // subcol /capitulos/{numero} pros caps 2+ (lazy load no cliente).
+        const LivrosAdmin = {
+            livros: [],
+
+            async carregar() {
+                const grid = document.getElementById('conteudo-livros-grid');
+                if (!grid) return;
+                grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando livros...</p></div>';
+                try {
+                    let snap;
+                    try {
+                        snap = await db.collection('conteudo_livros').orderBy('ordem', 'asc').get();
+                    } catch (e) {
+                        snap = await db.collection('conteudo_livros').get();
+                    }
+                    this.livros = [];
+                    snap.forEach(d => this.livros.push({ id: d.id, ...d.data() }));
+                    const c = document.getElementById('conteudo-livros-count');
+                    if (c) c.textContent = '(' + this.livros.length + ')';
+                    this.renderizar();
+                } catch (e) {
+                    console.error('Erro carregar livros:', e);
+                    grid.innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>Erro: ' + escapeHtml(e.message) + '</p></div>';
+                }
+            },
+
+            renderizar() {
+                const grid = document.getElementById('conteudo-livros-grid');
+                if (!grid) return;
+                if (!this.livros.length) {
+                    grid.innerHTML = '<div class="empty-state"><div class="icon">📚</div><p>Nenhum livro ainda</p><button class="btn-action blue" style="margin-top:16px" onclick="LivrosAdmin.abrirNovo()">➕ Adicionar 1º livro</button></div>';
+                    return;
+                }
+                grid.innerHTML = this.livros.map(l => {
+                    const total = l.totalCapitulos || (l.cap1 ? 1 : 0);
+                    const capaImg = l.capa && String(l.capa).startsWith('data:')
+                        ? '<img src="' + l.capa + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+                        : (l.capa || '📚');
+                    return '<div class="intencao-card">' +
+                        '<div class="intencao-header">' +
+                            '<div class="intencao-avatar" style="overflow:hidden">' + capaImg + '</div>' +
+                            '<div class="intencao-meta">' +
+                                '<h4>' + escapeHtml(String(l.titulo || '(sem título)').slice(0, 60)) + '</h4>' +
+                                '<p>' + escapeHtml(l.autor || '') + ' • ' + total + ' cap' + (total !== 1 ? 's' : '') + '</p>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="intencao-texto">' + escapeHtml(String(l.descricao || '').slice(0, 100)) + '</div>' +
+                        '<div class="intencao-footer">' +
+                            '<button class="btn-action blue" style="font-size:11px;padding:8px 14px" onclick="LivrosAdmin.abrirEditor(\'' + l.id + '\')">✏️ Editar</button>' +
+                            '<button class="btn-delete" onclick="LivrosAdmin.excluirLivro(\'' + l.id + '\')">🗑️ Excluir</button>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+            },
+
+            // ===== NOVO LIVRO (upload pasta/ZIP) =====
+            abrirNovo() {
+                document.getElementById('modal-avatar').textContent = '📚';
+                document.getElementById('modal-avatar').className = 'modal-avatar';
+                document.getElementById('modal-email').textContent = 'Novo Livro';
+                document.getElementById('modal-id').textContent = 'Upload de pasta ou .zip';
+                document.getElementById('modal-body').innerHTML =
+                    '<div class="detail-section">' +
+                        '<h3 style="margin-bottom:10px">📦 Estrutura esperada</h3>' +
+                        '<pre style="background:var(--bg-dark);padding:12px;border-radius:8px;font-size:11px;color:var(--text-secondary);overflow-x:auto;margin:0">' +
+'meu-livro/\n' +
+'├── titulo.txt          (1ª linha = título)\n' +
+'├── autor.txt           (opcional)\n' +
+'├── descricao.txt       (opcional)\n' +
+'├── capa.jpg            (opcional, &lt;200KB)\n' +
+'├── capitulo-01.txt     (1ª linha = título do cap)\n' +
+'├── capitulo-02.txt\n' +
+'└── ...' +
+                        '</pre>' +
+                        '<div id="livro-upload-area" style="margin-top:16px;border:2px dashed var(--border);border-radius:14px;padding:32px;text-align:center;background:var(--bg-dark);transition:border-color 0.2s">' +
+                            '<div style="font-size:48px;margin-bottom:8px">📤</div>' +
+                            '<p style="margin-bottom:12px;color:var(--text-secondary)">Arraste a <b>pasta</b> ou um <b>.zip</b> aqui</p>' +
+                            '<input type="file" id="livro-file-zip" accept=".zip" style="display:none">' +
+                            '<input type="file" id="livro-file-pasta" webkitdirectory directory multiple style="display:none">' +
+                            '<div style="display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap">' +
+                                '<button class="btn-action blue" onclick="document.getElementById(\'livro-file-zip\').click()">📦 Escolher .zip</button>' +
+                                '<button class="btn-action green" onclick="document.getElementById(\'livro-file-pasta\').click()">📁 Escolher pasta</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div id="livro-preview" style="margin-top:16px;display:none"></div>' +
+                    '</div>';
+                document.getElementById('modal-overlay').classList.add('active');
+
+                const zipInput = document.getElementById('livro-file-zip');
+                const pastaInput = document.getElementById('livro-file-pasta');
+                const dropArea = document.getElementById('livro-upload-area');
+                zipInput.addEventListener('change', e => { if (e.target.files[0]) this._processarZip(e.target.files[0]); });
+                pastaInput.addEventListener('change', e => { if (e.target.files.length) this._processarPasta(e.target.files); });
+                dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.borderColor = 'var(--accent-gold)'; });
+                dropArea.addEventListener('dragleave', () => { dropArea.style.borderColor = 'var(--border)'; });
+                dropArea.addEventListener('drop', async e => {
+                    e.preventDefault();
+                    dropArea.style.borderColor = 'var(--border)';
+                    const items = e.dataTransfer.items;
+                    if (items && items.length) {
+                        const entries = [];
+                        for (let i = 0; i < items.length; i++) {
+                            const entry = items[i].webkitGetAsEntry && items[i].webkitGetAsEntry();
+                            if (entry) entries.push(entry);
+                        }
+                        if (entries.length === 1 && entries[0].isDirectory) {
+                            const files = await this._extrairArquivosDoEntry(entries[0]);
+                            return this._processarPasta(files);
+                        }
+                    }
+                    const files = e.dataTransfer.files;
+                    if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) return this._processarZip(files[0]);
+                    if (files.length > 0) return this._processarPasta(files);
+                    toast('Arraste uma pasta ou um .zip', 'error');
+                });
+            },
+
+            async _extrairArquivosDoEntry(dirEntry) {
+                const files = [];
+                const reader = dirEntry.createReader();
+                const entries = await new Promise(resolve => reader.readEntries(resolve));
+                for (const entry of entries) {
+                    if (entry.isFile) {
+                        const file = await new Promise((resolve, reject) => entry.file(resolve, reject));
+                        file._relPath = entry.fullPath || entry.name;
+                        files.push(file);
+                    } else if (entry.isDirectory) {
+                        const subFiles = await this._extrairArquivosDoEntry(entry);
+                        files.push(...subFiles);
+                    }
+                }
+                return files;
+            },
+
+            async _processarZip(zipFile) {
+                try {
+                    if (typeof JSZip === 'undefined') { toast('JSZip não carregou', 'error'); return; }
+                    toast('📦 Lendo ZIP...', 'success');
+                    const zip = await JSZip.loadAsync(zipFile);
+                    const arquivos = {};
+                    const promessas = [];
+                    zip.forEach((relPath, entry) => {
+                        if (entry.dir) return;
+                        if (/\/(\.|__)/.test(relPath) || /^(\.|__)/.test(relPath)) return;
+                        const nome = relPath.split('/').pop().toLowerCase();
+                        if (!nome) return;
+                        promessas.push((async () => {
+                            if (this._eImagem(nome)) {
+                                const b64 = await entry.async('base64');
+                                arquivos[nome] = 'data:image/' + this._mimeExt(nome) + ';base64,' + b64;
+                            } else if (nome.endsWith('.txt')) {
+                                arquivos[nome] = await entry.async('string');
+                            }
+                        })());
+                    });
+                    await Promise.all(promessas);
+                    this._exibirPreview(arquivos, zipFile.name.replace(/\.zip$/i, ''));
+                } catch (e) {
+                    console.error(e);
+                    toast('Erro lendo ZIP: ' + e.message, 'error');
+                }
+            },
+
+            async _processarPasta(fileList) {
+                try {
+                    toast('📁 Lendo pasta...', 'success');
+                    const arquivos = {};
+                    let pastaNome = '';
+                    for (const file of fileList) {
+                        const relPath = file.webkitRelativePath || file._relPath || file.name;
+                        const partes = String(relPath).split('/').filter(p => p);
+                        if (partes.length > 1 && !pastaNome) pastaNome = partes[0];
+                        const nome = partes[partes.length - 1].toLowerCase();
+                        if (!nome || nome.startsWith('.') || nome.startsWith('_')) continue;
+                        if (this._eImagem(nome)) {
+                            arquivos[nome] = await this._lerComoBase64(file);
+                        } else if (nome.endsWith('.txt')) {
+                            arquivos[nome] = await file.text();
+                        }
+                    }
+                    this._exibirPreview(arquivos, pastaNome || 'livro-sem-nome');
+                } catch (e) {
+                    console.error(e);
+                    toast('Erro lendo pasta: ' + e.message, 'error');
+                }
+            },
+
+            _lerComoBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const r = new FileReader();
+                    r.onload = () => resolve(r.result);
+                    r.onerror = reject;
+                    r.readAsDataURL(file);
+                });
+            },
+
+            _eImagem(nome) { return /\.(jpg|jpeg|png|webp|gif)$/i.test(nome); },
+            _mimeExt(nome) {
+                const m = String(nome).toLowerCase().match(/\.(jpg|jpeg|png|webp|gif)$/);
+                if (!m) return 'jpeg';
+                return m[1] === 'jpg' ? 'jpeg' : m[1];
+            },
+
+            _parseArquivos(arquivos, nomePadrao) {
+                const stripBOM = s => String(s || '').replace(/^﻿/, '');
+                const titulo = stripBOM(arquivos['titulo.txt']).trim() || nomePadrao || 'Sem título';
+                const autor = stripBOM(arquivos['autor.txt']).trim();
+                const descricao = stripBOM(arquivos['descricao.txt']).trim();
+                let capa = '';
+                for (const ext of ['jpg','jpeg','png','webp']) {
+                    if (arquivos['capa.' + ext]) { capa = arquivos['capa.' + ext]; break; }
+                }
+                const caps = [];
+                const numerosVistos = new Set();
+                const duplicatas = [];
+                for (const nome of Object.keys(arquivos)) {
+                    const m = nome.match(/^(?:capitulo|cap)[-_]?(\d+)\.txt$/i);
+                    if (!m) continue;
+                    const numeroOrig = parseInt(m[1], 10);
+                    if (numerosVistos.has(numeroOrig)) {
+                        duplicatas.push(numeroOrig);
+                        continue;
+                    }
+                    numerosVistos.add(numeroOrig);
+                    const conteudo = stripBOM(arquivos[nome]);
+                    const linhas = String(conteudo).split(/\r?\n/);
+                    const tituloCap = stripBOM(linhas[0] || '').trim();
+                    const corpo = linhas.slice(1).join('\n').trim();
+                    caps.push({ numero: numeroOrig, titulo: tituloCap, conteudo: corpo });
+                }
+                caps.sort((a, b) => a.numero - b.numero);
+                caps.forEach((c, i) => { c.numero = i + 1; });
+                return { id: this._slugify(titulo), titulo, autor, descricao, capa, capitulos: caps, _duplicatas: duplicatas };
+            },
+
+            _slugify(s) {
+                return String(s).toLowerCase()
+                    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '')
+                    .slice(0, 60) || ('livro-' + Date.now());
+            },
+
+            _exibirPreview(arquivos, nomePadrao) {
+                const livro = this._parseArquivos(arquivos, nomePadrao);
+                const preview = document.getElementById('livro-preview');
+                if (!livro.capitulos.length) {
+                    preview.style.display = 'block';
+                    preview.innerHTML = '<div style="padding:16px;background:#3b1818;border-radius:10px;color:#fca5a5">❌ Nenhum arquivo <code>capitulo-NN.txt</code> encontrado.</div>';
+                    return;
+                }
+                const totalChars = livro.capitulos.reduce((a, c) => a + (c.conteudo || '').length, 0);
+                preview.style.display = 'block';
+                const avisoDup = (livro._duplicatas && livro._duplicatas.length)
+                    ? '<div style="padding:10px;background:#3b2c0a;border-left:3px solid var(--accent-gold);border-radius:6px;margin-bottom:10px;font-size:13px;color:#fde68a">⚠️ Capítulos com número duplicado foram ignorados: ' + livro._duplicatas.join(', ') + '. Renomeie os .txt e tente de novo se algum foi importante.</div>'
+                    : '';
+                const cap1Size = (livro.capitulos[0] && livro.capitulos[0].conteudo || '').length;
+                const cap1TooBig = cap1Size > 800 * 1024;
+                const avisoTamanho = cap1TooBig
+                    ? '<div style="padding:10px;background:#3b1818;border-left:3px solid #ef4444;border-radius:6px;margin-bottom:10px;font-size:13px;color:#fca5a5">❌ Capítulo 1 muito grande (' + Math.round(cap1Size/1024) + ' KB). Limite Firestore é 1MB por doc, e o cap1 fica embedded. Divida em partes ≤ 800KB.</div>'
+                    : '';
+                preview.innerHTML =
+                    '<h3 style="margin-bottom:12px">📖 Preview do livro</h3>' +
+                    avisoTamanho + avisoDup +
+                    '<div style="background:var(--bg-dark);padding:14px;border-radius:10px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start">' +
+                        (livro.capa ? '<img src="' + livro.capa + '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;flex-shrink:0">' : '<div style="width:80px;height:80px;background:var(--bg-card);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0">📖</div>') +
+                        '<div style="flex:1;min-width:0">' +
+                            '<div style="font-weight:600;font-size:15px">' + escapeHtml(livro.titulo) + '</div>' +
+                            '<div style="color:var(--text-secondary);font-size:13px">' + escapeHtml(livro.autor || '(sem autor)') + '</div>' +
+                            '<div style="color:var(--text-secondary);font-size:12px;margin-top:4px">' + livro.capitulos.length + ' capítulos • ~' + Math.round(totalChars/1024) + ' KB</div>' +
+                            (livro.descricao ? '<div style="margin-top:8px;font-size:12px;color:var(--text-secondary)">' + escapeHtml(livro.descricao.slice(0, 200)) + '</div>' : '') +
+                        '</div>' +
+                    '</div>' +
+                    '<details style="margin-bottom:10px"><summary style="cursor:pointer;color:var(--text-secondary);font-size:13px">📋 Lista de capítulos</summary>' +
+                        '<ol style="margin:10px 0 0 24px;color:var(--text-secondary);font-size:12px">' +
+                            livro.capitulos.map(c => '<li>' + escapeHtml(c.titulo || '(sem título)') + ' <span style="opacity:0.5">— ' + (c.conteudo||'').length + ' chars</span></li>').join('') +
+                        '</ol>' +
+                    '</details>' +
+                    '<div style="display:flex;gap:10px;margin-top:14px">' +
+                        (cap1TooBig
+                            ? '<button class="btn-action" style="flex:1;background:#3a3a3a;color:#888;cursor:not-allowed" disabled>💾 Corrija o tamanho do cap 1 primeiro</button>'
+                            : '<button class="btn-action green" style="flex:1" onclick="LivrosAdmin._salvarNovo()">💾 Publicar livro</button>') +
+                        '<button class="btn-action" style="background:var(--bg-dark);border:1px solid var(--border);color:var(--text-secondary)" onclick="document.getElementById(\'livro-preview\').style.display=\'none\'">Cancelar</button>' +
+                    '</div>';
+                this._novoLivroBuffer = livro;
+            },
+
+            async _salvarNovo() {
+                const livro = this._novoLivroBuffer;
+                if (!livro || !livro.capitulos.length) { toast('Nada pra salvar', 'error'); return; }
+                // Validação tamanho cap1 (Firestore = 1MB por doc, deixa folga 200KB pros outros campos)
+                const cap1Size = (livro.capitulos[0].conteudo || '').length;
+                if (cap1Size > 800 * 1024) {
+                    toast('Cap 1 muito grande (' + Math.round(cap1Size/1024) + 'KB > 800KB). Divida em partes menores.', 'error');
+                    return;
+                }
+                try {
+                    toast('💾 Salvando livro...', 'success');
+                    const docId = livro.id;
+                    const existe = await db.collection('conteudo_livros').doc(docId).get();
+                    let docIdFinal = docId;
+                    if (existe.exists) {
+                        docIdFinal = docId + '-' + Date.now().toString(36);
+                    }
+                    // 1) Doc principal SEM totalCapitulos final ainda — começa só com cap1 publicado.
+                    //    Se batches da subcol falharem, biblioteca não vê placeholders fantasmas.
+                    const docData = {
+                        id: docIdFinal,
+                        titulo: livro.titulo,
+                        autor: livro.autor,
+                        descricao: livro.descricao,
+                        capa: livro.capa || '📖',
+                        totalCapitulos: 1,
+                        cap1: {
+                            titulo: livro.capitulos[0].titulo,
+                            conteudo: livro.capitulos[0].conteudo
+                        },
+                        ordem: 999,
+                        criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+                        atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    await db.collection('conteudo_livros').doc(docIdFinal).set(docData);
+                    // 2) Batches dos caps 2+
+                    if (livro.capitulos.length > 1) {
+                        const subcol = db.collection('conteudo_livros').doc(docIdFinal).collection('capitulos');
+                        const restantes = livro.capitulos.slice(1);
+                        for (let i = 0; i < restantes.length; i += 400) {
+                            const batch = db.batch();
+                            restantes.slice(i, i + 400).forEach(c => {
+                                batch.set(subcol.doc(String(c.numero)), {
+                                    numero: c.numero,
+                                    titulo: c.titulo,
+                                    conteudo: c.conteudo
+                                });
+                            });
+                            await batch.commit();
+                        }
+                        // 3) APÓS confirmação de todos os batches, atualiza totalCapitulos.
+                        await db.collection('conteudo_livros').doc(docIdFinal).update({
+                            totalCapitulos: livro.capitulos.length,
+                            atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                    toast('✅ "' + livro.titulo + '" publicado!', 'success');
+                    fecharModal();
+                    this._novoLivroBuffer = null;
+                    await this.carregar();
+                } catch (e) {
+                    console.error(e);
+                    toast('Erro ao salvar: ' + e.message, 'error');
+                }
+            },
+
+            // ===== EDIÇÃO GRANULAR =====
+            abrirEditor(id) {
+                const livro = this.livros.find(l => l.id === id);
+                if (!livro) return;
+                this._editandoLivroId = id;
+                document.getElementById('modal-avatar').textContent = '📚';
+                document.getElementById('modal-avatar').className = 'modal-avatar';
+                document.getElementById('modal-email').textContent = livro.titulo;
+                document.getElementById('modal-id').textContent = 'ID: ' + id;
+                document.getElementById('modal-body').innerHTML =
+                    '<div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border)">' +
+                        '<button id="liv-tab-geral" onclick="LivrosAdmin._abrirTab(\'geral\')" style="padding:12px 18px;background:none;border:none;color:var(--accent-gold);border-bottom:2px solid var(--accent-gold);font-weight:600;cursor:pointer">Geral</button>' +
+                        '<button id="liv-tab-caps" onclick="LivrosAdmin._abrirTab(\'capitulos\')" style="padding:12px 18px;background:none;border:none;color:var(--text-secondary);cursor:pointer">Capítulos (' + (livro.totalCapitulos || 0) + ')</button>' +
+                    '</div>' +
+                    '<div id="liv-tab-content"></div>';
+                document.getElementById('modal-overlay').classList.add('active');
+                this._abrirTab('geral');
+            },
+
+            _abrirTab(tab) {
+                const livro = this.livros.find(l => l.id === this._editandoLivroId);
+                if (!livro) return;
+                const gBtn = document.getElementById('liv-tab-geral');
+                const cBtn = document.getElementById('liv-tab-caps');
+                if (gBtn) { gBtn.style.color = tab === 'geral' ? 'var(--accent-gold)' : 'var(--text-secondary)'; gBtn.style.borderBottom = tab === 'geral' ? '2px solid var(--accent-gold)' : 'none'; }
+                if (cBtn) { cBtn.style.color = tab === 'capitulos' ? 'var(--accent-gold)' : 'var(--text-secondary)'; cBtn.style.borderBottom = tab === 'capitulos' ? '2px solid var(--accent-gold)' : 'none'; }
+                const c = document.getElementById('liv-tab-content');
+                const inputStyle = 'width:100%;padding:12px;background:var(--bg-dark);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-family:inherit;font-size:14px';
+                const labelStyle = 'display:block;color:var(--text-secondary);font-size:12px;margin-bottom:6px;margin-top:14px';
+                if (tab === 'geral') {
+                    c.innerHTML =
+                        '<label style="' + labelStyle + ';margin-top:0">Título *</label>' +
+                        '<input id="liv-titulo" type="text" value="' + escapeHtml(livro.titulo || '') + '" style="' + inputStyle + '">' +
+                        '<label style="' + labelStyle + '">Autor</label>' +
+                        '<input id="liv-autor" type="text" value="' + escapeHtml(livro.autor || '') + '" style="' + inputStyle + '">' +
+                        '<label style="' + labelStyle + '">Descrição</label>' +
+                        '<textarea id="liv-descricao" rows="3" style="' + inputStyle + ';resize:vertical">' + escapeHtml(livro.descricao || '') + '</textarea>' +
+                        '<label style="' + labelStyle + '">Capa (emoji, URL ou data:base64)</label>' +
+                        '<input id="liv-capa" type="text" value="' + escapeHtml(livro.capa || '') + '" style="' + inputStyle + '">' +
+                        '<label style="' + labelStyle + '">Ordem (menor = aparece primeiro)</label>' +
+                        '<input id="liv-ordem" type="number" value="' + (livro.ordem != null ? livro.ordem : 999) + '" style="' + inputStyle + '">' +
+                        '<div style="display:flex;gap:10px;margin-top:20px">' +
+                            '<button class="btn-action green" style="flex:1" onclick="LivrosAdmin._salvarMeta()">💾 Salvar dados gerais</button>' +
+                        '</div>';
+                } else {
+                    const total = livro.totalCapitulos || (livro.cap1 ? 1 : 0);
+                    const linhas = [];
+                    if (livro.cap1) linhas.push(this._renderLinhaCap(1, livro.cap1.titulo || '(sem título)', true));
+                    for (let n = 2; n <= total; n++) linhas.push(this._renderLinhaCap(n, '⏳ carregando...', false));
+                    c.innerHTML =
+                        '<div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary)">Cada edição é independente — 1 capítulo = 1 write no Firestore.</div>' +
+                        '<div id="liv-lista-caps">' + linhas.join('') + '</div>' +
+                        '<button class="btn-action green" style="margin-top:16px;width:100%" onclick="LivrosAdmin._addCap()">➕ Adicionar capítulo</button>';
+                    this._buscarTitulosCaps(livro.id);
+                }
+            },
+
+            _renderLinhaCap(numero, titulo, ehCap1) {
+                return '<div id="liv-cap-row-' + numero + '" style="display:flex;align-items:center;gap:6px;padding:10px;background:var(--bg-dark);border-radius:8px;margin-bottom:6px">' +
+                    '<div style="width:30px;text-align:center;color:var(--text-secondary);font-weight:600;font-size:13px">' + numero + '</div>' +
+                    '<div id="liv-cap-titulo-' + numero + '" style="flex:1;color:var(--text-primary);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escapeHtml(titulo) + '</div>' +
+                    '<button class="btn-action blue" style="padding:6px 10px;font-size:11px" onclick="LivrosAdmin._editarCap(' + numero + ')" title="Editar inline">✏️</button>' +
+                    '<button class="btn-action" style="padding:6px 10px;font-size:11px;background:var(--accent-purple);color:white" onclick="LivrosAdmin._substituirCap(' + numero + ')" title="Substituir por arquivo .txt">🔄</button>' +
+                    (ehCap1 ? '' : '<button class="btn-delete" style="padding:6px 10px;font-size:11px" onclick="LivrosAdmin._excluirCap(' + numero + ')">🗑️</button>') +
+                '</div>';
+            },
+
+            async _buscarTitulosCaps(livroId) {
+                try {
+                    const snap = await db.collection('conteudo_livros').doc(livroId).collection('capitulos').get();
+                    snap.forEach(doc => {
+                        const numero = Number(doc.id);
+                        const data = doc.data();
+                        const el = document.getElementById('liv-cap-titulo-' + numero);
+                        if (el) el.textContent = data.titulo || '(sem título)';
+                    });
+                } catch (e) { console.error(e); }
+            },
+
+            async _editarCap(numero) {
+                const livroId = this._editandoLivroId;
+                let tituloAtual = '', conteudoAtual = '';
+                if (numero === 1) {
+                    const livro = this.livros.find(l => l.id === livroId);
+                    if (livro && livro.cap1) { tituloAtual = livro.cap1.titulo || ''; conteudoAtual = livro.cap1.conteudo || ''; }
+                } else {
+                    try {
+                        const doc = await db.collection('conteudo_livros').doc(livroId).collection('capitulos').doc(String(numero)).get();
+                        if (doc.exists) { const d = doc.data(); tituloAtual = d.titulo || ''; conteudoAtual = d.conteudo || ''; }
+                    } catch (e) { toast('Erro lendo cap ' + numero, 'error'); return; }
+                }
+                const inputStyle = 'width:100%;padding:12px;background:var(--bg-dark);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-family:inherit;font-size:14px';
+                const c = document.getElementById('liv-tab-content');
+                c.innerHTML =
+                    '<button onclick="LivrosAdmin._abrirTab(\'capitulos\')" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;margin-bottom:10px;font-size:13px">← Voltar à lista</button>' +
+                    '<h3 style="margin-bottom:14px">Editar capítulo ' + numero + (numero === 1 ? ' <span style="font-size:11px;color:var(--text-secondary);font-weight:400">(embedded — abre 1º na biblioteca)</span>' : '') + '</h3>' +
+                    '<label style="display:block;color:var(--text-secondary);font-size:12px;margin-bottom:6px">Título do capítulo</label>' +
+                    '<input id="cap-edit-titulo" type="text" value="' + escapeHtml(tituloAtual) + '" style="' + inputStyle + '">' +
+                    '<label style="display:block;color:var(--text-secondary);font-size:12px;margin-bottom:6px;margin-top:14px">Conteúdo (parágrafos separados por linha em branco)</label>' +
+                    '<textarea id="cap-edit-conteudo" rows="20" style="' + inputStyle + ';resize:vertical;font-family:Georgia,serif">' + escapeHtml(conteudoAtual) + '</textarea>' +
+                    '<div style="display:flex;gap:10px;margin-top:14px">' +
+                        '<button class="btn-action green" style="flex:1" onclick="LivrosAdmin._salvarCap(' + numero + ')">💾 Salvar capítulo</button>' +
+                    '</div>';
+            },
+
+            async _salvarCap(numero) {
+                const livroId = this._editandoLivroId;
+                const titulo = document.getElementById('cap-edit-titulo').value.trim();
+                const conteudo = document.getElementById('cap-edit-conteudo').value;
+                if (numero === 1 && conteudo.length > 800 * 1024) {
+                    toast('Cap 1 grande demais (' + Math.round(conteudo.length/1024) + 'KB > 800KB). Divida.', 'error');
+                    return;
+                }
+                try {
+                    if (numero === 1) {
+                        await db.collection('conteudo_livros').doc(livroId).update({
+                            'cap1.titulo': titulo,
+                            'cap1.conteudo': conteudo,
+                            atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        const livro = this.livros.find(l => l.id === livroId);
+                        if (livro) livro.cap1 = { titulo, conteudo };
+                    } else {
+                        await db.collection('conteudo_livros').doc(livroId).collection('capitulos').doc(String(numero)).set({
+                            numero, titulo, conteudo
+                        });
+                        await db.collection('conteudo_livros').doc(livroId).update({
+                            atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                    toast('✅ Capítulo ' + numero + ' salvo', 'success');
+                    this._abrirTab('capitulos');
+                } catch (e) { toast('Erro: ' + e.message, 'error'); }
+            },
+
+            _substituirCap(numero) {
+                const livroId = this._editandoLivroId;
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.txt';
+                input.onchange = async e => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const conteudo = await file.text();
+                    const linhas = conteudo.split(/\r?\n/);
+                    const titulo = (linhas[0] || '').trim();
+                    const corpo = linhas.slice(1).join('\n').trim();
+                    if (numero === 1 && corpo.length > 800 * 1024) {
+                        toast('Cap 1 grande demais (' + Math.round(corpo.length/1024) + 'KB > 800KB). Divida.', 'error');
+                        return;
+                    }
+                    try {
+                        if (numero === 1) {
+                            await db.collection('conteudo_livros').doc(livroId).update({
+                                'cap1.titulo': titulo,
+                                'cap1.conteudo': corpo,
+                                atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            const livro = this.livros.find(l => l.id === livroId);
+                            if (livro) livro.cap1 = { titulo, conteudo: corpo };
+                        } else {
+                            await db.collection('conteudo_livros').doc(livroId).collection('capitulos').doc(String(numero)).set({
+                                numero, titulo, conteudo: corpo
+                            });
+                            await db.collection('conteudo_livros').doc(livroId).update({
+                                atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                        toast('✅ Capítulo ' + numero + ' substituído', 'success');
+                        this._abrirTab('capitulos');
+                    } catch (err) { toast('Erro: ' + err.message, 'error'); }
+                };
+                input.click();
+            },
+
+            async _excluirCap(numero) {
+                if (numero === 1) { toast('Cap 1 não pode ser excluído (é o embedded). Edite ou substitua.', 'error'); return; }
+                if (!confirm('Excluir capítulo ' + numero + '? Os outros capítulos mantêm a numeração atual.')) return;
+                const livroId = this._editandoLivroId;
+                try {
+                    await db.collection('conteudo_livros').doc(livroId).collection('capitulos').doc(String(numero)).delete();
+                    // totalCapitulos = MAIOR número que ainda existe (cap1 sempre = 1).
+                    // Usar max evita gaps fantasmas (ex: exclui cap3 de [1,2,3,4] → max=4, biblioteca mostra 4 itens).
+                    const snap = await db.collection('conteudo_livros').doc(livroId).collection('capitulos').get();
+                    let maior = 1;
+                    snap.forEach(d => { const n = Number(d.id); if (n > maior) maior = n; });
+                    await db.collection('conteudo_livros').doc(livroId).update({
+                        totalCapitulos: maior,
+                        atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    const livro = this.livros.find(l => l.id === livroId);
+                    if (livro) livro.totalCapitulos = maior;
+                    toast('✅ Capítulo ' + numero + ' excluído', 'success');
+                    this._abrirTab('capitulos');
+                } catch (e) { toast('Erro: ' + e.message, 'error'); }
+            },
+
+            async _addCap() {
+                const livroId = this._editandoLivroId;
+                let proximo = 2;
+                try {
+                    const snap = await db.collection('conteudo_livros').doc(livroId).collection('capitulos').get();
+                    let maior = 1;
+                    snap.forEach(d => { const n = Number(d.id); if (n > maior) maior = n; });
+                    proximo = maior + 1;
+                } catch (e) {}
+                const inputStyle = 'width:100%;padding:12px;background:var(--bg-dark);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-family:inherit;font-size:14px';
+                const c = document.getElementById('liv-tab-content');
+                c.innerHTML =
+                    '<button onclick="LivrosAdmin._abrirTab(\'capitulos\')" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;margin-bottom:10px;font-size:13px">← Voltar à lista</button>' +
+                    '<h3 style="margin-bottom:14px">Novo capítulo (nº ' + proximo + ')</h3>' +
+                    '<label style="display:block;color:var(--text-secondary);font-size:12px;margin-bottom:6px">Título</label>' +
+                    '<input id="cap-edit-titulo" type="text" placeholder="Ex: Da humildade" style="' + inputStyle + '">' +
+                    '<label style="display:block;color:var(--text-secondary);font-size:12px;margin-bottom:6px;margin-top:14px">Conteúdo</label>' +
+                    '<textarea id="cap-edit-conteudo" rows="20" placeholder="Cole o texto aqui..." style="' + inputStyle + ';resize:vertical;font-family:Georgia,serif"></textarea>' +
+                    '<div style="display:flex;gap:10px;margin-top:14px">' +
+                        '<button class="btn-action green" style="flex:1" onclick="LivrosAdmin._salvarNovoCap(' + proximo + ')">💾 Salvar capítulo</button>' +
+                    '</div>';
+            },
+
+            async _salvarNovoCap(numero) {
+                const livroId = this._editandoLivroId;
+                const titulo = document.getElementById('cap-edit-titulo').value.trim();
+                const conteudo = document.getElementById('cap-edit-conteudo').value;
+                if (!titulo && !conteudo) { toast('Preencha pelo menos o conteúdo', 'error'); return; }
+                try {
+                    await db.collection('conteudo_livros').doc(livroId).collection('capitulos').doc(String(numero)).set({
+                        numero, titulo, conteudo
+                    });
+                    const livro = this.livros.find(l => l.id === livroId);
+                    const novoTotal = Math.max(numero, (livro && livro.totalCapitulos) || 1);
+                    await db.collection('conteudo_livros').doc(livroId).update({
+                        totalCapitulos: novoTotal,
+                        atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    if (livro) livro.totalCapitulos = novoTotal;
+                    toast('✅ Capítulo ' + numero + ' adicionado', 'success');
+                    this._abrirTab('capitulos');
+                } catch (e) { toast('Erro: ' + e.message, 'error'); }
+            },
+
+            async _salvarMeta() {
+                const livroId = this._editandoLivroId;
+                const dados = {
+                    titulo: document.getElementById('liv-titulo').value.trim(),
+                    autor: document.getElementById('liv-autor').value.trim(),
+                    descricao: document.getElementById('liv-descricao').value.trim(),
+                    capa: document.getElementById('liv-capa').value.trim(),
+                    ordem: Number(document.getElementById('liv-ordem').value) || 999,
+                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                if (!dados.titulo) { toast('Título é obrigatório', 'error'); return; }
+                try {
+                    await db.collection('conteudo_livros').doc(livroId).update(dados);
+                    const livro = this.livros.find(l => l.id === livroId);
+                    if (livro) Object.assign(livro, dados);
+                    toast('✅ Dados gerais salvos', 'success');
+                    this.renderizar();
+                } catch (e) { toast('Erro: ' + e.message, 'error'); }
+            },
+
+            async excluirLivro(id) {
+                const livro = this.livros.find(l => l.id === id);
+                if (!livro) return;
+                const conf = prompt('Excluir "' + livro.titulo + '" e TODOS os capítulos.\n\nDigite EXCLUIR pra confirmar:');
+                if (conf !== 'EXCLUIR') return;
+                try {
+                    const subcol = db.collection('conteudo_livros').doc(id).collection('capitulos');
+                    const snap = await subcol.get();
+                    const docs = snap.docs;
+                    for (let i = 0; i < docs.length; i += 400) {
+                        const batch = db.batch();
+                        docs.slice(i, i + 400).forEach(d => batch.delete(d.ref));
+                        await batch.commit();
+                    }
+                    await db.collection('conteudo_livros').doc(id).delete();
+                    toast('✅ Livro excluído', 'success');
+                    this.livros = this.livros.filter(l => l.id !== id);
+                    this.renderizar();
+                } catch (e) { toast('Erro: ' + e.message, 'error'); }
+            }
+        };
+        window.LivrosAdmin = LivrosAdmin;
 
         // Gráficos
         function renderizarGraficos() {

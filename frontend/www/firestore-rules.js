@@ -126,9 +126,16 @@ service cloud.firestore {
         ];
     }
 
+    // LIVROS — doc principal contém cap1 embedded (leitura imediata, 1 read).
+    // Subcollection /capitulos/{numero} contém caps 2+ (lazy load sob demanda).
     match /conteudo_livros/{docId} {
       allow read: if true;
       allow write: if isAdmin();
+
+      match /capitulos/{numero} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
     }
     match /conteudo_musicas/{docId} {
       allow read: if true;

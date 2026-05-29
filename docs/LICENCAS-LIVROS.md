@@ -86,6 +86,44 @@ vida-devota.json              3.2 KB   ⚠️ Parcial (Cap. I de 130+)
 
 ---
 
+## 📦 Formato esperado para upload no Painel Admin
+
+A partir de 2026-05-29, o painel `Livros` aceita upload de **pasta** (drag-drop) ou **arquivo ZIP** com a seguinte estrutura:
+
+```
+meu-livro/
+├── titulo.txt          (obrigatório — primeira linha = título do livro)
+├── autor.txt           (opcional — uma linha com o autor)
+├── descricao.txt       (opcional — descrição/sinopse)
+├── capa.jpg            (opcional — imagem da capa, ou .png/.webp)
+├── capitulo-01.txt     (obrigatório — cap. 1, primeira linha = título do capítulo)
+├── capitulo-02.txt     (...)
+├── capitulo-03.txt
+└── ...
+```
+
+### Regras do parser
+
+- Os arquivos `capitulo-NN.txt` são ordenados pelo número (zero-padded ou não — `capitulo-1.txt` e `capitulo-01.txt` funcionam igual).
+- **Primeira linha** de cada `capitulo-NN.txt` vira o **título do capítulo**. Linhas seguintes (separadas por linha em branco) viram parágrafos.
+- Se `titulo.txt` não existir, o parser usa o nome da pasta/ZIP como título.
+- Capa: se enviada, vira string base64 no doc (≤ 200KB recomendado) OU URL externa. Capítulo 1 fica **embedded** no doc principal pra leitura imediata; capítulos 2+ vão pra subcollection.
+
+### Edição granular (a partir de 2026-05-29)
+
+No painel, ao clicar **[Editar]** num livro já publicado:
+
+- Tab **Geral**: edita título, autor, descrição, capa
+- Tab **Capítulos (N)**: lista cada capítulo individualmente com:
+  - ✏️ **Editar inline** — abre textarea com conteúdo do capítulo
+  - 🔄 **Substituir arquivo** — drag-drop de novo `.txt` pra substituir só esse cap
+  - 🗑️ **Excluir** — apaga só esse capítulo
+  - **+ Adicionar capítulo** — append no fim
+
+Cada edição granular = 1 write no Firestore. Não precisa re-uploadar o livro todo.
+
+---
+
 ## Pendências
 
 1. **Completar** os JSONs de Confissões e Vida Devota — fica como tarefa de conteúdo (não-código)

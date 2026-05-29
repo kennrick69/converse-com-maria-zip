@@ -45,21 +45,48 @@ const BibliotecaCrista = {
 
     // F1 (2026-05-25): tenta carregar do Firestore primeiro (controle JOs via
     // painel admin). Se Firestore vazio/falha, fallback pro Hostinger (legado).
+    //
+    // Schema v2 (2026-05-29): doc principal embarca cap1 (leitura imediata, 1 read).
+    // Capítulos 2+ ficam em subcol /capitulos/{numero} e carregam sob demanda.
+    // Suporta também schema v1 (`capitulos: [...]` embedded) e v0 (`conteudo` string).
     async carregarCatalogoDoFirestore() {
         try {
             if (!window.firebase || !firebase.firestore) return null;
-            const snap = await firebase.firestore().collection('conteudo_livros').orderBy('ordem', 'asc').get();
+            let snap;
+            try {
+                snap = await firebase.firestore().collection('conteudo_livros').orderBy('ordem', 'asc').get();
+            } catch (e) {
+                snap = await firebase.firestore().collection('conteudo_livros').get();
+            }
             if (snap.empty) return null;
             const livros = snap.docs.map(d => {
                 const data = d.data();
+                const capitulos = [];
+                if (data.cap1 && typeof data.cap1 === 'object') {
+                    // v2 — cap1 embedded + total
+                    capitulos.push({ numero: 1, ...data.cap1 });
+                    const total = Number(data.totalCapitulos) || 1;
+                    for (let n = 2; n <= total; n++) {
+                        capitulos.push({ numero: n, titulo: '', conteudo: '', _lazy: true });
+                    }
+                } else if (Array.isArray(data.capitulos) && data.capitulos.length) {
+                    // v1 — array embedded inteiro
+                    capitulos.push(...data.capitulos);
+                } else if (data.conteudo) {
+                    // v0 — campo único do CRUD genérico antigo
+                    capitulos.push({ numero: 1, titulo: data.titulo || '', conteudo: String(data.conteudo) });
+                }
                 return {
                     id: data.id || d.id,
                     titulo: data.titulo,
                     autor: data.autor,
                     capa: data.capa || '📖',
+                    descricao: data.descricao || '',
                     _fonteFirestore: true,
                     _docId: d.id,
-                    _capitulos: data.capitulos || []
+                    _atualizadoEm: data.atualizadoEm || null,
+                    _capitulos: capitulos,
+                    _totalCapitulos: Number(data.totalCapitulos) || capitulos.length
                 };
             });
             return livros;
@@ -67,6 +94,75 @@ const BibliotecaCrista = {
             console.warn('[biblioteca] Firestore catálogo falhou, fallback Hostinger:', e.message);
             return null;
         }
+    },
+
+    // Normaliza Firestore Timestamp / Date / string → ms (pra cache key).
+    _stamp(ts) {
+        if (!ts) return 'na';
+        if (ts.toMillis) return ts.toMillis();
+        if (ts.seconds) return ts.seconds * 1000;
+        const p = Date.parse(ts);
+        return isNaN(p) ? 'na' : p;
+    },
+
+    // Lazy load de capítulo individual da subcollection.
+    // Cache key inclui `atualizadoEm` do doc principal — quando JOs edita pelo painel,
+    // o stamp muda e a entrada antiga é descartada automaticamente.
+    async _loadCapituloOnDemand(docId, numero, atualizadoEm) {
+        const stamp = this._stamp(atualizadoEm);
+        const cacheKey = 'biblioCap_' + docId + '_' + numero + '_' + stamp;
+        try {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                try { return JSON.parse(cached); } catch (e) {}
+            }
+        } catch (e) {}
+        try {
+            if (!window.firebase || !firebase.firestore) return null;
+            const doc = await firebase.firestore()
+                .collection('conteudo_livros').doc(docId)
+                .collection('capitulos').doc(String(numero)).get();
+            if (!doc.exists) return null;
+            const data = doc.data();
+            // Limpa caches velhos do mesmo (docId, numero) com stamps anteriores
+            try {
+                const prefix = 'biblioCap_' + docId + '_' + numero + '_';
+                for (let i = localStorage.length - 1; i >= 0; i--) {
+                    const k = localStorage.key(i);
+                    if (k && k.startsWith(prefix) && k !== cacheKey) localStorage.removeItem(k);
+                }
+            } catch (e) {}
+            try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch (e) {}
+            return data;
+        } catch (e) {
+            console.warn('[biblioteca] erro lazy cap', numero, e.message);
+            return null;
+        }
+    },
+
+    _avisoOffline() {
+        try {
+            const aviso = document.createElement('div');
+            aviso.textContent = '⚠️ Sem conexão pra buscar este capítulo. Tente de novo quando estiver online.';
+            aviso.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#ef4444;color:#fff;padding:14px 20px;border-radius:12px;z-index:10001;font-weight:600;max-width:90vw;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+            document.body.appendChild(aviso);
+            setTimeout(() => aviso.remove(), 4000);
+        } catch (e) {}
+    },
+
+    // Garante que livro.capitulos[idx] esteja carregado de verdade. Retorna true se sucesso.
+    async _garantirCapitulo(idx) {
+        const livro = this.livroAtual;
+        if (!livro || !Array.isArray(livro.capitulos)) return true;
+        const cap = livro.capitulos[idx];
+        if (!cap || !cap._lazy) return true;
+        if (!livro._docId) return true;
+        const real = await this._loadCapituloOnDemand(livro._docId, cap.numero, livro._atualizadoEm);
+        if (real) {
+            livro.capitulos[idx] = { numero: cap.numero, ...real };
+            return true;
+        }
+        return false;
     },
 
     async carregarCatalogo() {
@@ -89,19 +185,21 @@ const BibliotecaCrista = {
 
     async carregarLivro(id) {
         if (this.livrosCache[id]) return this.livrosCache[id];
-        // 1) Firestore: vê se o item do catálogo veio do Firestore (tem _capitulos embedded)
+        // 1) Firestore: vê se o item do catálogo veio do Firestore (tem _capitulos embedded/lazy)
         const meta = (this.catalogo || []).find(x => x.id === id);
         if (meta && meta._fonteFirestore && Array.isArray(meta._capitulos)) {
             const livro = {
                 id: meta.id,
+                _docId: meta._docId,
+                _fonteFirestore: true,
+                _atualizadoEm: meta._atualizadoEm,
                 titulo: meta.titulo,
                 autor: meta.autor,
                 capa: meta.capa,
                 capitulos: meta._capitulos
             };
             this.livrosCache[id] = livro;
-            this.salvar();
-            return livro;
+            return livro; // NÃO salvar livro com placeholders _lazy no cache localStorage
         }
         // 2) Fallback Hostinger
         const r = await fetch(this.URL_BASE + '/' + id + '.json');
@@ -155,6 +253,7 @@ const BibliotecaCrista = {
         this.livroAtual = await this.carregarLivro(id);
         this.capituloAtual = 0;
         this.canetaAtiva = null;
+        await this._garantirCapitulo(0);
         this.renderLeitor();
     },
 
@@ -911,16 +1010,20 @@ const BibliotecaCrista = {
         this.abrir();
     },
 
-    capAnt() { 
-        if (this.capituloAtual > 0) { 
-            this.capituloAtual--; 
-            this.renderLeitor(); 
+    async capAnt() {
+        if (this.capituloAtual > 0) {
+            this.capituloAtual--;
+            const ok = await this._garantirCapitulo(this.capituloAtual);
+            if (!ok) { this.capituloAtual++; this._avisoOffline(); return; }
+            this.renderLeitor();
         } 
     },
 
-    capProx() { 
-        if (this.capituloAtual < this.livroAtual.capitulos.length - 1) { 
-            this.capituloAtual++; 
+    async capProx() {
+        if (this.capituloAtual < this.livroAtual.capitulos.length - 1) {
+            this.capituloAtual++;
+            const ok = await this._garantirCapitulo(this.capituloAtual);
+            if (!ok) { this.capituloAtual--; this._avisoOffline(); return; }
             this.renderLeitor();
         } 
     },
