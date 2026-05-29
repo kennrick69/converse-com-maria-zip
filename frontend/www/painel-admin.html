@@ -2150,34 +2150,46 @@ Anexei o livro abaixo. Manda ver.`;
             }
         }
         
-        // Deletar Conta
+        // Deletar Conta (Auth + Firestore via backend admin)
+        // URL do backend Railway. Se mudar de provedor, atualizar aqui.
+        const API_URL_ADMIN = 'https://converse-com-maria-production.up.railway.app';
         async function deletarConta(id, email) {
-            const confirmacao = prompt(`ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\nPara confirmar, digite o email do usuário:\n${email}`);
-            
+            const confirmacao = prompt(`ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\nVai remover login (Auth) E dados (Firestore) do usuário.\n\nPara confirmar, digite o email do usuário:\n${email}`);
+
             if (confirmacao !== email) {
                 if (confirmacao !== null) toast('❌ Email não confere', 'error');
                 return;
             }
-            
+
             try {
-                // Deletar documento do Firestore
-                await db.collection('usuarios').doc(id).delete();
-                
-                toast('✅ Conta deletada do Firestore!', 'success');
+                // Pega ID Token do admin logado pra autenticar a chamada
+                const adminUser = firebase.auth().currentUser;
+                if (!adminUser) { toast('❌ Você precisa estar logado como admin', 'error'); return; }
+                const idToken = await adminUser.getIdToken();
+
+                // Chama backend que deleta Auth + Firestore numa única operação
+                const response = await fetch(`${API_URL_ADMIN}/api/admin/deletar-usuario-completo`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({ userId: id })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+
+                const msg = data.resumo
+                    ? `✅ Excluído — Auth: ${data.resumo.auth ? 'sim' : 'não existia'} | Firestore: ${data.resumo.firestore ? 'sim' : 'não existia'}`
+                    : '✅ Conta deletada completamente!';
+                toast(msg, 'success');
                 fecharModal();
-                
-                // Atualizar lista
                 todosUsuarios = todosUsuarios.filter(u => u.id !== id);
                 renderizarUsuarios();
-                
-                // Atualizar stats
                 document.getElementById('total-usuarios').textContent = todosUsuarios.length;
-                
-                alert('⚠️ IMPORTANTE:\n\nOs dados foram removidos do Firestore.\n\nPara remover também o login do usuário:\n1. Vá no Console Firebase\n2. Authentication → Users\n3. Encontre o email e delete');
-                
             } catch (e) {
                 console.error(e);
-                toast('❌ Erro ao deletar', 'error');
+                toast('❌ Erro ao deletar: ' + e.message, 'error');
             }
         }
         
