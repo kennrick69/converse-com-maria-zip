@@ -4335,8 +4335,9 @@ async function enviarMensagem() {
         
         adicionarMensagem('assistant', data.resposta);
         
-        // Após a 3ª mensagem, mostrar popup de compartilhamento (10s de delay)
-        if (mensagensSessaoAtual === 3) {
+        // Após a 5ª mensagem, mostrar popup de compartilhamento (10s de delay)
+        // 2026-05-29 (JOs): 3 → 5, alinhado com o aumento do limite freemium pra 10
+        if (mensagensSessaoAtual === 5) {
             setTimeout(() => mostrarPopupCompartilhamento(), 10000);
         }
         

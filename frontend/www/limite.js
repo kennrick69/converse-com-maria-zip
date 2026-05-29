@@ -5,7 +5,10 @@
 
 const SistemaMensagens = {
     // Configurações
-    LIMITE_DIARIO_GRATIS: 3,
+    // 2026-05-29 (JOs): 3 → 10. Maria precisa ter espaço pra realmente ajudar
+    // antes de pedir Premium. 3 mensagens não dá pra construir conversa nem
+    // conforto. 10 é o sweet spot pra acolhimento + conversão.
+    LIMITE_DIARIO_GRATIS: 10,
     
     // Carregar dados do dia
     carregarDados() {
@@ -79,7 +82,7 @@ const SistemaMensagens = {
                 contador.innerHTML = '💬 <span class="text-green-400">∞</span>';
                 contador.title = 'Premium - Mensagens ilimitadas';
             } else {
-                const corClasse = restantes <= 2 ? 'text-red-400' : restantes <= 3 ? 'text-yellow-400' : 'text-white';
+                const corClasse = restantes <= 2 ? 'text-red-400' : restantes <= 5 ? 'text-yellow-400' : 'text-white';
                 contador.innerHTML = `💬 <span class="${corClasse}">${restantes}</span>/${this.LIMITE_DIARIO_GRATIS}`;
                 contador.title = `${restantes} mensagens restantes hoje`;
             }
@@ -185,9 +188,13 @@ const SistemaMensagens = {
 
     // Mostrar lembrete suave
     mostrarLembreteSuave(restantes) {
-        if (restantes === 3) {
+        if (restantes === 5) {
             setTimeout(() => {
-                if (window.showToast) showToast('💬 Você tem 3 mensagens restantes hoje');
+                if (window.showToast) showToast('💬 Você tem 5 mensagens gratuitas restantes hoje');
+            }, 1500);
+        } else if (restantes === 3) {
+            setTimeout(() => {
+                if (window.showToast) showToast('💬 Faltam 3 mensagens gratuitas hoje');
             }, 1500);
         } else if (restantes === 1) {
             setTimeout(() => {
