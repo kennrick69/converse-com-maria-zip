@@ -80,12 +80,16 @@ const NotificationSystem = {
         }
         
         this.loadSettings();
-        
+
+        // Carrega frases do painel admin (Firestore) pra entrar no pool de versículos.
+        // Background, não bloqueia init. Cache localStorage 24h pra reduzir reads.
+        this._loadFrasesFromFirestore().catch(e => console.warn('Frases Firestore falhou:', e.message));
+
         // Reagendar se estava ativo
         if (this.isNative && this.settings.enabled) {
             await this.scheduleAll();
         }
-        
+
         console.log('🔔 Sistema de lembretes iniciado!');
         
         // Verificar se app foi aberto por notificação (cold start)
@@ -519,10 +523,64 @@ const NotificationSystem = {
     // ========================================
     // UTILITÁRIOS
     // ========================================
+
+    // Frases administradas pelo painel admin (Firestore: conteudo_frases).
+    // Carregadas em init() com cache 24h em localStorage pra reduzir reads.
+    _frasesFirestore: [],
+
+    async _loadFrasesFromFirestore() {
+        // 1) Tenta cache localStorage (válido por 24h)
+        try {
+            const raw = localStorage.getItem('maria_frases_pool');
+            if (raw) {
+                const cache = JSON.parse(raw);
+                if (cache && cache.timestamp && (Date.now() - cache.timestamp < 24 * 60 * 60 * 1000)) {
+                    this._frasesFirestore = cache.lista || [];
+                    return;
+                }
+            }
+        } catch (e) {}
+
+        // 2) Busca fresca no Firestore
+        if (!window.firebase || !firebase.firestore) return;
+        try {
+            const snap = await firebase.firestore().collection('conteudo_frases').get();
+            const lista = [];
+            snap.forEach(doc => {
+                const d = doc.data();
+                if (d.texto) {
+                    lista.push({
+                        texto: d.texto,
+                        ref: d.referencia || '',
+                        reflexao: d.reflexao || ''
+                    });
+                }
+            });
+            this._frasesFirestore = lista;
+            localStorage.setItem('maria_frases_pool', JSON.stringify({ timestamp: Date.now(), lista }));
+            console.log('💭 Frases do painel carregadas:', lista.length);
+        } catch (e) {
+            console.warn('💭 Falha lendo conteudo_frases:', e.message);
+        }
+    },
+
+    // Pool MISTO: frases do painel admin + versículos hardcoded como fallback
+    _getFrasesPool() {
+        const fromFirestore = this._frasesFirestore || [];
+        // Se Firestore tem ≥ 7 frases, usa SÓ elas (curadoria do JOs).
+        // Se tem poucas (<7), MESCLA com hardcoded pra ter variedade mínima.
+        if (fromFirestore.length >= 7) return fromFirestore;
+        return [...fromFirestore, ...this.versiculos];
+    },
+
     getDailyVerse() {
+        const pool = this._getFrasesPool();
+        if (pool.length === 0) {
+            return { texto: 'Fazei tudo o que Ele vos disser.', ref: 'João 2:5' };
+        }
         const today = new Date();
         const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-        return this.versiculos[dayOfYear % this.versiculos.length];
+        return pool[dayOfYear % pool.length];
     },
 
     isSupported() {
