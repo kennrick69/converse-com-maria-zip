@@ -713,39 +713,126 @@ const BibliotecaCrista = {
     ativarEventosSelecao() {
         const container = document.getElementById('texto-leitura');
         if (!container) return;
-        
+
         const self = this;
-        
-        // Função que marca quando soltar
+
+        // ============ DESKTOP (mouse): comportamento padrão ============
         container._marcarAoSoltar = function(e) {
             if (!self.canetaAtiva) return;
-            
-            // Pequeno delay para garantir que a seleção está pronta
             setTimeout(() => {
                 const selection = window.getSelection();
                 if (!selection || selection.isCollapsed) return;
-                
                 const texto = selection.toString().trim();
                 if (texto.length < 3) return;
-                
-                console.log('✅ Selecionou:', texto.substring(0, 30));
-                
-                // MARCA AUTOMATICAMENTE!
                 self.marcarTexto(texto, selection);
             }, 50);
         };
-        
         container.addEventListener('mouseup', container._marcarAoSoltar);
-        container.addEventListener('touchend', container._marcarAoSoltar);
+
+        // ============ MOBILE (touch): seleção por arrasto customizada ============
+        // PROBLEMA: no celular, single tap não inicia seleção (precisa long-press).
+        // SOLUÇÃO: quando caneta tá ativa, primeiro toque posiciona o caret no
+        // ponto tocado e arrastar expande a seleção em tempo real.
+
+        container._touchStart = function(e) {
+            if (!self.canetaAtiva) return;
+            const touch = e.touches[0];
+            if (!touch) return;
+            const range = self._caretRangeDoPonto(touch.clientX, touch.clientY);
+            if (range) {
+                self._touchStartRange = range;
+                // Posiciona uma seleção inicial colapsada (caret) no ponto
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range.cloneRange());
+            }
+        };
+
+        container._touchMove = function(e) {
+            if (!self.canetaAtiva || !self._touchStartRange) return;
+            const touch = e.touches[0];
+            if (!touch) return;
+            const range = self._caretRangeDoPonto(touch.clientX, touch.clientY);
+            if (!range) return;
+            // Bloqueia o scroll enquanto seleciona (essencial pra mobile)
+            try { e.preventDefault(); } catch (_) {}
+            // Atualiza seleção do touchStart até o ponto atual
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            const novoRange = document.createRange();
+            try {
+                novoRange.setStart(self._touchStartRange.startContainer, self._touchStartRange.startOffset);
+                novoRange.setEnd(range.startContainer, range.startOffset);
+                // Se selecionou pra trás (direção invertida), o range fica
+                // colapsado — trocamos start/end pra corrigir
+                if (novoRange.collapsed) {
+                    novoRange.setStart(range.startContainer, range.startOffset);
+                    novoRange.setEnd(self._touchStartRange.startContainer, self._touchStartRange.startOffset);
+                }
+                sel.addRange(novoRange);
+            } catch (_) {
+                // Range cruzando elementos pode lançar — ignora silenciosamente
+            }
+        };
+
+        container._touchEnd = function(e) {
+            if (!self.canetaAtiva || !self._touchStartRange) return;
+            setTimeout(() => {
+                const selection = window.getSelection();
+                if (selection && !selection.isCollapsed) {
+                    const texto = selection.toString().trim();
+                    if (texto.length >= 3) self.marcarTexto(texto, selection);
+                }
+                self._touchStartRange = null;
+            }, 50);
+        };
+
+        // touchmove com passive:false pra permitir preventDefault (bloquear scroll)
+        container.addEventListener('touchstart', container._touchStart, { passive: true });
+        container.addEventListener('touchmove', container._touchMove, { passive: false });
+        container.addEventListener('touchend', container._touchEnd);
+    },
+
+    // Helper cross-browser: pega Range a partir de coordenadas (x,y) do toque.
+    // Safari/iOS usa caretRangeFromPoint; Firefox usa caretPositionFromPoint.
+    _caretRangeDoPonto(x, y) {
+        try {
+            if (document.caretRangeFromPoint) {
+                return document.caretRangeFromPoint(x, y);
+            }
+            if (document.caretPositionFromPoint) {
+                const pos = document.caretPositionFromPoint(x, y);
+                if (pos && pos.offsetNode) {
+                    const range = document.createRange();
+                    range.setStart(pos.offsetNode, pos.offset);
+                    range.setEnd(pos.offsetNode, pos.offset);
+                    return range;
+                }
+            }
+        } catch (_) {}
+        return null;
     },
 
     desativarEventosSelecao() {
         const container = document.getElementById('texto-leitura');
-        if (!container || !container._marcarAoSoltar) return;
-        
-        container.removeEventListener('mouseup', container._marcarAoSoltar);
-        container.removeEventListener('touchend', container._marcarAoSoltar);
-        delete container._marcarAoSoltar;
+        if (!container) return;
+        if (container._marcarAoSoltar) {
+            container.removeEventListener('mouseup', container._marcarAoSoltar);
+            delete container._marcarAoSoltar;
+        }
+        if (container._touchStart) {
+            container.removeEventListener('touchstart', container._touchStart);
+            delete container._touchStart;
+        }
+        if (container._touchMove) {
+            container.removeEventListener('touchmove', container._touchMove);
+            delete container._touchMove;
+        }
+        if (container._touchEnd) {
+            container.removeEventListener('touchend', container._touchEnd);
+            delete container._touchEnd;
+        }
+        this._touchStartRange = null;
     },
 
     marcarTexto(texto, selection) {
