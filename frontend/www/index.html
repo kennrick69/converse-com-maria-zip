@@ -307,34 +307,32 @@
             }
         }
         
-        /* Feedback inline 👍/👎 nas mensagens da Maria */
-        .bubble-feedback {
-            display: flex;
-            gap: 6px;
-            margin-top: 10px;
-            opacity: 0.45;
-            transition: opacity 0.2s;
-        }
-        .bubble-feedback:hover { opacity: 1; }
-        .bubble-feedback button {
+        /* Header compacto da bubble: título + 🔊 + 👍 numa linha só */
+        .bubble-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .bubble-header-left { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+        .bubble-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .btn-audio-inline, .btn-feedback-inline {
             background: rgba(255,255,255,0.08);
             border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 16px;
-            padding: 4px 12px;
+            border-radius: 14px;
+            padding: 3px 8px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
+            line-height: 1;
+            opacity: 0.7;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 26px;
         }
-        .bubble-feedback button:hover { background: rgba(255,255,255,0.18); transform: scale(1.05); }
-        .bubble-feedback button:disabled { cursor: default; transform: none; }
-        .bubble-feedback button.fb-active-positivo {
+        .btn-audio-inline svg, .btn-audio-inline img { width: 14px; height: 14px; }
+        .btn-audio-inline:hover, .btn-feedback-inline:hover { opacity: 1; background: rgba(255,255,255,0.18); }
+        .btn-feedback-inline:disabled { cursor: default; }
+        .btn-feedback-inline.fb-active-positivo {
             background: rgba(34, 197, 94, 0.35);
             border-color: rgba(34, 197, 94, 0.7);
-            opacity: 1;
-        }
-        .bubble-feedback button.fb-active-negativo {
-            background: rgba(239, 68, 68, 0.35);
-            border-color: rgba(239, 68, 68, 0.7);
             opacity: 1;
         }
 
@@ -1532,6 +1530,20 @@
     line-height: 1.7;
 }
 
+.privacy-modal-body p {
+    text-align: justify;
+    hyphens: auto;
+    margin-bottom: 10px;
+}
+
+.privacy-modal-body ul li {
+    text-align: justify;
+}
+
+.privacy-modal-body a {
+    word-break: break-all;
+}
+
 .privacy-modal-body h3 {
     color: #6b2d06;
     font-weight: 700;
@@ -2336,7 +2348,7 @@
         <div id="onb-error" class="onb-error hidden mb-2"></div>
 
         <div class="space-y-2">
-            <div>
+            <div id="onb-apelido-wrapper">
                 <label class="onb-label" for="onb-apelido">Como gostaria de ser chamado(a)?</label>
                 <input type="text" id="onb-apelido" class="onb-input" placeholder="Ex: Cris, Dudu, Leda…" maxlength="40" autocomplete="given-name" autocapitalize="words">
                 <small style="display:block;color:rgba(120,90,40,0.7);font-size:11px;margin-top:4px;font-style:italic">É como Maria vai te chamar — pode ser o apelido do coração ✨</small>
@@ -2636,10 +2648,13 @@ function irParaOnboarding() {
 function mostrarOnboarding() {
     document.getElementById('onboarding').classList.remove('hidden');
 
-    // Pré-preencher campo apelido se já tem (veio da #tela-acesso ou de cadastro anterior)
+    // Pré-preencher campo apelido se já tem (veio da #tela-acesso ou de cadastro anterior).
+    // Se JÁ TEM apelido, esconde o wrapper inteiro — evita duplicar a pergunta.
     const apelidoSalvo = localStorage.getItem('maria_user_apelido') || localStorage.getItem('maria_user_nome') || '';
     const inputApelido = document.getElementById('onb-apelido');
+    const wrapperApelido = document.getElementById('onb-apelido-wrapper');
     if (inputApelido) inputApelido.value = apelidoSalvo;
+    if (wrapperApelido) wrapperApelido.style.display = apelidoSalvo ? 'none' : '';
 
     // Personalizar título com nome do usuário
     const nome = localStorage.getItem('maria_user_nome');
@@ -3165,7 +3180,7 @@ function abrirPoliticaPrivacidade() {
         <div class="privacy-modal-content">
             <div class="privacy-modal-header">
                 <h2 style="font-size: 24px; font-weight: 700; color: #6b2d06; margin: 0;">📜 Política de Privacidade</h2>
-                <p style="color: #7a3a0a; margin-top: 8px;">Última atualização: Janeiro 2025</p>
+                <p style="color: #7a3a0a; margin-top: 8px;">Última atualização: Maio 2026</p>
             </div>
             <div class="privacy-modal-body">
                 <p>O aplicativo <strong>"Converse com Maria"</strong> respeita sua privacidade e está comprometido em proteger seus dados pessoais.</p>
@@ -3217,7 +3232,7 @@ function abrirTermosUso() {
         <div class="privacy-modal-content">
             <div class="privacy-modal-header">
                 <h2 style="font-size: 24px; font-weight: 700; color: #6b2d06; margin: 0;">📖 Termos de Uso</h2>
-                <p style="color: #7a3a0a; margin-top: 8px;">Última atualização: Janeiro 2025</p>
+                <p style="color: #7a3a0a; margin-top: 8px;">Última atualização: Maio 2026</p>
             </div>
             <div class="privacy-modal-body">
                 <p>Ao usar o aplicativo <strong>"Converse com Maria"</strong>, você concorda com os seguintes termos:</p>
@@ -3240,7 +3255,7 @@ function abrirTermosUso() {
                 
                 <h3>🗑️ Exclusão de Dados</h3>
                 <p>Você tem o direito de solicitar a exclusão de todos os seus dados pessoais a qualquer momento. Para isso, envie um email para:</p>
-                <p style="text-align: center; margin: 12px 0;">
+                <p style="text-align: center; margin: 12px 0; word-break: break-all;">
                     <a href="mailto:contato@conversecommaria.com.br" style="color: #7c3aed; font-weight: bold; text-decoration: underline;">contato@conversecommaria.com.br</a>
                 </p>
                 <p>Sua solicitação será processada em até 15 dias úteis.</p>
@@ -4008,17 +4023,10 @@ let mensagemId = 0;
 // feedbacks_maria/{auto-id} → { userId, tipo, mensagemMaria, mensagemUser, ts }
 window.enviarFeedbackMaria = async function(messageId, tipo, btnEl) {
     try {
-        const container = document.getElementById('fb-' + messageId);
-        if (!container) return;
-        if (container.dataset.enviado === 'true') return;
-        container.dataset.enviado = 'true';
-
-        // Marca visualmente o botão clicado
-        container.querySelectorAll('button').forEach(b => {
-            b.classList.remove('fb-active-positivo', 'fb-active-negativo');
-            b.disabled = true;
-        });
-        btnEl.classList.add(tipo === 'positivo' ? 'fb-active-positivo' : 'fb-active-negativo');
+        if (!btnEl || btnEl.dataset.enviado === 'true') return;
+        btnEl.dataset.enviado = 'true';
+        btnEl.disabled = true;
+        btnEl.classList.add('fb-active-positivo');
 
         // Texto da mensagem da Maria
         const textoMaria = document.getElementById('texto-' + messageId)?.innerText || '';
@@ -4060,28 +4068,23 @@ function adicionarMensagem(role, content) {
     row.className = `msg-row ${role === 'user' ? 'is-user' : 'is-bot'}`;
     const idAtual = mensagemId++;
 
-    const botaoAudio = role === 'assistant' ? `
-        <button onclick="gerarAudio(document.getElementById('texto-${idAtual}').innerText, this)"
-            class="btn-audio">
-            ${getIconeAudio()}
-        </button>` : '';
-
-    const botoesFeedback = role === 'assistant' ? `
-        <div class="bubble-feedback" id="fb-${idAtual}" title="Essa resposta te ajudou?">
-            <button type="button" onclick="enviarFeedbackMaria(${idAtual}, 'positivo', this)" aria-label="Resposta útil">👍</button>
-            <button type="button" onclick="enviarFeedbackMaria(${idAtual}, 'negativo', this)" aria-label="Resposta não ajudou">👎</button>
+    const botoesHeader = role === 'assistant' ? `
+        <div class="bubble-actions">
+            <button onclick="gerarAudio(document.getElementById('texto-${idAtual}').innerText, this)" class="btn-audio-inline" aria-label="Ouvir mensagem">${getIconeAudio()}</button>
+            <button type="button" id="fb-${idAtual}" class="btn-feedback-inline" onclick="enviarFeedbackMaria(${idAtual}, 'positivo', this)" aria-label="Resposta útil">👍</button>
         </div>` : '';
 
     row.innerHTML = `
         <div class="bubble ${role === 'user' ? 'bubble-user' : 'bubble-bot'}">
             ${role === 'assistant' ? `
               <div class="bubble-header">
-                <span class="bubble-sparkle">✨</span>
-                <span class="bubble-title">Maria, Mãe de Jesus</span>
+                <div class="bubble-header-left">
+                    <span class="bubble-sparkle">✨</span>
+                    <span class="bubble-title">Maria, Mãe de Jesus</span>
+                </div>
+                ${botoesHeader}
               </div>` : ''}
             <p id="texto-${idAtual}" class="bubble-text">${content}</p>
-            ${botaoAudio}
-            ${botoesFeedback}
         </div>`;
 
     container.appendChild(row);

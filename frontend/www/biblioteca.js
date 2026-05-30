@@ -353,10 +353,13 @@ const BibliotecaCrista = {
         // Marcador manual (bookmark) — diferente da régua automática
         const marcador = this.config.marcadores && this.config.marcadores[livro.id];
         const capMarcador = marcador ? livro.capitulos[marcador.capIdx] : null;
+        // Para o %, prefere ratioAbs (posição absoluta no conteúdo) sobre ratio
+        // (que é scroll-relative e fica 0 quando o cap cabe inteiro na tela).
+        const ratioMarcador = (marcador && (marcador.ratioAbs != null ? marcador.ratioAbs : marcador.ratio)) || 0;
         const marcadorHtml = (marcador && capMarcador) ? `
             <div style="background:linear-gradient(135deg,rgba(239,68,68,0.18),rgba(220,38,38,0.12));border:1px solid rgba(239,68,68,0.4);border-radius:14px;padding:14px 16px;margin-bottom:14px;">
                 <div style="color:#fca5a5;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;font-weight:bold;margin-bottom:8px;">🔖 Seu marcador</div>
-                <div style="color:#fff;font-size:14px;margin-bottom:10px;font-weight:600;">Capítulo ${capMarcador.numero}${capMarcador.titulo ? ' — ' + capMarcador.titulo : ''} • ${Math.round((marcador.ratio||0)*100)}%</div>
+                <div style="color:#fff;font-size:14px;margin-bottom:10px;font-weight:600;">Capítulo ${capMarcador.numero}${capMarcador.titulo ? ' — ' + capMarcador.titulo : ''} • ${Math.round(ratioMarcador*100)}%</div>
                 <button onclick="BibliotecaCrista.iniciarLeitura(${marcador.capIdx})" style="width:100%;padding:12px;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;border-radius:10px;color:#fff;font-weight:bold;font-size:14px;cursor:pointer;">Ir pro marcador →</button>
             </div>
         ` : '';
@@ -1048,6 +1051,10 @@ const BibliotecaCrista = {
         scroll.addEventListener('scroll', this._scrollHandler, { passive: true });
         // Atualiza visual logo no abrir (caso restauração já tenha posicionado)
         setTimeout(() => this._atualizarReguaVisual(), 300);
+        // BUG-FIX (JOs 2026-05-29): força save após 2s de leitura mesmo SEM scroll.
+        // Cobre o caso de capítulos curtos que cabem na tela inteira — antes
+        // ficavam 0% pra sempre porque nenhum scroll event disparava.
+        setTimeout(() => this._salvarPosicaoAtual(), 2000);
     },
 
     // ============ MARCADOR (bookmark manual) — modo "tap pra apontar" ============
@@ -1232,7 +1239,10 @@ const BibliotecaCrista = {
         const chave = this._chaveLivroAtual();
         if (!scroll || !chave) return;
         const denom = (scroll.scrollHeight - scroll.clientHeight);
-        const ratio = denom > 0 ? scroll.scrollTop / denom : 0;
+        // BUG-FIX (JOs 2026-05-29): se o capítulo cabe inteiro na tela (denom=0),
+        // não há scroll → ratio ficava 0 pra sempre. Agora considera como lido (1).
+        // Pra caps com scroll, usa o scroll relativo normal.
+        const ratio = denom > 0 ? scroll.scrollTop / denom : 1;
         if (!this.config.posicoes) this.config.posicoes = {};
         // M8: posições agora guardam timestamp pra LRU cleanup
         this.config.posicoes[chave] = { ratio: ratio, ts: Date.now() };
