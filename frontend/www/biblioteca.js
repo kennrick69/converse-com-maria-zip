@@ -1294,12 +1294,27 @@ const BibliotecaCrista = {
         linha.style.cssText = 'position:fixed;left:0;right:0;top:28vh;height:4px;background:linear-gradient(90deg,transparent 0%,#b8860b 12%,#fbbf24 50%,#b8860b 88%,transparent 100%);box-shadow:0 0 14px rgba(251,191,36,0.7),0 0 28px rgba(251,191,36,0.4);pointer-events:none;z-index:9999;';
         document.body.appendChild(linha);
 
+        // BUG-FIX (JOs 2026-05-30): padding-bottom dinâmico pra última linha
+        // alcançar a régua. Sem isso, conteúdo entre 28vh-100vh fica preso
+        // debaixo do overlay sem nunca subir até a altura da linha amarela.
+        const scroll = document.getElementById('leitor-scroll');
+        if (scroll) {
+            scroll.dataset.paddingBottomOriginal = scroll.style.paddingBottom || '180px';
+            scroll.style.paddingBottom = 'calc(72vh + 20px)';
+        }
+
         this.toast('📏 Régua ligada — rola o texto pra ver o resto');
     },
 
     _esconderRegua() {
         document.getElementById('biblio-regua-linha')?.remove();
         document.getElementById('biblio-regua-overlay')?.remove();
+        // Restaurar padding original
+        const scroll = document.getElementById('leitor-scroll');
+        if (scroll && scroll.dataset.paddingBottomOriginal !== undefined) {
+            scroll.style.paddingBottom = scroll.dataset.paddingBottomOriginal;
+            delete scroll.dataset.paddingBottomOriginal;
+        }
     },
 
     _atualizarBotaoRegua() {
