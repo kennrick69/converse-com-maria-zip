@@ -1907,6 +1907,73 @@ async function desativarPremiumUsuario(userId) {
 }
 
 // ========================================
+// 🗑️ DELETAR USUÁRIO COMPLETO (Auth + Firestore) — ADMIN ONLY
+// ========================================
+// Permite ao painel admin deletar um usuário do Firebase Auth E do Firestore
+// numa única chamada. Validação: ID Token do admin no header Authorization +
+// email do token tem que estar na lista de admins.
+app.post('/api/admin/deletar-usuario-completo', async (req, res) => {
+    try {
+        if (!process.env.FIREBASE_ADMIN_KEY) {
+            return res.status(500).json({ error: 'Servidor sem FIREBASE_ADMIN_KEY configurado' });
+        }
+        const admin = require('firebase-admin');
+        if (!admin.apps.length) {
+            admin.initializeApp({
+                credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_ADMIN_KEY))
+            });
+        }
+
+        // 1) Extrai ID Token do header Authorization: Bearer <token>
+        const authHeader = req.headers.authorization || '';
+        const idToken = authHeader.replace(/^Bearer\s+/i, '').trim();
+        if (!idToken) return res.status(401).json({ error: 'Token ausente' });
+
+        // 2) Verifica token e checa se é admin
+        let decoded;
+        try {
+            decoded = await admin.auth().verifyIdToken(idToken);
+        } catch (e) {
+            return res.status(401).json({ error: 'Token inválido' });
+        }
+        const ADMINS_PERMITIDOS = ['kennrick@gmail.com', 'rickboypoke@gmail.com'];
+        if (!decoded.email || !ADMINS_PERMITIDOS.includes(decoded.email)) {
+            return res.status(403).json({ error: 'Acesso negado — apenas admins podem deletar usuários' });
+        }
+
+        // 3) Pega userId pra deletar
+        const { userId } = req.body;
+        if (!userId) return res.status(400).json({ error: 'userId obrigatório' });
+        if (userId === decoded.uid) return res.status(400).json({ error: 'Não pode deletar o próprio admin logado' });
+
+        // 4) Deleta do Auth (se existir) + Firestore (se existir)
+        let resumo = { auth: false, firestore: false };
+        try {
+            await admin.auth().deleteUser(userId);
+            resumo.auth = true;
+        } catch (e) {
+            // user-not-found não é erro fatal — pode já ter sido deletado
+            if (e.code !== 'auth/user-not-found') {
+                console.error('Erro deletar do Auth:', e);
+                return res.status(500).json({ error: 'Falha ao deletar do Auth: ' + e.message });
+            }
+        }
+        try {
+            await admin.firestore().collection('usuarios').doc(userId).delete();
+            resumo.firestore = true;
+        } catch (e) {
+            console.warn('Firestore delete falhou (ignorando):', e.message);
+        }
+
+        console.log(`🗑️ Usuário deletado: uid=${userId} | por=${decoded.email} | auth=${resumo.auth} fs=${resumo.firestore}`);
+        res.json({ success: true, resumo });
+    } catch (error) {
+        console.error('Erro deletar usuário completo:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ========================================
 // 🇧🇷 PAGAMENTOS - MERCADO PAGO (PIX)
 // ========================================
 
