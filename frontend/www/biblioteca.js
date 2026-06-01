@@ -1821,7 +1821,7 @@ const BibliotecaCrista = {
         card.innerHTML =
             '<div style="position:relative;width:540px;height:960px;background:linear-gradient(180deg,#3d2817 0%,#5b3a1a 50%,#8b6332 100%);overflow:hidden;">'
             + '<div style="position:absolute;top:90px;left:0;right:0;text-align:center;">'
-            + '<div style="margin-bottom:18px;display:flex;justify-content:center;"><img src="icones/rosario.png" alt="" style="width:200px;height:200px;filter:invert(1) brightness(1.05);opacity:0.95;" crossorigin="anonymous"></div>'
+            + '<div style="margin-bottom:18px;display:flex;justify-content:center;"><img src="icones/maria-auxiliadora.png" alt="" style="width:240px;height:240px;filter:drop-shadow(0 10px 30px rgba(0,0,0,0.4));" crossorigin="anonymous"></div>'
             + '<div style="color:#f5e8c8;font-family:Georgia,serif;font-size:38px;font-weight:700;letter-spacing:2px;line-height:1.2;margin-bottom:12px;">Converse com Maria</div>'
             + '<div style="color:#d4a948;font-size:16px;font-style:italic;letter-spacing:2px;">Sua Mãe está te esperando.</div>'
             + '</div>'
