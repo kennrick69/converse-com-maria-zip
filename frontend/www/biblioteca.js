@@ -1717,7 +1717,8 @@ const BibliotecaCrista = {
             </style>
 
             <div style="text-align:center;color:#f5e8c8;margin-bottom:24px;animation:bibPauUp 0.5s ease-out 0.2s both;">
-                <div style="font-size:54px;line-height:1;margin-bottom:14px;">📿</div>
+                <img src="icones/rosario.png" alt="" style="width:72px;height:72px;margin-bottom:14px;filter:invert(1) brightness(1.2);opacity:0.9;">
+                <span style="display:none;">📿</span>
                 <div style="font-family:Georgia,serif;font-size:22px;font-weight:600;margin-bottom:10px;">Uma pausa antes do fim</div>
                 <div style="font-size:14.5px;opacity:0.85;line-height:1.55;max-width:420px;margin:0 auto;">
                     Aproveite estes minutos pra apresentar o Converse com Maria a alguém que talvez precise.
@@ -1795,7 +1796,7 @@ const BibliotecaCrista = {
 
         const URL_APP = 'https://play.google.com/store/apps/details?id=com.conversemaria.app';
         const titulo = 'Converse com Maria';
-        const mensagem = `Conheça o Converse com Maria 📿\n\nConverse com a Mãe de Jesus, reze o terço com áudio guiado, leia livros espirituais e mais — tudo gratuito.\n\nBaixe na Play Store:\n${URL_APP}`;
+        const mensagem = `Conheça o Converse com Maria 🙏\n\nConverse com a Mãe de Jesus, reze o terço com áudio guiado, leia livros espirituais e mais — tudo gratuito.\n\nBaixe na Play Store:\n${URL_APP}`;
 
         if (typeof html2canvas === 'undefined') {
             if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
@@ -1820,7 +1821,7 @@ const BibliotecaCrista = {
         card.innerHTML =
             '<div style="position:relative;width:540px;height:960px;background:linear-gradient(180deg,#3d2817 0%,#5b3a1a 50%,#8b6332 100%);overflow:hidden;">'
             + '<div style="position:absolute;top:90px;left:0;right:0;text-align:center;">'
-            + '<div style="font-size:140px;line-height:1;margin-bottom:18px;">📿</div>'
+            + '<div style="margin-bottom:18px;display:flex;justify-content:center;"><img src="icones/rosario.png" alt="" style="width:200px;height:200px;filter:invert(1) brightness(1.05);opacity:0.95;" crossorigin="anonymous"></div>'
             + '<div style="color:#f5e8c8;font-family:Georgia,serif;font-size:38px;font-weight:700;letter-spacing:2px;line-height:1.2;margin-bottom:12px;">Converse com Maria</div>'
             + '<div style="color:#d4a948;font-size:16px;font-style:italic;letter-spacing:2px;">Sua Mãe está te esperando.</div>'
             + '</div>'
@@ -1972,7 +1973,7 @@ const BibliotecaCrista = {
             + '<div style="color:#f5e8c8;font-size:15px;font-weight:500;line-height:1.55;margin-bottom:10px;">Li este livro no Converse com Maria.<br>Você também pode ler, gratuitamente.</div>'
             + '<div style="color:#d4a948;font-size:16px;font-weight:700;letter-spacing:1px;">▶ Baixe na Google Play</div>'
             + '</div>'
-            + '<div style="position:absolute;bottom:24px;left:0;right:0;text-align:center;font-size:22px;">📿</div>'
+            + '<div style="position:absolute;bottom:18px;left:0;right:0;text-align:center;"><img src="icones/rosario.png" alt="" style="width:36px;height:36px;filter:invert(1) brightness(1.05);opacity:0.85;" crossorigin="anonymous"></div>'
             + '</div>';
         document.body.appendChild(card);
 
