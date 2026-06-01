@@ -57,67 +57,110 @@
     <script>
     // Serviço de Compartilhamento Nativo
     const CompartilharService = {
-        // Compartilhar com imagem
+        // Caminhos cobertos (em ordem de preferência):
+        //   1) Android Capacitor: window.plugins.socialsharing (Cordova plugin nativo)
+        //      → abre o share sheet do Android com WhatsApp, Instagram, Gmail etc.
+        //   2) Mobile/desktop com Web Share API + files (Chrome Android 89+, iOS 16.4+)
+        //      → abre share nativo do SO com a imagem anexada
+        //   3) Web Share API só com texto (alguns webviews antigos)
+        //   4) Fallback: baixa a imagem como arquivo + toast informativo
+        //      (desktop Chrome/Firefox/Edge sem Web Share API)
+        // Retorna boolean. AbortError (user cancelou) retorna false sem feedback.
         async compartilharComImagem(canvas, titulo, texto) {
             try {
                 const dataURL = canvas.toDataURL('image/png');
-                
-                // cordova-plugin-x-socialsharing (FUNCIONA NO ANDROID!)
+
+                // 1) Android nativo via Cordova plugin
                 if (window.plugins && window.plugins.socialsharing) {
+                    console.log('[Compartilhar] usando plugin nativo do Android');
                     return new Promise((resolve) => {
                         window.plugins.socialsharing.shareWithOptions({
                             message: texto,
                             subject: titulo,
                             files: [dataURL]
-                        }, 
-                        () => resolve(true),
-                        () => resolve(false));
+                        },
+                        () => { console.log('[Compartilhar] plugin nativo: ok'); resolve(true); },
+                        (msg) => { console.warn('[Compartilhar] plugin nativo: cancelado/erro', msg); resolve(false); });
                     });
                 }
-                
-                // Web Share API (navegador)
+
+                // 2-3) Web Share API
                 if (navigator.share) {
                     try {
                         const blob = await fetch(dataURL).then(r => r.blob());
                         const file = new File([blob], 'maria.png', { type: 'image/png' });
                         if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            console.log('[Compartilhar] Web Share API com imagem');
                             await navigator.share({ title: titulo, text: texto, files: [file] });
                             return true;
                         }
+                        console.log('[Compartilhar] Web Share API só com texto (sem suporte a files)');
+                        await navigator.share({ title: titulo, text: texto });
+                        return true;
+                    } catch (e) {
+                        if (e.name === 'AbortError') {
+                            console.log('[Compartilhar] cancelado pelo usuário');
+                            return false;
+                        }
+                        console.warn('[Compartilhar] Web Share falhou, indo pro fallback:', e);
+                    }
+                }
+
+                // 4) Fallback: baixa a imagem direto (desktop sem Web Share)
+                console.log('[Compartilhar] sem API nativa — baixando imagem');
+                const nomeArquivo = String(titulo || 'maria').toLowerCase()
+                    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+                    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'maria';
+                const a = document.createElement('a');
+                a.href = dataURL;
+                a.download = nomeArquivo + '.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                if (window.showToast) showToast('💾 Imagem baixada — anexe no app que quiser');
+                return true;
+
+            } catch (error) {
+                console.error('[Compartilhar] erro inesperado:', error);
+                if (window.showToast) showToast('❌ Não foi possível compartilhar');
+                return false;
+            }
+        },
+
+        // Caminhos: plugin Cordova → Web Share API → fallback clipboard.
+        async compartilharTexto(titulo, texto) {
+            try {
+                if (window.plugins && window.plugins.socialsharing) {
+                    console.log('[Compartilhar Texto] plugin nativo');
+                    return new Promise((resolve) => {
+                        window.plugins.socialsharing.share(texto, titulo, null, null,
+                            () => resolve(true),
+                            () => resolve(false));
+                    });
+                }
+                if (navigator.share) {
+                    try {
+                        console.log('[Compartilhar Texto] Web Share API');
                         await navigator.share({ title: titulo, text: texto });
                         return true;
                     } catch (e) {
                         if (e.name === 'AbortError') return false;
+                        console.warn('[Compartilhar Texto] Web Share falhou:', e);
                     }
                 }
-                
-                // Fallback: mostrar toast
-                showToast('Compartilhamento não disponível');
-                return false;
-                
-            } catch (error) {
-                console.error('Erro compartilhar:', error);
-                return false;
-            }
-        },
-        
-        // Compartilhar texto
-        async compartilharTexto(titulo, texto) {
-            if (window.plugins && window.plugins.socialsharing) {
-                return new Promise((resolve) => {
-                    window.plugins.socialsharing.share(texto, titulo, null, null,
-                        () => resolve(true),
-                        () => resolve(false));
-                });
-            }
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: titulo, text: texto });
+                // Fallback: clipboard
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    console.log('[Compartilhar Texto] fallback: clipboard');
+                    await navigator.clipboard.writeText(texto);
+                    if (window.showToast) showToast('🔗 Texto copiado pra área de transferência');
                     return true;
-                } catch (e) { if (e.name === 'AbortError') return false; }
+                }
+                if (window.showToast) showToast('Compartilhamento não disponível');
+                return false;
+            } catch (e) {
+                console.error('[Compartilhar Texto] erro:', e);
+                return false;
             }
-            showToast('Compartilhamento não disponível');
-            return false;
         }
     };
     

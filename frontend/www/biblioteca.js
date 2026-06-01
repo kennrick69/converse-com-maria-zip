@@ -1830,7 +1830,7 @@ const BibliotecaCrista = {
             const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
             document.body.removeChild(card);
             document.getElementById('biblio-spinner')?.remove();
-            await this._enviarOuBaixarImagem(canvas, titulo, mensagem, 'converse-com-maria.png');
+            await this._compartilharCanvas(canvas, titulo, mensagem);
         } catch (e) {
             console.error('compartilharAppMaria:', e);
             try { document.body.removeChild(card); } catch (_) {}
@@ -1842,36 +1842,25 @@ const BibliotecaCrista = {
         }
     },
 
-    // Helper: tenta Web Share/plugin nativo; se falhar (desktop sem API ou cancelou)
-    // baixa a imagem direto no device. Resolve o "Compartilhamento não disponível"
-    // que aparecia em navegador desktop sem Web Share API.
-    async _enviarOuBaixarImagem(canvas, titulo, texto, nomeArquivo) {
-        let compartilhado = false;
+    // Wrapper fino — o CompartilharService global (index.html) já cobre os 4 caminhos:
+    // plugin Cordova nativo, Web Share API com files, Web Share só texto, e fallback
+    // de download direto da imagem. Só checamos a existência por segurança.
+    async _compartilharCanvas(canvas, titulo, texto) {
         if (window.CompartilharService) {
-            try {
-                const ret = await CompartilharService.compartilharComImagem(canvas, titulo, texto);
-                compartilhado = (ret === true);
-            } catch (_) { compartilhado = false; }
+            try { return await CompartilharService.compartilharComImagem(canvas, titulo, texto); }
+            catch (e) { console.error('[Biblioteca] erro no service:', e); return false; }
         }
-        if (!compartilhado) {
-            try {
-                const url = canvas.toDataURL('image/png');
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = nomeArquivo || ('maria-' + Date.now() + '.png');
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                this.toast('💾 Imagem baixada — anexe no WhatsApp ou Instagram');
-            } catch (e) {
-                console.error('download imagem:', e);
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(texto).then(() => this.toast('🔗 Texto copiado pra área de transferência'));
-                } else {
-                    this.toast('Compartilhamento não disponível neste navegador');
-                }
-            }
-        }
+        // Sem service nem em PWA: fallback bruto
+        try {
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL('image/png');
+            a.download = 'maria.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            this.toast('💾 Imagem baixada');
+            return true;
+        } catch (e) { return false; }
     },
 
     _concluirLeitura() {
@@ -1966,7 +1955,7 @@ const BibliotecaCrista = {
             const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
             document.body.removeChild(card);
             document.getElementById('biblio-spinner')?.remove();
-            await this._enviarOuBaixarImagem(canvas, livro.titulo || 'Livro', mensagem, 'livro-' + (livro.id || 'maria') + '.png');
+            await this._compartilharCanvas(canvas, livro.titulo || 'Livro', mensagem);
         } catch (e) {
             console.error('compartilharLivroFinalizado:', e);
             try { document.body.removeChild(card); } catch (_) {}
