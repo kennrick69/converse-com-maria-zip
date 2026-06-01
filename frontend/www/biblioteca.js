@@ -1717,7 +1717,7 @@ const BibliotecaCrista = {
             </style>
 
             <div style="text-align:center;color:#f5e8c8;margin-bottom:24px;animation:bibPauUp 0.5s ease-out 0.2s both;">
-                <img src="icones/rosario.png" alt="" style="width:72px;height:72px;margin-bottom:14px;filter:invert(1) brightness(1.2);opacity:0.9;">
+                <img src="icones/rosario.png" alt="" style="display:block;width:144px;height:144px;margin:0 auto 18px;filter:invert(1) brightness(1.2);opacity:0.9;">
                 <div style="font-family:Georgia,serif;font-size:22px;font-weight:600;margin-bottom:10px;">Uma pausa antes do fim</div>
                 <div style="font-size:14.5px;opacity:0.85;line-height:1.55;max-width:420px;margin:0 auto;">
                     Aproveite estes minutos pra apresentar o Converse com Maria a alguém que talvez precise.
