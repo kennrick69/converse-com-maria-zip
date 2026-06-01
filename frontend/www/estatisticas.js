@@ -850,7 +850,7 @@ ${nivel.nivelAtual.icone} Nível: ${nivel.nivelAtual.nome}
 🕯️ ${dados.velasAcesas} velas acesas
 
 Baixe o app "Converse com Maria"! 💙
-www.conversecommaria.com.br`;
+https://play.google.com/store/apps/details?id=com.conversemaria.app`;
 
         try {
             // Usar CompartilharService se disponível
@@ -906,7 +906,7 @@ www.conversecommaria.com.br`;
 ⏱️ ${this.formatarTempo(dados.minutosEmOracao)} em oração
 
 Baixe o app "Converse com Maria" e comece sua jornada espiritual! 💙
-www.conversecommaria.com.br`;
+https://play.google.com/store/apps/details?id=com.conversemaria.app`;
 
         // Usar CompartilharService se disponível
         if (window.CompartilharService) {

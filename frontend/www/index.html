@@ -4537,7 +4537,7 @@ function mostrarPopupCompartilhamento() {
 
 // Compartilhar via WhatsApp
 function compartilharAppWhatsApp() {
-    const texto = encodeURIComponent('🙏 Descobri um app incrível para conversar com Maria! Ela me acolheu com muito carinho. Experimente também: https://www.conversecommaria.com.br');
+    const texto = encodeURIComponent('🙏 Descobri um app incrível para conversar com Maria! Ela me acolheu com muito carinho. Baixe na Play Store: https://play.google.com/store/apps/details?id=com.conversemaria.app');
     window.open(`https://wa.me/?text=${texto}`, '_blank');
     document.getElementById('popup-compartilhar-devocao')?.remove();
 }
@@ -4546,17 +4546,17 @@ function compartilharAppWhatsApp() {
 function compartilharAppNativo() {
     const dados = {
         title: 'Converse com Maria',
-        text: '🙏 Descobri um app incrível para conversar com Maria! Ela me acolheu com muito carinho. Experimente também!',
-        url: 'https://www.conversecommaria.com.br'
+        text: '🙏 Descobri um app incrível para conversar com Maria! Ela me acolheu com muito carinho. Baixe na Play Store!',
+        url: 'https://play.google.com/store/apps/details?id=com.conversemaria.app'
     };
-    
+
     if (navigator.share) {
         navigator.share(dados)
             .then(() => document.getElementById('popup-compartilhar-devocao')?.remove())
             .catch(() => {});
     } else {
         // Fallback: copiar link
-        navigator.clipboard.writeText('🙏 Converse com Maria: https://www.conversecommaria.com.br');
+        navigator.clipboard.writeText('🙏 Converse com Maria — baixe na Play Store: https://play.google.com/store/apps/details?id=com.conversemaria.app');
         showToast('📋 Link copiado! Cole onde quiser compartilhar');
         document.getElementById('popup-compartilhar-devocao')?.remove();
     }
@@ -5365,7 +5365,7 @@ function mostrarVersiculoDoDia() {
                 Compartilhar Versículo
             </button>
             
-            <p class="text-center text-xs text-gray-400 mt-4">🙏 Converse com Maria • www.conversecommaria.com.br</p>
+            <p class="text-center text-xs text-gray-400 mt-4">🙏 Converse com Maria • Disponível na Google Play</p>
         </div>
     `;
     document.body.appendChild(modal);
@@ -5423,7 +5423,7 @@ async function compartilharVersiculo() {
             <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(0,0,0,0.1);">
                 <p style="font-size: 20px; margin: 0 0 4px 0;">🙏</p>
                 <p style="color: #7c3aed; font-weight: bold; font-size: 16px; margin: 0 0 4px 0;">Converse com Maria</p>
-                <p style="color: #9333ea; font-size: 13px; margin: 0;">www.conversecommaria.com.br</p>
+                <p style="color: #9333ea; font-size: 13px; margin: 0;">▶ Disponível na Google Play</p>
             </div>
         `;
         
@@ -5443,7 +5443,7 @@ async function compartilharVersiculo() {
 🔥 ${streak} ${streak === 1 ? 'dia' : 'dias'} em oração!
 
 🙏 Receba palavras de Maria todos os dias!
-📲 www.conversecommaria.com.br`;
+📲 Baixe na Play Store: https://play.google.com/store/apps/details?id=com.conversemaria.app`;
 
         // Verificar se html2canvas está disponível
         if (typeof html2canvas === 'undefined') {

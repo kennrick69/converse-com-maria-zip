@@ -1486,7 +1486,7 @@ const BibliotecaCrista = {
         });
 
         const finalHtml = html + secoes
-            + '<div class="rodape">Marcações feitas no app <strong>Converse com Maria</strong><br>www.conversecommaria.com.br</div>'
+            + '<div class="rodape">Marcações feitas no app <strong>Converse com Maria</strong><br>▶ Disponível na Google Play</div>'
             + '</body></html>';
 
         // Pop-up bloqueado em iOS PWA. Usa same-window overlay + iframe + botão claro.
@@ -1558,7 +1558,7 @@ const BibliotecaCrista = {
             + '</div>'
             + '<div style="position:absolute;bottom:90px;left:30px;right:30px;text-align:center;color:' + palette.titulo + ';font-size:16px;font-weight:bold;">' + grifo.livroTitulo + '</div>'
             + '<div style="position:absolute;bottom:60px;left:30px;right:30px;text-align:center;color:' + palette.muted + ';font-size:12px;">Capítulo ' + (grifo.capitulo || '') + '</div>'
-            + '<div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;color:' + palette.muted + ';font-size:11px;">www.conversecommaria.com.br</div>'
+            + '<div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;color:' + palette.muted + ';font-size:11px;">▶ Disponível na Google Play</div>'
             + '</div>';
         document.body.appendChild(card);
 

@@ -545,7 +545,7 @@ const SistemaConquistas = {
                             
                             <!-- Texto e site -->
                             <p class="text-white/60 text-xs mb-1">Baixe o app e comece sua jornada</p>
-                            <p class="text-purple-300 text-sm font-semibold mb-4">www.conversecommaria.com.br</p>
+                            <p class="text-purple-300 text-sm font-semibold mb-4">▶ Disponível na Google Play</p>
                             
                             <!-- Botão -->
                             <div class="flex justify-center">
@@ -775,7 +775,7 @@ const SistemaConquistas = {
         
         ctx.fillStyle = '#C084FC';
         ctx.font = '24px Arial';
-        ctx.fillText('www.conversecommaria.com.br', 300, 715);
+        ctx.fillText('▶ Disponível na Google Play', 300, 715);
         
         // Cruz decorativa
         ctx.fillStyle = '#FFD700';
@@ -945,7 +945,7 @@ const SistemaConquistas = {
         // ========== SITE ==========
         ctx.fillStyle = '#C084FC';
         ctx.font = '40px Arial';
-        ctx.fillText('www.conversecommaria.com.br', 540, 1540);
+        ctx.fillText('▶ Disponível na Google Play', 540, 1540);
         
         // ========== CRUZ DECORATIVA ==========
         ctx.fillStyle = '#FFD700';
@@ -1068,7 +1068,7 @@ const SistemaConquistas = {
                 <!-- Logo -->
                 <p style="font-size: 32px; margin: 0 0 8px 0;">🙏</p>
                 <p style="color: #a78bfa; font-weight: bold; font-size: 18px; margin: 0 0 4px 0;">Converse com Maria</p>
-                <p style="color: #c4b5fd; font-size: 14px; margin: 0;">www.conversecommaria.com.br</p>
+                <p style="color: #c4b5fd; font-size: 14px; margin: 0;">▶ Disponível na Google Play</p>
             </div>
         `;
         
@@ -1112,7 +1112,7 @@ const SistemaConquistas = {
 🔥 ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração
 
 Baixe o app e comece sua jornada!
-🙏 www.conversecommaria.com.br`;
+🙏 https://play.google.com/store/apps/details?id=com.conversemaria.app`;
             
             // Gerar canvas via HTML
             const canvas = await this.gerarCanvasHTML();
@@ -1140,7 +1140,7 @@ Baixe o app e comece sua jornada!
                     await navigator.share({
                         title: 'Minhas Conquistas - Converse com Maria',
                         text: texto,
-                        url: 'https://www.conversecommaria.com.br'
+                        url: 'https://play.google.com/store/apps/details?id=com.conversemaria.app'
                     });
                 } else {
                     await navigator.clipboard.writeText(texto);
