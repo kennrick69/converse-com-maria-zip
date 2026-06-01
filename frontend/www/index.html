@@ -117,12 +117,12 @@
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                if (window.showToast) showToast('💾 Imagem baixada — anexe no app que quiser');
+                if (window.showToast) window.showToast('💾 Imagem baixada — anexe no app que quiser');
                 return true;
 
             } catch (error) {
                 console.error('[Compartilhar] erro inesperado:', error);
-                if (window.showToast) showToast('❌ Não foi possível compartilhar');
+                if (window.showToast) window.showToast('❌ Não foi possível compartilhar');
                 return false;
             }
         },
@@ -152,10 +152,10 @@
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     console.log('[Compartilhar Texto] fallback: clipboard');
                     await navigator.clipboard.writeText(texto);
-                    if (window.showToast) showToast('🔗 Texto copiado pra área de transferência');
+                    if (window.showToast) window.showToast('🔗 Texto copiado pra área de transferência');
                     return true;
                 }
-                if (window.showToast) showToast('Compartilhamento não disponível');
+                if (window.showToast) window.showToast('Compartilhamento não disponível');
                 return false;
             } catch (e) {
                 console.error('[Compartilhar Texto] erro:', e);
