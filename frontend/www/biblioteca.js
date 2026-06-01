@@ -1533,6 +1533,11 @@ const BibliotecaCrista = {
         spinner.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;';
         spinner.innerHTML = '<div style="width:48px;height:48px;border:4px solid rgba(255,255,255,0.2);border-top-color:#FFD700;border-radius:50%;animation:spin 1s linear infinite;"></div><p style="color:#fff;font-size:14px;">Preparando imagem...</p><style>@keyframes spin{to{transform:rotate(360deg);}}</style>';
         document.body.appendChild(spinner);
+        // Failsafe: spinner se remove sozinho em 15s caso algo trave
+        setTimeout(() => {
+            const sp = document.getElementById('biblio-spinner');
+            if (sp) { sp.remove(); this._compartilhando = false; this.toast('⏱️ Demorou demais — tente de novo'); }
+        }, 15000);
 
         // Cria card escondido com manto Maria de fundo
         // M7 (Camila/Eduardo): cores do card seguem o tema atual da biblioteca
@@ -1558,7 +1563,9 @@ const BibliotecaCrista = {
         document.body.appendChild(card);
 
         try {
-            const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
+            console.log('[Compartilhar] gerando canvas (imageTimeout 5s)');
+            const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true, imageTimeout: 5000, logging: false });
+            console.log('[Compartilhar] canvas pronto, indo pro share');
             document.body.removeChild(card);
             document.getElementById('biblio-spinner')?.remove();
 
@@ -1802,6 +1809,11 @@ const BibliotecaCrista = {
         spinner.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;';
         spinner.innerHTML = '<div style="width:48px;height:48px;border:4px solid rgba(255,255,255,0.2);border-top-color:#FFD700;border-radius:50%;animation:spin 1s linear infinite;"></div><p style="color:#fff;font-size:14px;">Preparando imagem...</p><style>@keyframes spin{to{transform:rotate(360deg);}}</style>';
         document.body.appendChild(spinner);
+        // Failsafe: spinner se remove sozinho em 15s caso algo trave
+        setTimeout(() => {
+            const sp = document.getElementById('biblio-spinner');
+            if (sp) { sp.remove(); this._compartilhando = false; this.toast('⏱️ Demorou demais — tente de novo'); }
+        }, 15000);
 
         const card = document.createElement('div');
         card.style.cssText = 'position:fixed;left:-99999px;top:0;width:540px;font-family:Georgia,serif;';
@@ -1827,7 +1839,9 @@ const BibliotecaCrista = {
         document.body.appendChild(card);
 
         try {
-            const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
+            console.log('[Compartilhar] gerando canvas (imageTimeout 5s)');
+            const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true, imageTimeout: 5000, logging: false });
+            console.log('[Compartilhar] canvas pronto, indo pro share');
             document.body.removeChild(card);
             document.getElementById('biblio-spinner')?.remove();
             await this._compartilharCanvas(canvas, titulo, mensagem);
@@ -1835,8 +1849,14 @@ const BibliotecaCrista = {
             console.error('compartilharAppMaria:', e);
             try { document.body.removeChild(card); } catch (_) {}
             document.getElementById('biblio-spinner')?.remove();
-            this.toast('Erro ao gerar imagem — tentando texto');
-            if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
+            this.toast('Erro ao gerar imagem — compartilhando texto');
+            if (window.CompartilharService) {
+                try { await CompartilharService.compartilharTexto('Converse com Maria', mensagem); } catch (_) {}
+            } else if (navigator.share) {
+                navigator.share({ text: mensagem }).catch(() => {});
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(mensagem).then(() => this.toast('🔗 Texto copiado'));
+            }
         } finally {
             this._compartilhando = false;
         }
@@ -1921,6 +1941,11 @@ const BibliotecaCrista = {
         spinner.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;';
         spinner.innerHTML = '<div style="width:48px;height:48px;border:4px solid rgba(255,255,255,0.2);border-top-color:#FFD700;border-radius:50%;animation:spin 1s linear infinite;"></div><p style="color:#fff;font-size:14px;">Preparando imagem...</p><style>@keyframes spin{to{transform:rotate(360deg);}}</style>';
         document.body.appendChild(spinner);
+        // Failsafe: spinner se remove sozinho em 15s caso algo trave
+        setTimeout(() => {
+            const sp = document.getElementById('biblio-spinner');
+            if (sp) { sp.remove(); this._compartilhando = false; this.toast('⏱️ Demorou demais — tente de novo'); }
+        }, 15000);
 
         const capa = livro.capa;
         const capaEhImagem = capa && (String(capa).startsWith('data:') || String(capa).startsWith('http'));
@@ -1952,7 +1977,9 @@ const BibliotecaCrista = {
         document.body.appendChild(card);
 
         try {
-            const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
+            console.log('[Compartilhar] gerando canvas (imageTimeout 5s)');
+            const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true, imageTimeout: 5000, logging: false });
+            console.log('[Compartilhar] canvas pronto, indo pro share');
             document.body.removeChild(card);
             document.getElementById('biblio-spinner')?.remove();
             await this._compartilharCanvas(canvas, livro.titulo || 'Livro', mensagem);
@@ -1960,8 +1987,14 @@ const BibliotecaCrista = {
             console.error('compartilharLivroFinalizado:', e);
             try { document.body.removeChild(card); } catch (_) {}
             document.getElementById('biblio-spinner')?.remove();
-            this.toast('Erro ao gerar imagem — tentando texto');
-            if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
+            this.toast('Erro ao gerar imagem — compartilhando texto');
+            if (window.CompartilharService) {
+                try { await CompartilharService.compartilharTexto('Converse com Maria', mensagem); } catch (_) {}
+            } else if (navigator.share) {
+                navigator.share({ text: mensagem }).catch(() => {});
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(mensagem).then(() => this.toast('🔗 Texto copiado'));
+            }
         } finally {
             this._compartilhando = false;
         }
