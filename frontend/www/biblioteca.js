@@ -1704,7 +1704,7 @@ const BibliotecaCrista = {
         this._modalPausaAberto = true;
         this._pausaOnContinuar = onContinuar;
 
-        const TEMPO = 180;
+        const TEMPO = 60;
         let restante = TEMPO;
 
         const overlay = document.createElement('div');
@@ -1725,7 +1725,7 @@ const BibliotecaCrista = {
             </div>
 
             <div style="background:rgba(201,169,97,0.12);border:1px solid rgba(201,169,97,0.3);border-radius:18px;padding:18px 26px;max-width:340px;width:100%;text-align:center;margin-bottom:24px;animation:bibPauUp 0.5s ease-out 0.5s both;">
-                <div id="biblio-pausa-countdown" style="font-family:Georgia,serif;font-size:42px;color:#d4a948;font-weight:600;letter-spacing:2px;">3:00</div>
+                <div id="biblio-pausa-countdown" style="font-family:Georgia,serif;font-size:42px;color:#d4a948;font-weight:600;letter-spacing:2px;">1:00</div>
             </div>
 
             <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;animation:bibPauUp 0.5s ease-out 0.7s both;">
