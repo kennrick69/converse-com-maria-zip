@@ -599,7 +599,7 @@ const BibliotecaCrista = {
                 <div style="display:flex;justify-content:space-between;">
                     <button onclick="BibliotecaCrista.capAnt()" style="padding:8px 16px;background:rgba(0,0,0,0.1);border:none;border-radius:16px;opacity:${this.capituloAtual===0?'0.3':'1'};" ${this.capituloAtual===0?'disabled':''}>← Ant</button>
                     ${this.capituloAtual >= livro.capitulos.length-1
-                        ? `<button onclick="BibliotecaCrista.finalizarLivro()" style="padding:9px 20px;background:linear-gradient(135deg,#d4a948,#c9a961);border:none;border-radius:16px;color:#1a1614;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(201,169,97,0.3);">🌅 Finalizar livro</button>`
+                        ? `<button id="biblio-btn-finalizar" onclick="BibliotecaCrista.finalizarLivro()" disabled style="padding:9px 20px;background:linear-gradient(135deg,#d4a948,#c9a961);border:none;border-radius:16px;color:#1a1614;font-weight:600;font-size:13px;opacity:0.4;cursor:not-allowed;transition:opacity 0.5s ease, transform 0.25s ease;box-shadow:0 4px 14px rgba(201,169,97,0.3);">🌅 Finalizar livro</button>`
                         : `<button onclick="BibliotecaCrista.capProx()" style="padding:8px 16px;background:rgba(0,0,0,0.1);border:none;border-radius:16px;">Próx →</button>`
                     }
                 </div>
@@ -1134,6 +1134,8 @@ const BibliotecaCrista = {
         this._scrollHandler = () => {
             // Atualização visual da régua é imediata (cada scroll event)
             this._atualizarReguaVisual();
+            // Libera botão "Finalizar livro" quando scroll passa de 85% no último cap
+            this._talvezLiberarFinalizar(scroll);
             // Salvamento debounced em 1s (evita escrita excessiva no localStorage)
             if (timer) clearTimeout(timer);
             timer = setTimeout(() => this._salvarPosicaoAtual(), 1000);
@@ -1146,6 +1148,26 @@ const BibliotecaCrista = {
         // Cobre o caso de capítulos curtos que cabem na tela inteira — antes
         // ficavam 0% pra sempre porque nenhum scroll event disparava.
         setTimeout(() => this._salvarPosicaoAtual(), 2000);
+        // Mesma lógica pro botão Finalizar: cap curto cabe na tela → libera depois de 2s
+        setTimeout(() => this._talvezLiberarFinalizar(scroll), 2000);
+    },
+
+    // Libera o botão "Finalizar livro" quando o user passou de 85% do último cap.
+    // Cap curto que cabe na tela inteira (scrollHeight <= clientHeight) libera direto.
+    _talvezLiberarFinalizar(scroll) {
+        const btn = document.getElementById('biblio-btn-finalizar');
+        if (!btn || !btn.disabled) return;
+        if (!this.livroAtual || this.capituloAtual < this.livroAtual.capitulos.length - 1) return;
+        const denom = scroll.scrollHeight - scroll.clientHeight;
+        const ratio = denom > 4 ? scroll.scrollTop / denom : 1;
+        if (ratio >= 0.85) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+            btn.style.transform = 'scale(1.06)';
+            setTimeout(() => { btn.style.transform = 'scale(1)'; }, 280);
+            if (navigator.vibrate) { try { navigator.vibrate(25); } catch (_) {} }
+        }
     },
 
     // ============ MARCADOR (bookmark manual) — modo "tap pra apontar" ============
