@@ -1612,9 +1612,10 @@ const BibliotecaCrista = {
         }
     },
 
-    // ===== FINALIZAÇÃO DE LIVRO (modal de celebração + share + countdown) =====
-    // Disparado pelo botão "🌅 Finalizar livro" que aparece no final do último
-    // capítulo (liberado por _talvezLiberarFinalizar quando scroll ≥ 85%).
+    // ===== FINALIZAÇÃO DE LIVRO (celebração — sem countdown) =====
+    // Disparado pelo botão "🌅 Finalizar livro" no final do último cap (scroll ≥ 85%).
+    // É só festa: capa, halo, frase devocional, share da conquista e concluir.
+    // O countdown de "compartilhar o app" mora em _abrirPausaConvite, ANTES do último cap.
     finalizarLivro() {
         if (this._modalFinalizacaoAberto) return;
         if (!this.livroAtual) return;
@@ -1630,9 +1631,6 @@ const BibliotecaCrista = {
             'Que esta leitura te faça bem hoje e amanhã.'
         ];
         const frase = frasesDevocionais[Math.floor(Math.random() * frasesDevocionais.length)];
-
-        const TEMPO_MEDITACAO_SEC = 180; // 3 minutos
-        let restante = TEMPO_MEDITACAO_SEC;
 
         const capa = livro.capa;
         const capaEhImagem = capa && (String(capa).startsWith('data:') || String(capa).startsWith('http'));
@@ -1665,23 +1663,16 @@ const BibliotecaCrista = {
 
             <div style="width:140px;height:1px;margin:22px 0;background:linear-gradient(90deg,transparent,#c9a961,transparent);animation:bibFimUp 0.5s ease-out 1.3s both;"></div>
 
-            <div style="max-width:460px;color:#f5e8c8;text-align:center;font-family:Georgia,serif;font-style:italic;font-size:16px;line-height:1.55;opacity:0.92;margin-bottom:22px;padding:0 8px;animation:bibFimUp 0.5s ease-out 1.6s both;">
+            <div style="max-width:460px;color:#f5e8c8;text-align:center;font-family:Georgia,serif;font-style:italic;font-size:16px;line-height:1.55;opacity:0.92;margin-bottom:32px;padding:0 8px;animation:bibFimUp 0.5s ease-out 1.6s both;">
                 ${frase}
             </div>
 
-            <div style="background:rgba(201,169,97,0.12);border:1px solid rgba(201,169,97,0.3);border-radius:18px;padding:18px 22px;max-width:460px;width:100%;text-align:center;margin-bottom:24px;animation:bibFimUp 0.5s ease-out 1.9s both;">
-                <div id="biblio-countdown" style="font-family:Georgia,serif;font-size:36px;color:#d4a948;font-weight:600;letter-spacing:2px;margin-bottom:6px;">3:00</div>
-                <div style="color:#f5e8c8;font-size:13.5px;line-height:1.5;opacity:0.85;">
-                    Aproveite este tempo para enviar este livro a alguém que você ama ler.
-                </div>
-            </div>
-
-            <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;margin-bottom:auto;animation:bibFimUp 0.5s ease-out 2.1s both;">
+            <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;margin-bottom:auto;animation:bibFimUp 0.5s ease-out 1.9s both;">
                 <button onclick="BibliotecaCrista.compartilharLivroFinalizado()" style="padding:15px;background:linear-gradient(135deg,#d4a948,#c9a961);border:none;border-radius:14px;color:#1a1614;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 8px 24px rgba(201,169,97,0.35);">
-                    📤 Compartilhar este livro
+                    📤 Compartilhar minha conquista
                 </button>
-                <button id="biblio-btn-concluir" onclick="BibliotecaCrista._concluirLeitura()" disabled style="padding:13px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:14px;color:#f5e8c8;font-weight:500;font-size:14px;cursor:not-allowed;opacity:0.5;transition:all 0.4s ease;">
-                    Concluir leitura
+                <button onclick="BibliotecaCrista._concluirLeitura()" style="padding:14px;background:linear-gradient(135deg,#4ade80,#22c55e);border:none;border-radius:14px;color:#fff;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 8px 24px rgba(74,222,128,0.25);">
+                    ✓ Concluir leitura
                 </button>
                 <button onclick="BibliotecaCrista._fecharModalFinalizacao()" style="padding:8px;background:none;border:none;color:#f5e8c8;opacity:0.55;font-size:12.5px;cursor:pointer;">
                     Voltar à biblioteca
@@ -1689,26 +1680,83 @@ const BibliotecaCrista = {
             </div>
         `;
         document.body.appendChild(overlay);
+        if (navigator.vibrate) { try { navigator.vibrate(40); } catch (_) {} }
+    },
 
-        // Countdown 3min — habilita "Concluir" ao zerar
-        this._countdownInterval = setInterval(() => {
+    _fecharModalFinalizacao() {
+        document.getElementById('biblio-modal-finalizacao')?.remove();
+        this._modalFinalizacaoAberto = false;
+    },
+
+    // ===== PAUSA CONVITE (countdown 3min antes do último cap pra compartilhar o APP) =====
+    // Disparada UMA VEZ por livro, ao tentar ir do penúltimo pro último cap.
+    // É o tempo de pegar o celular, abrir o WhatsApp e mandar o app pra alguém.
+    // O card de share aqui é do APP Maria, não do livro — esse mora na finalização.
+    _abrirPausaConvite(onContinuar) {
+        if (this._modalPausaAberto) { onContinuar?.(); return; }
+        this._modalPausaAberto = true;
+        this._pausaOnContinuar = onContinuar;
+
+        const TEMPO = 180;
+        let restante = TEMPO;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'biblio-modal-pausa';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:20000;background:radial-gradient(ellipse at center, #2d2419 0%, #1a1614 60%, #0d0a07 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;animation:bibPauFadeIn 0.6s ease-out;overflow-y:auto;';
+        overlay.innerHTML = `
+            <style>
+                @keyframes bibPauFadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes bibPauUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+            </style>
+
+            <div style="text-align:center;color:#f5e8c8;margin-bottom:24px;animation:bibPauUp 0.5s ease-out 0.2s both;">
+                <div style="font-size:54px;line-height:1;margin-bottom:14px;">📿</div>
+                <div style="font-family:Georgia,serif;font-size:22px;font-weight:600;margin-bottom:10px;">Uma pausa antes do fim</div>
+                <div style="font-size:14.5px;opacity:0.85;line-height:1.55;max-width:420px;margin:0 auto;">
+                    Aproveite estes minutos pra apresentar o app Maria a alguém que talvez precise.
+                </div>
+            </div>
+
+            <div style="background:rgba(201,169,97,0.12);border:1px solid rgba(201,169,97,0.3);border-radius:18px;padding:18px 26px;max-width:340px;width:100%;text-align:center;margin-bottom:24px;animation:bibPauUp 0.5s ease-out 0.5s both;">
+                <div id="biblio-pausa-countdown" style="font-family:Georgia,serif;font-size:42px;color:#d4a948;font-weight:600;letter-spacing:2px;">3:00</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;animation:bibPauUp 0.5s ease-out 0.7s both;">
+                <button onclick="BibliotecaCrista.compartilharAppMaria()" style="padding:15px;background:linear-gradient(135deg,#d4a948,#c9a961);border:none;border-radius:14px;color:#1a1614;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 8px 24px rgba(201,169,97,0.35);">
+                    📤 Compartilhar o app Maria
+                </button>
+                <button id="biblio-btn-continuar-ultimo" disabled style="padding:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:14px;color:#f5e8c8;font-weight:500;font-size:14px;cursor:not-allowed;opacity:0.5;transition:all 0.4s ease;">
+                    Continuar para o último capítulo
+                </button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        document.getElementById('biblio-btn-continuar-ultimo').onclick = () => {
+            const cb = this._pausaOnContinuar;
+            if (this.livroAtual) this._marcarPausouAntesUltimo(this.livroAtual.id);
+            this._fecharPausaConvite();
+            cb?.();
+        };
+
+        this._pausaCountdownInterval = setInterval(() => {
             restante--;
             const min = Math.floor(restante / 60);
             const sec = restante % 60;
-            const el = document.getElementById('biblio-countdown');
+            const el = document.getElementById('biblio-pausa-countdown');
             if (el) el.textContent = `${min}:${String(sec).padStart(2, '0')}`;
             if (restante <= 0) {
-                clearInterval(this._countdownInterval);
-                this._countdownInterval = null;
-                this._liberarBtnConcluir();
+                clearInterval(this._pausaCountdownInterval);
+                this._pausaCountdownInterval = null;
+                this._liberarBtnContinuarUltimo();
             }
         }, 1000);
 
         if (navigator.vibrate) { try { navigator.vibrate(40); } catch (_) {} }
     },
 
-    _liberarBtnConcluir() {
-        const btn = document.getElementById('biblio-btn-concluir');
+    _liberarBtnContinuarUltimo() {
+        const btn = document.getElementById('biblio-btn-continuar-ultimo');
         if (btn) {
             btn.disabled = false;
             btn.style.cursor = 'pointer';
@@ -1716,20 +1764,92 @@ const BibliotecaCrista = {
             btn.style.background = 'linear-gradient(135deg,#4ade80,#22c55e)';
             btn.style.color = '#fff';
             btn.style.border = 'none';
-            btn.textContent = '✓ Concluir leitura';
+            btn.textContent = '✓ Continuar para o último capítulo';
         }
-        const el = document.getElementById('biblio-countdown');
+        const el = document.getElementById('biblio-pausa-countdown');
         if (el) el.textContent = '✦';
         if (navigator.vibrate) { try { navigator.vibrate([40, 80, 40]); } catch (_) {} }
     },
 
-    _fecharModalFinalizacao() {
-        if (this._countdownInterval) {
-            clearInterval(this._countdownInterval);
-            this._countdownInterval = null;
+    _fecharPausaConvite() {
+        if (this._pausaCountdownInterval) {
+            clearInterval(this._pausaCountdownInterval);
+            this._pausaCountdownInterval = null;
         }
-        document.getElementById('biblio-modal-finalizacao')?.remove();
-        this._modalFinalizacaoAberto = false;
+        document.getElementById('biblio-modal-pausa')?.remove();
+        this._modalPausaAberto = false;
+        this._pausaOnContinuar = null;
+    },
+
+    // Card sobre o APP Maria (não sobre o livro). Logo, descrição, link de download.
+    async compartilharAppMaria() {
+        if (this._compartilhando) return;
+        this._compartilhando = true;
+
+        const URL_APP = 'https://kennrick69.github.io/converse-com-maria-zip/frontend/www/';
+        const titulo = 'Conheça o app Maria';
+        const mensagem = `Conheça o app Maria 📿\n\nConverse com a Mãe de Jesus, reze o terço com áudio guiado, leia livros espirituais e mais — tudo gratuito.\n\n${URL_APP}`;
+
+        if (typeof html2canvas === 'undefined') {
+            if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
+            else if (navigator.clipboard) navigator.clipboard.writeText(mensagem).then(() => this.toast('🔗 Texto copiado'));
+            this._compartilhando = false;
+            return;
+        }
+
+        const spinner = document.createElement('div');
+        spinner.id = 'biblio-spinner';
+        spinner.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;';
+        spinner.innerHTML = '<div style="width:48px;height:48px;border:4px solid rgba(255,255,255,0.2);border-top-color:#FFD700;border-radius:50%;animation:spin 1s linear infinite;"></div><p style="color:#fff;font-size:14px;">Preparando imagem...</p><style>@keyframes spin{to{transform:rotate(360deg);}}</style>';
+        document.body.appendChild(spinner);
+
+        const card = document.createElement('div');
+        card.style.cssText = 'position:fixed;left:-99999px;top:0;width:540px;font-family:Georgia,serif;';
+        card.innerHTML =
+            '<div style="position:relative;width:540px;height:960px;background:linear-gradient(180deg,#3d2817 0%,#5b3a1a 50%,#8b6332 100%);overflow:hidden;">'
+            + '<div style="position:absolute;top:80px;left:0;right:0;text-align:center;">'
+            + '<div style="font-size:150px;line-height:1;margin-bottom:14px;">📿</div>'
+            + '<div style="color:#f5e8c8;font-family:Georgia,serif;font-size:58px;font-weight:700;letter-spacing:4px;margin-bottom:10px;">Maria</div>'
+            + '<div style="color:#d4a948;font-size:16px;font-style:italic;letter-spacing:2px;">Sua Mãe está te esperando.</div>'
+            + '</div>'
+            + '<div style="position:absolute;top:475px;left:50px;right:50px;color:#f5e8c8;font-size:16.5px;line-height:1.9;opacity:0.95;text-align:left;">'
+            + '<div style="margin-bottom:8px;">✦ Converse com Maria a qualquer hora</div>'
+            + '<div style="margin-bottom:8px;">✦ Reze o Terço com áudio guiado</div>'
+            + '<div style="margin-bottom:8px;">✦ Leia livros espirituais grátis</div>'
+            + '<div style="margin-bottom:8px;">✦ Acompanhe sua jornada de oração</div>'
+            + '</div>'
+            + '<div style="position:absolute;bottom:110px;left:30px;right:30px;text-align:center;">'
+            + '<div style="color:#f5e8c8;font-size:18px;font-weight:600;line-height:1.5;margin-bottom:14px;">Baixe gratuitamente:</div>'
+            + '<div style="color:#d4a948;font-size:13px;letter-spacing:1px;">kennrick69.github.io/converse-com-maria-zip</div>'
+            + '</div>'
+            + '<div style="position:absolute;bottom:30px;left:0;right:0;text-align:center;font-size:22px;color:rgba(245,232,200,0.5);">✦</div>'
+            + '</div>';
+        document.body.appendChild(card);
+
+        try {
+            const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
+            document.body.removeChild(card);
+            document.getElementById('biblio-spinner')?.remove();
+
+            if (window.CompartilharService) {
+                await CompartilharService.compartilharComImagem(canvas, titulo, mensagem);
+            } else {
+                const url = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'app-maria.png';
+                a.click();
+                this.toast('💾 Imagem baixada');
+            }
+        } catch (e) {
+            console.error('compartilharAppMaria:', e);
+            try { document.body.removeChild(card); } catch (_) {}
+            document.getElementById('biblio-spinner')?.remove();
+            this.toast('Erro ao gerar imagem — tentando texto');
+            if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
+        } finally {
+            this._compartilhando = false;
+        }
     },
 
     _concluirLeitura() {
@@ -1856,12 +1976,34 @@ const BibliotecaCrista = {
     },
 
     async capProx() {
-        if (this.capituloAtual < this.livroAtual.capitulos.length - 1) {
-            this.capituloAtual++;
-            const ok = await this._garantirCapitulo(this.capituloAtual);
-            if (!ok) { this.capituloAtual--; this._avisoOffline(); return; }
-            this.renderLeitor();
-        } 
+        if (this.capituloAtual >= this.livroAtual.capitulos.length - 1) return;
+        // Pausa convite (3min pra compartilhar o app) antes de abrir o ÚLTIMO cap.
+        // Só dispara uma vez por livro — releitura não pede de novo.
+        const indoParaUltimo = (this.capituloAtual + 1) === (this.livroAtual.capitulos.length - 1);
+        const temMaisDeUmCap = this.livroAtual.capitulos.length > 1;
+        if (indoParaUltimo && temMaisDeUmCap && !this._jaPausouAntesUltimo(this.livroAtual.id)) {
+            this._abrirPausaConvite(() => this._irParaProximoCap());
+            return;
+        }
+        return this._irParaProximoCap();
+    },
+
+    async _irParaProximoCap() {
+        if (this.capituloAtual >= this.livroAtual.capitulos.length - 1) return;
+        this.capituloAtual++;
+        const ok = await this._garantirCapitulo(this.capituloAtual);
+        if (!ok) { this.capituloAtual--; this._avisoOffline(); return; }
+        this.renderLeitor();
+    },
+
+    _jaPausouAntesUltimo(livroId) {
+        return !!(this.config.livrosPausouUltimoCap && this.config.livrosPausouUltimoCap[livroId]);
+    },
+
+    _marcarPausouAntesUltimo(livroId) {
+        this.config.livrosPausouUltimoCap = this.config.livrosPausouUltimoCap || {};
+        this.config.livrosPausouUltimoCap[livroId] = { ts: Date.now() };
+        this.salvar();
     },
 
     meusGrifos() {
