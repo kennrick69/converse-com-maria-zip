@@ -23,69 +23,76 @@
       <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
     </filter>
     <filter id="glow-filter">
-      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-  
+
   <style>
     .conta1 { animation: brilhar 2.1s ease-in-out infinite; }
-    .conta2 { animation: brilhar 2.1s ease-in-out infinite 0.3s; }
-    .conta3 { animation: brilhar 2.1s ease-in-out infinite 0.6s; }
-    .conta4 { animation: brilhar 2.1s ease-in-out infinite 0.9s; }
-    .conta5 { animation: brilhar 2.1s ease-in-out infinite 1.2s; }
-    .conta6 { animation: brilhar 2.1s ease-in-out infinite 1.5s; }
-    .conta7 { animation: brilhar 2.1s ease-in-out infinite 1.8s; }
+    .conta2 { animation: brilhar 2.1s ease-in-out infinite 0.2s; }
+    .conta3 { animation: brilhar 2.1s ease-in-out infinite 0.4s; }
+    .conta4 { animation: brilhar 2.1s ease-in-out infinite 0.6s; }
+    .conta5 { animation: brilhar 2.1s ease-in-out infinite 0.8s; }
+    .conta6 { animation: brilhar 2.1s ease-in-out infinite 1.0s; }
+    .conta7 { animation: brilhar 2.1s ease-in-out infinite 1.2s; }
+    .conta8 { animation: brilhar 2.1s ease-in-out infinite 1.4s; }
     .cruz { animation: brilho-cruz 1.5s ease-in-out infinite alternate; }
-    .conta-pai { animation: pulsar 1s ease-in-out infinite alternate; }
-    
+    .conta-pai { animation: pulsar 1.2s ease-in-out infinite alternate; transform-origin: 50px 56px; }
+
     @keyframes brilhar {
       0%, 100% { fill: url(#perola); filter: none; }
       50% { fill: url(#perola-brilho); filter: url(#glow-filter); }
     }
     @keyframes brilho-cruz {
-      0% { opacity: 0.4; }
+      0% { opacity: 0.5; }
       100% { opacity: 1; }
     }
     @keyframes pulsar {
       0% { transform: scale(1); }
-      100% { transform: scale(1.1); }
+      100% { transform: scale(1.12); }
     }
   </style>
-  
+
   <circle cx="50" cy="50" r="45" fill="url(#bgPurple)" filter="url(#shadow)"/>
   <circle cx="50" cy="50" r="42" fill="none" stroke="#e9d5ff" stroke-width="3" opacity="0.4"/>
-  
-  <!-- Cordão do terço -->
-  <circle cx="50" cy="45" r="22" fill="none" stroke="url(#gold)" stroke-width="3"/>
-  
-  <!-- Contas do terço (animadas em sequência) -->
-  <circle cx="28" cy="45" r="5" class="conta1"/>
-  <circle cx="35" cy="28" r="5" class="conta2"/>
-  <circle cx="50" cy="23" r="5" class="conta3"/>
-  <circle cx="65" cy="28" r="5" class="conta4"/>
-  <circle cx="72" cy="45" r="5" class="conta5"/>
-  <circle cx="65" cy="62" r="5" class="conta6"/>
-  <circle cx="35" cy="62" r="5" class="conta7"/>
-  
-  <!-- Conta maior (Pai Nosso) -->
-  <g class="conta-pai" style="transform-origin: 50px 67px;">
-    <circle cx="50" cy="67" r="6" fill="url(#gold)"/>
-    <circle cx="48" cy="65" r="2" fill="#fff" opacity="0.5"/>
+
+  <!-- LOOP DO TERÇO (em formato de gota/coração apontando pra baixo) -->
+  <path d="M 50 56 C 30 50, 26 30, 38 18 C 44 12, 50 14, 50 22 C 50 14, 56 12, 62 18 C 74 30, 70 50, 50 56 Z"
+        fill="none" stroke="url(#gold)" stroke-width="1.5" opacity="0.85"/>
+
+  <!-- Contas pequenas ao redor do loop (Ave-Marias) -->
+  <circle cx="38" cy="18" r="3" class="conta1"/>
+  <circle cx="31" cy="26" r="3" class="conta2"/>
+  <circle cx="28" cy="36" r="3" class="conta3"/>
+  <circle cx="33" cy="46" r="3" class="conta4"/>
+  <circle cx="67" cy="46" r="3" class="conta5"/>
+  <circle cx="72" cy="36" r="3" class="conta6"/>
+  <circle cx="69" cy="26" r="3" class="conta7"/>
+  <circle cx="62" cy="18" r="3" class="conta8"/>
+
+  <!-- Conta grande (Pai Nosso) na junção do loop com o cordão pendente -->
+  <g class="conta-pai">
+    <circle cx="50" cy="56" r="4.5" fill="url(#gold)"/>
+    <circle cx="48.5" cy="54.5" r="1.5" fill="#fff" opacity="0.6"/>
   </g>
-  
-  <!-- Cordão pendente -->
-  <line x1="50" y1="73" x2="50" y2="82" stroke="url(#gold)" stroke-width="2"/>
-  
-  <!-- Cruz -->
+
+  <!-- CORDÃO PENDENTE (linear, descendo do loop até a cruz) -->
+  <line x1="50" y1="60" x2="50" y2="82" stroke="url(#gold)" stroke-width="1.5"/>
+
+  <!-- Contas pequenas no cordão pendente -->
+  <circle cx="50" cy="66" r="2" fill="url(#perola)"/>
+  <circle cx="50" cy="72" r="2" fill="url(#perola)"/>
+  <circle cx="50" cy="78" r="2" fill="url(#perola)"/>
+
+  <!-- CRUZ no fim do terço -->
   <g class="cruz">
-    <rect x="46" y="82" width="8" height="14" rx="1" fill="url(#gold)"/>
-    <rect x="42" y="86" width="16" height="6" rx="1" fill="url(#gold)"/>
-    <rect x="47" y="83" width="2" height="5" fill="#fff" opacity="0.5"/>
+    <rect x="47" y="82" width="6" height="14" rx="0.8" fill="url(#gold)"/>
+    <rect x="42" y="86" width="16" height="5" rx="0.8" fill="url(#gold)"/>
+    <rect x="48" y="83" width="1.5" height="4" fill="#fff" opacity="0.55"/>
   </g>
-  
-  <!-- Brilhos nas contas -->
-  <circle cx="26" cy="43" r="1.5" fill="#fff" opacity="0.8"/>
-  <circle cx="33" cy="26" r="1.5" fill="#fff" opacity="0.8"/>
-  <circle cx="48" cy="21" r="1.5" fill="#fff" opacity="0.8"/>
+
+  <!-- Brilhos sutis nas contas do loop -->
+  <circle cx="36" cy="16" r="1.2" fill="#fff" opacity="0.7"/>
+  <circle cx="29" cy="24" r="1.2" fill="#fff" opacity="0.7"/>
 </svg>
