@@ -1793,9 +1793,9 @@ const BibliotecaCrista = {
         if (this._compartilhando) return;
         this._compartilhando = true;
 
-        const URL_APP = 'https://kennrick69.github.io/converse-com-maria-zip/frontend/www/';
+        const URL_APP = 'https://play.google.com/store/apps/details?id=com.conversemaria.app';
         const titulo = 'Converse com Maria';
-        const mensagem = `Conheça o Converse com Maria 📿\n\nConverse com a Mãe de Jesus, reze o terço com áudio guiado, leia livros espirituais e mais — tudo gratuito.\n\n${URL_APP}`;
+        const mensagem = `Conheça o Converse com Maria 📿\n\nConverse com a Mãe de Jesus, reze o terço com áudio guiado, leia livros espirituais e mais — tudo gratuito.\n\nBaixe na Play Store:\n${URL_APP}`;
 
         if (typeof html2canvas === 'undefined') {
             if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
@@ -1831,8 +1831,8 @@ const BibliotecaCrista = {
             + '<div style="margin-bottom:8px;">✦ Acompanhe sua jornada de oração</div>'
             + '</div>'
             + '<div style="position:absolute;bottom:110px;left:30px;right:30px;text-align:center;">'
-            + '<div style="color:#f5e8c8;font-size:18px;font-weight:600;line-height:1.5;margin-bottom:14px;">Baixe gratuitamente:</div>'
-            + '<div style="color:#d4a948;font-size:13px;letter-spacing:1px;">kennrick69.github.io/converse-com-maria-zip</div>'
+            + '<div style="color:#f5e8c8;font-size:18px;font-weight:600;line-height:1.5;margin-bottom:8px;">Baixe gratuitamente na</div>'
+            + '<div style="color:#d4a948;font-size:22px;font-weight:700;letter-spacing:1px;">▶ Google Play</div>'
             + '</div>'
             + '<div style="position:absolute;bottom:30px;left:0;right:0;text-align:center;font-size:22px;color:rgba(245,232,200,0.5);">✦</div>'
             + '</div>';
@@ -1926,8 +1926,8 @@ const BibliotecaCrista = {
         const livro = this.livroAtual;
         if (!livro) { this._compartilhando = false; return; }
 
-        const URL_APP = 'https://kennrick69.github.io/converse-com-maria-zip/frontend/www/';
-        const mensagem = `Acabei de ler "${livro.titulo}" no Converse com Maria 💛\n\nLeia também, gratuitamente:\n${URL_APP}`;
+        const URL_APP = 'https://play.google.com/store/apps/details?id=com.conversemaria.app';
+        const mensagem = `Acabei de ler "${livro.titulo}" no Converse com Maria 💛\n\nLeia também, gratuitamente. Baixe na Play Store:\n${URL_APP}`;
 
         if (typeof html2canvas === 'undefined') {
             if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
@@ -1969,8 +1969,8 @@ const BibliotecaCrista = {
             + '<div style="position:absolute;top:565px;left:50%;transform:translateX(-50%);width:80px;height:1px;background:rgba(201,169,97,0.7);"></div>'
             + (sobreTrunc ? '<div style="position:absolute;top:590px;left:50px;right:50px;text-align:center;color:#f5e8c8;font-size:13.5px;line-height:1.55;font-style:italic;opacity:0.92;">' + sobreTrunc.replace(/</g,'&lt;') + '</div>' : '')
             + '<div style="position:absolute;bottom:95px;left:30px;right:30px;text-align:center;">'
-            + '<div style="color:#f5e8c8;font-size:15px;font-weight:500;line-height:1.55;margin-bottom:12px;">Li este livro no Converse com Maria.<br>Você também pode ler, gratuitamente.</div>'
-            + '<div style="color:#d4a948;font-size:12px;letter-spacing:1px;">kennrick69.github.io/converse-com-maria-zip</div>'
+            + '<div style="color:#f5e8c8;font-size:15px;font-weight:500;line-height:1.55;margin-bottom:10px;">Li este livro no Converse com Maria.<br>Você também pode ler, gratuitamente.</div>'
+            + '<div style="color:#d4a948;font-size:16px;font-weight:700;letter-spacing:1px;">▶ Baixe na Google Play</div>'
             + '</div>'
             + '<div style="position:absolute;bottom:24px;left:0;right:0;text-align:center;font-size:22px;">📿</div>'
             + '</div>';
