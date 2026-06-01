@@ -598,7 +598,10 @@ const BibliotecaCrista = {
                 <!-- NAVEGAÇÃO -->
                 <div style="display:flex;justify-content:space-between;">
                     <button onclick="BibliotecaCrista.capAnt()" style="padding:8px 16px;background:rgba(0,0,0,0.1);border:none;border-radius:16px;opacity:${this.capituloAtual===0?'0.3':'1'};" ${this.capituloAtual===0?'disabled':''}>← Ant</button>
-                    <button onclick="BibliotecaCrista.capProx()" style="padding:8px 16px;background:rgba(0,0,0,0.1);border:none;border-radius:16px;opacity:${this.capituloAtual>=livro.capitulos.length-1?'0.3':'1'};" ${this.capituloAtual>=livro.capitulos.length-1?'disabled':''}>Próx →</button>
+                    ${this.capituloAtual >= livro.capitulos.length-1
+                        ? `<button id="biblio-btn-finalizar" onclick="BibliotecaCrista.finalizarLivro()" disabled style="padding:9px 20px;background:linear-gradient(135deg,#d4a948,#c9a961);border:none;border-radius:16px;color:#1a1614;font-weight:600;font-size:13px;opacity:0.4;cursor:not-allowed;transition:opacity 0.5s ease, transform 0.25s ease;box-shadow:0 4px 14px rgba(201,169,97,0.3);">🌅 Finalizar livro</button>`
+                        : `<button onclick="BibliotecaCrista.capProx()" style="padding:8px 16px;background:rgba(0,0,0,0.1);border:none;border-radius:16px;">Próx →</button>`
+                    }
                 </div>
             </div>
         `;
@@ -1131,6 +1134,8 @@ const BibliotecaCrista = {
         this._scrollHandler = () => {
             // Atualização visual da régua é imediata (cada scroll event)
             this._atualizarReguaVisual();
+            // Libera botão "Finalizar livro" quando scroll passa de 85% no último cap
+            this._talvezLiberarFinalizar(scroll);
             // Salvamento debounced em 1s (evita escrita excessiva no localStorage)
             if (timer) clearTimeout(timer);
             timer = setTimeout(() => this._salvarPosicaoAtual(), 1000);
@@ -1143,6 +1148,26 @@ const BibliotecaCrista = {
         // Cobre o caso de capítulos curtos que cabem na tela inteira — antes
         // ficavam 0% pra sempre porque nenhum scroll event disparava.
         setTimeout(() => this._salvarPosicaoAtual(), 2000);
+        // Mesma lógica pro botão Finalizar: cap curto cabe na tela → libera depois de 2s
+        setTimeout(() => this._talvezLiberarFinalizar(scroll), 2000);
+    },
+
+    // Libera o botão "Finalizar livro" quando o user passou de 85% do último cap.
+    // Cap curto que cabe na tela inteira (scrollHeight <= clientHeight) libera direto.
+    _talvezLiberarFinalizar(scroll) {
+        const btn = document.getElementById('biblio-btn-finalizar');
+        if (!btn || !btn.disabled) return;
+        if (!this.livroAtual || this.capituloAtual < this.livroAtual.capitulos.length - 1) return;
+        const denom = scroll.scrollHeight - scroll.clientHeight;
+        const ratio = denom > 4 ? scroll.scrollTop / denom : 1;
+        if (ratio >= 0.85) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+            btn.style.transform = 'scale(1.06)';
+            setTimeout(() => { btn.style.transform = 'scale(1)'; }, 280);
+            if (navigator.vibrate) { try { navigator.vibrate(25); } catch (_) {} }
+        }
     },
 
     // ============ MARCADOR (bookmark manual) — modo "tap pra apontar" ============
@@ -1584,6 +1609,229 @@ const BibliotecaCrista = {
         if (this._telaSentinel) {
             try { await this._telaSentinel.release(); } catch (_) {}
             this._telaSentinel = null;
+        }
+    },
+
+    // ===== FINALIZAÇÃO DE LIVRO (modal de celebração + share + countdown) =====
+    // Disparado pelo botão "🌅 Finalizar livro" que aparece no final do último
+    // capítulo (liberado por _talvezLiberarFinalizar quando scroll ≥ 85%).
+    finalizarLivro() {
+        if (this._modalFinalizacaoAberto) return;
+        if (!this.livroAtual) return;
+        this._modalFinalizacaoAberto = true;
+
+        const livro = this.livroAtual;
+        const frasesDevocionais = [
+            'Que esta leitura permaneça em você muito além da última página.',
+            'O livro acaba. A semente fica.',
+            'Que as palavras lidas aqui se tornem oração nos seus dias.',
+            'Há livros que a gente fecha. Há livros que ficam abertos dentro da gente.',
+            'Você terminou. Mas o que importa começa agora.',
+            'Que esta leitura te faça bem hoje e amanhã.'
+        ];
+        const frase = frasesDevocionais[Math.floor(Math.random() * frasesDevocionais.length)];
+
+        const TEMPO_MEDITACAO_SEC = 180; // 3 minutos
+        let restante = TEMPO_MEDITACAO_SEC;
+
+        const capa = livro.capa;
+        const capaEhImagem = capa && (String(capa).startsWith('data:') || String(capa).startsWith('http'));
+        const capaHTML = capaEhImagem
+            ? `<img src="${capa}" alt="${livro.titulo || ''}" crossorigin="anonymous" style="width:200px;height:300px;object-fit:cover;border-radius:8px;box-shadow:0 16px 50px rgba(201,169,97,0.45);position:relative;z-index:2;">`
+            : `<div style="width:200px;height:300px;border-radius:8px;background:linear-gradient(135deg,#c9a961,#8b6332);display:flex;align-items:center;justify-content:center;font-size:80px;box-shadow:0 16px 50px rgba(201,169,97,0.45);position:relative;z-index:2;">${capa || '📖'}</div>`;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'biblio-modal-finalizacao';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:20000;background:radial-gradient(ellipse at center, #2d2419 0%, #1a1614 60%, #0d0a07 100%);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:32px 20px;animation:bibFimFadeIn 0.6s ease-out;overflow-y:auto;';
+        overlay.innerHTML = `
+            <style>
+                @keyframes bibFimFadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes bibFimZoom { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+                @keyframes bibFimUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes bibFimHalo { 0%, 100% { opacity: 0.38; } 50% { opacity: 0.6; } }
+                @keyframes bibFimRespira { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.015); } }
+            </style>
+
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;margin:auto 0 24px;animation:bibFimZoom 0.5s ease-out 0.3s both;">
+                <div style="position:absolute;width:320px;height:420px;border-radius:50%;background:radial-gradient(circle, rgba(212,169,72,0.6), transparent 70%);filter:blur(40px);animation:bibFimHalo 4.5s ease-in-out infinite;"></div>
+                <div style="animation:bibFimRespira 4s ease-in-out infinite;">${capaHTML}</div>
+            </div>
+
+            <div style="text-align:center;color:#f5e8c8;animation:bibFimUp 0.5s ease-out 0.9s both;">
+                <div style="font-size:13px;letter-spacing:3px;opacity:0.65;margin-bottom:8px;">VOCÊ TERMINOU</div>
+                <div style="font-family:Georgia,serif;font-size:22px;font-weight:600;line-height:1.3;margin-bottom:4px;">${livro.titulo || ''}</div>
+                <div style="font-size:14px;opacity:0.75;font-style:italic;">${livro.autor || ''}</div>
+            </div>
+
+            <div style="width:140px;height:1px;margin:22px 0;background:linear-gradient(90deg,transparent,#c9a961,transparent);animation:bibFimUp 0.5s ease-out 1.3s both;"></div>
+
+            <div style="max-width:460px;color:#f5e8c8;text-align:center;font-family:Georgia,serif;font-style:italic;font-size:16px;line-height:1.55;opacity:0.92;margin-bottom:22px;padding:0 8px;animation:bibFimUp 0.5s ease-out 1.6s both;">
+                ${frase}
+            </div>
+
+            <div style="background:rgba(201,169,97,0.12);border:1px solid rgba(201,169,97,0.3);border-radius:18px;padding:18px 22px;max-width:460px;width:100%;text-align:center;margin-bottom:24px;animation:bibFimUp 0.5s ease-out 1.9s both;">
+                <div id="biblio-countdown" style="font-family:Georgia,serif;font-size:36px;color:#d4a948;font-weight:600;letter-spacing:2px;margin-bottom:6px;">3:00</div>
+                <div style="color:#f5e8c8;font-size:13.5px;line-height:1.5;opacity:0.85;">
+                    Aproveite este tempo para enviar este livro a alguém que você ama ler.
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;margin-bottom:auto;animation:bibFimUp 0.5s ease-out 2.1s both;">
+                <button onclick="BibliotecaCrista.compartilharLivroFinalizado()" style="padding:15px;background:linear-gradient(135deg,#d4a948,#c9a961);border:none;border-radius:14px;color:#1a1614;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 8px 24px rgba(201,169,97,0.35);">
+                    📤 Compartilhar este livro
+                </button>
+                <button id="biblio-btn-concluir" onclick="BibliotecaCrista._concluirLeitura()" disabled style="padding:13px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:14px;color:#f5e8c8;font-weight:500;font-size:14px;cursor:not-allowed;opacity:0.5;transition:all 0.4s ease;">
+                    Concluir leitura
+                </button>
+                <button onclick="BibliotecaCrista._fecharModalFinalizacao()" style="padding:8px;background:none;border:none;color:#f5e8c8;opacity:0.55;font-size:12.5px;cursor:pointer;">
+                    Voltar à biblioteca
+                </button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        // Countdown 3min — habilita "Concluir" ao zerar
+        this._countdownInterval = setInterval(() => {
+            restante--;
+            const min = Math.floor(restante / 60);
+            const sec = restante % 60;
+            const el = document.getElementById('biblio-countdown');
+            if (el) el.textContent = `${min}:${String(sec).padStart(2, '0')}`;
+            if (restante <= 0) {
+                clearInterval(this._countdownInterval);
+                this._countdownInterval = null;
+                this._liberarBtnConcluir();
+            }
+        }, 1000);
+
+        if (navigator.vibrate) { try { navigator.vibrate(40); } catch (_) {} }
+    },
+
+    _liberarBtnConcluir() {
+        const btn = document.getElementById('biblio-btn-concluir');
+        if (btn) {
+            btn.disabled = false;
+            btn.style.cursor = 'pointer';
+            btn.style.opacity = '1';
+            btn.style.background = 'linear-gradient(135deg,#4ade80,#22c55e)';
+            btn.style.color = '#fff';
+            btn.style.border = 'none';
+            btn.textContent = '✓ Concluir leitura';
+        }
+        const el = document.getElementById('biblio-countdown');
+        if (el) el.textContent = '✦';
+        if (navigator.vibrate) { try { navigator.vibrate([40, 80, 40]); } catch (_) {} }
+    },
+
+    _fecharModalFinalizacao() {
+        if (this._countdownInterval) {
+            clearInterval(this._countdownInterval);
+            this._countdownInterval = null;
+        }
+        document.getElementById('biblio-modal-finalizacao')?.remove();
+        this._modalFinalizacaoAberto = false;
+    },
+
+    _concluirLeitura() {
+        const livroId = this.livroAtual?.id;
+        if (livroId) this._marcarLivroFinalizado(livroId);
+        this._fecharModalFinalizacao();
+        this.voltar();
+        this.toast('✦ Livro concluído. Que esta leitura te acompanhe.');
+    },
+
+    _marcarLivroFinalizado(livroId) {
+        this.config.livrosFinalizados = this.config.livrosFinalizados || {};
+        this.config.livrosFinalizados[livroId] = { ts: Date.now() };
+        this.salvar();
+        // Sync Firestore opcional (best-effort, sem await — não trava UX se falhar)
+        try {
+            if (window.firebase && firebase.auth && firebase.auth().currentUser && firebase.firestore) {
+                const uid = firebase.auth().currentUser.uid;
+                firebase.firestore().collection('usuarios').doc(uid)
+                    .set({ biblioteca: { livrosFinalizados: this.config.livrosFinalizados } }, { merge: true })
+                    .catch(() => {});
+            }
+        } catch (_) {}
+    },
+
+    // Card de compartilhamento 540×960 (renderizado em 2x → 1080×1920 stories).
+    // Capa + título + autor + sobre truncado + mensagem + URL do app.
+    async compartilharLivroFinalizado() {
+        if (this._compartilhando) return;
+        this._compartilhando = true;
+
+        const livro = this.livroAtual;
+        if (!livro) { this._compartilhando = false; return; }
+
+        const URL_APP = 'https://kennrick69.github.io/converse-com-maria-zip/frontend/www/';
+        const mensagem = `Acabei de ler "${livro.titulo}" no app Maria 💛\n\nLeia também, gratuitamente:\n${URL_APP}`;
+
+        if (typeof html2canvas === 'undefined') {
+            if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
+            else if (navigator.clipboard) navigator.clipboard.writeText(mensagem).then(() => this.toast('🔗 Texto copiado'));
+            this._compartilhando = false;
+            return;
+        }
+
+        const spinner = document.createElement('div');
+        spinner.id = 'biblio-spinner';
+        spinner.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;';
+        spinner.innerHTML = '<div style="width:48px;height:48px;border:4px solid rgba(255,255,255,0.2);border-top-color:#FFD700;border-radius:50%;animation:spin 1s linear infinite;"></div><p style="color:#fff;font-size:14px;">Preparando imagem...</p><style>@keyframes spin{to{transform:rotate(360deg);}}</style>';
+        document.body.appendChild(spinner);
+
+        const capa = livro.capa;
+        const capaEhImagem = capa && (String(capa).startsWith('data:') || String(capa).startsWith('http'));
+        const sobre = String(livro.descricao || livro.sobre || '').trim();
+        const sobreTrunc = sobre.length > 180 ? (sobre.slice(0, 178).trim() + '…') : sobre;
+
+        const card = document.createElement('div');
+        card.style.cssText = 'position:fixed;left:-99999px;top:0;width:540px;font-family:Georgia,serif;';
+        card.innerHTML =
+            '<div style="position:relative;width:540px;height:960px;background:linear-gradient(180deg,#f5e8c8 0%,#8b6332 55%,#3d2817 100%);overflow:hidden;">'
+            + '<div style="position:absolute;top:24px;left:20px;right:20px;text-align:center;color:rgba(61,40,23,0.7);font-size:11px;letter-spacing:3px;font-weight:600;">✦ CONVERSE COM MARIA ✦</div>'
+            + '<div style="position:absolute;top:70px;left:0;right:0;display:flex;justify-content:center;">'
+            + (capaEhImagem
+                ? '<img src="' + capa + '" crossorigin="anonymous" style="width:230px;height:344px;object-fit:cover;border-radius:6px;box-shadow:0 16px 40px rgba(60,30,10,0.5);">'
+                : '<div style="width:230px;height:344px;border-radius:6px;background:linear-gradient(135deg,#c9a961,#8b6332);display:flex;align-items:center;justify-content:center;font-size:80px;box-shadow:0 16px 40px rgba(60,30,10,0.5);">' + (capa || '📖') + '</div>')
+            + '</div>'
+            + '<div style="position:absolute;top:455px;left:40px;right:40px;text-align:center;color:#3d2817;">'
+            + '<div style="font-size:22px;font-weight:600;line-height:1.3;margin-bottom:6px;">' + (livro.titulo || '') + '</div>'
+            + '<div style="font-size:14px;opacity:0.78;font-style:italic;">' + (livro.autor || '') + '</div>'
+            + '</div>'
+            + '<div style="position:absolute;top:565px;left:50%;transform:translateX(-50%);width:80px;height:1px;background:rgba(201,169,97,0.7);"></div>'
+            + (sobreTrunc ? '<div style="position:absolute;top:590px;left:50px;right:50px;text-align:center;color:#f5e8c8;font-size:13.5px;line-height:1.55;font-style:italic;opacity:0.92;">' + sobreTrunc.replace(/</g,'&lt;') + '</div>' : '')
+            + '<div style="position:absolute;bottom:95px;left:30px;right:30px;text-align:center;">'
+            + '<div style="color:#f5e8c8;font-size:15px;font-weight:500;line-height:1.55;margin-bottom:12px;">Li este livro no app Maria.<br>Você também pode ler, gratuitamente.</div>'
+            + '<div style="color:#d4a948;font-size:12px;letter-spacing:1px;">kennrick69.github.io/converse-com-maria-zip</div>'
+            + '</div>'
+            + '<div style="position:absolute;bottom:24px;left:0;right:0;text-align:center;font-size:22px;">📿</div>'
+            + '</div>';
+        document.body.appendChild(card);
+
+        try {
+            const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
+            document.body.removeChild(card);
+            document.getElementById('biblio-spinner')?.remove();
+
+            if (window.CompartilharService) {
+                await CompartilharService.compartilharComImagem(canvas, livro.titulo || 'Livro', mensagem);
+            } else {
+                const url = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'livro-maria.png';
+                a.click();
+                this.toast('💾 Imagem baixada');
+            }
+        } catch (e) {
+            console.error('compartilharLivroFinalizado:', e);
+            try { document.body.removeChild(card); } catch (_) {}
+            document.getElementById('biblio-spinner')?.remove();
+            this.toast('Erro ao gerar imagem — tentando texto');
+            if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
+        } finally {
+            this._compartilhando = false;
         }
     },
 
