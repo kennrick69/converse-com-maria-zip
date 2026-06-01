@@ -122,7 +122,7 @@ const SistemaMensagens = {
                     <div class="grid grid-cols-3 gap-2">
                         <button onclick="document.getElementById('modal-limite').remove(); if(window.TercoGuiado) TercoGuiado.abrir();" 
                                 class="py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all flex flex-col items-center gap-1">
-                            <span class="text-xl">📿</span>
+                            <span class="text-xl">🌹</span>
                             <span class="text-[10px]">Terço</span>
                         </button>
                         <button onclick="document.getElementById('modal-limite').remove(); if(window.SantuarioVelas) SantuarioVelas.abrir();" 

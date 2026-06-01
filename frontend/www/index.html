@@ -4960,7 +4960,7 @@ function verificarFestaOuNovena() {
     if (novena) {
         banner.classList.remove('hidden');
         banner.className = banner.className.replace(/from-\w+-\d+/g, 'from-indigo-600').replace(/to-\w+-\d+/g, 'to-purple-600');
-        emoji.textContent = '📿';
+        emoji.textContent = '🌹';
         titulo.textContent = `${novena.nome} - ${novena.diaAtual}º Dia`;
         subtitulo.textContent = novena.conteudo.titulo;
         banner.onclick = () => mostrarNovenaHoje(novena);
@@ -5163,7 +5163,7 @@ function fecharModalFesta() {
 }
 
 function mostrarNovenaHoje(novena) {
-    showToast(`📿 ${novena.nome} - Dia ${novena.diaAtual}`);
+    showToast(`🌹 ${novena.nome} - Dia ${novena.diaAtual}`);
 }
 
 function fecharModalNovena() {
@@ -5173,7 +5173,7 @@ function fecharModalNovena() {
 }
 
 // ========================================
-// 📿 TERÇO GUIADO
+// 🌹 TERÇO GUIADO
 // ========================================
 
 function abrirTerco() {

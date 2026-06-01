@@ -95,7 +95,7 @@ const SistemaTemas = {
             id: 'carmo',
             nome: 'Nossa Senhora do Carmo',
             descricao: 'Marrom carmelita',
-            icone: '📿',
+            icone: '🌹',
             premium: true,
             cores: {
                 primary: '#5D4037',

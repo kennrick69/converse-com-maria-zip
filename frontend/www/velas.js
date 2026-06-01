@@ -847,7 +847,7 @@ const SantuarioVelas = {
                         <span>💬</span> Conversas ilimitadas com Maria
                     </div>
                     <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
-                        <span>📿</span> Terço guiado completo
+                        <span>🌹</span> Terço guiado completo
                     </div>
                     <div class="flex items-center gap-2 text-white/80 text-sm">
                         <span>🚫</span> Sem anúncios

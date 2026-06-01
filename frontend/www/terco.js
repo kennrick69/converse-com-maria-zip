@@ -1,5 +1,5 @@
 // ========================================
-// 📿 TERÇO GUIADO - CONVERSE COM MARIA
+// 🌹 TERÇO GUIADO - CONVERSE COM MARIA
 // Maria conduzindo cada mistério com ÁUDIO
 // ========================================
 
@@ -52,32 +52,32 @@ const TercoGuiado = {
         creio: {
             titulo: "Credo Apostólico", 
             texto: `Creio em Deus Pai Todo-Poderoso, criador do céu e da terra, e em Jesus Cristo, Seu único Filho Nosso Senhor, que foi concebido pelo poder do Espírito Santo, nasceu da Virgem Maria, padeceu sob Pôncio Pilatos, foi crucificado, morto e sepultado; desceu à mansão dos mortos, ressuscitou ao terceiro dia, subiu aos céus, está sentado à direita de Deus Pai Todo-Poderoso, donde há de vir a julgar os vivos e mortos. Creio no Espírito Santo, na Santa Igreja Católica, na comunhão dos santos, na remissão dos pecados, na ressurreição da carne e na vida eterna. Amém.`,
-            instrucao: "📿 Segure o CRUCIFIXO do terço"
+            instrucao: "🌹 Segure o CRUCIFIXO do terço"
         },
         paiNosso: {
             titulo: "Pai Nosso",
             texto: `Pai nosso que estais nos céus, santificado seja o Vosso nome, venha a nós o Vosso Reino, seja feita a Vossa vontade, assim na terra como no céu. O pão nosso de cada dia nos dai hoje, perdoai-nos as nossas ofensas assim como nós perdoamos a quem nos tem ofendido. Não nos deixeis cair em tentação, mas livrai-nos do mal. Amém.`,
-            instrucao: "📿 Na CONTA GRANDE (bolinha maior)"
+            instrucao: "🌹 Na CONTA GRANDE (bolinha maior)"
         },
         aveMaria: {
             titulo: "Ave Maria",
             texto: `Ave Maria, cheia de graça, o Senhor é convosco, bendita sois vós entre as mulheres e bendito é o Fruto do vosso ventre, Jesus. Santa Maria Mãe de Deus, rogai por nós, os pecadores, agora e na hora de nossa morte. Amém.`,
-            instrucao: "📿 Nas CONTAS PEQUENAS (bolinhas menores) - são 10 por dezena"
+            instrucao: "🌹 Nas CONTAS PEQUENAS (bolinhas menores) - são 10 por dezena"
         },
         gloria: {
             titulo: "Glória ao Pai",
             texto: "Glória ao Pai, ao Filho e ao Espírito Santo. Assim como era no princípio, agora e sempre, e por todos os séculos dos séculos. Amém.",
-            instrucao: "📿 Ao FINAL de cada dezena (após as 10 Ave Marias)"
+            instrucao: "🌹 Ao FINAL de cada dezena (após as 10 Ave Marias)"
         },
         fatima: {
             titulo: "Oração de Fátima",
             texto: "Ó meu Jesus, perdoai-nos e livrai-nos do fogo do inferno; levai as almas todas para o Céu, e socorrei principalmente as que mais precisarem.",
-            instrucao: "📿 Logo após o Glória ao Pai, antes de passar para o próximo mistério"
+            instrucao: "🌹 Logo após o Glória ao Pai, antes de passar para o próximo mistério"
         },
         salveRainha: {
             titulo: "Salve Rainha",
             texto: `Salve Rainha, Mãe de misericórdia, vida, doçura e esperança nossa, salve! A vós bradamos os degradados filhos de Eva. A vós suspiramos, gemendo e chorando neste vale de lágrimas. Eia pois advogada nossa, esses vossos olhos misericordiosos a nós volvei. E depois deste desterro, mostrai-nos Jesus, bendito fruto de vosso ventre. Ó clemente! Ó piedosa! Ó doce sempre Virgem Maria! Rogai por nós Santa Mãe de Deus, para que sejamos dignos das promessas de Cristo. Amém.`,
-            instrucao: "📿 Oração FINAL do Terço - segure a medalha de Nossa Senhora"
+            instrucao: "🌹 Oração FINAL do Terço - segure a medalha de Nossa Senhora"
         }
     },
 
@@ -560,7 +560,7 @@ const TercoGuiado = {
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                         <div class="text-center">
-                            <h1 class="text-white font-bold">📿 Santo Terço</h1>
+                            <h1 class="text-white font-bold">🌹 Santo Terço</h1>
                             <p class="text-yellow-400 text-sm">${misterios.nome}</p>
                         </div>
                         <div class="w-10"></div>
@@ -610,7 +610,7 @@ const TercoGuiado = {
                 
                 <!-- Imagem ilustrativa do terço -->
                 <div class="bg-white/5 rounded-xl p-4 mb-4 text-center">
-                    <p class="text-yellow-400 text-sm mb-2">📿 Estrutura do Terço</p>
+                    <p class="text-yellow-400 text-sm mb-2">🌹 Estrutura do Terço</p>
                     <p class="text-white/70 text-xs">Crucifixo → 1 conta grande → 3 contas pequenas → 1 conta grande → 5 dezenas (10 contas cada)</p>
                 </div>
                 
@@ -703,7 +703,7 @@ const TercoGuiado = {
         return `
             <div class="text-center mb-6">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-3" style="background: ${misterios.cor}22; border: 1px solid ${misterios.cor}44">
-                    <span class="text-xl">📿</span>
+                    <span class="text-xl">🌹</span>
                     <span class="font-bold text-white">${misterio.titulo}</span>
                 </div>
                 <p class="text-white/60 text-sm">Fruto: <span class="text-yellow-400 font-semibold">${misterio.fruto}</span></p>

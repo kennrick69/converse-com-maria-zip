@@ -48,7 +48,7 @@ const TelaPremium = {
             premium: 'Sempre'
         },
         {
-            icone: '📿',
+            icone: '🌹',
             titulo: 'Terço Guiado Completo',
             descricao: 'Maria reza o terço junto com você',
             gratis: '1 mistério',

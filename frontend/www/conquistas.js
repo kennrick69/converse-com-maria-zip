@@ -63,7 +63,7 @@ const SistemaConquistas = {
             id: 'primeiro_terco',
             nome: 'Primeiro Terço',
             descricao: 'Completou seu primeiro terço',
-            icone: '📿',
+            icone: '🌹',
             categoria: 'terco',
             condicao: (dados) => dados.tercosCompletos >= 1,
             pontos: 30,
@@ -330,7 +330,7 @@ const SistemaConquistas = {
     // Categorias
     categorias: {
         constancia: { nome: 'Constância', icone: '🔥', cor: 'orange' },
-        terco: { nome: 'Terço', icone: '📿', cor: 'purple' },
+        terco: { nome: 'Terço', icone: '🌹', cor: 'purple' },
         velas: { nome: 'Velas', icone: '🕯️', cor: 'yellow' },
         comunidade: { nome: 'Comunidade', icone: '💙', cor: 'blue' },
         tempo: { nome: 'Tempo', icone: '⏰', cor: 'green' },

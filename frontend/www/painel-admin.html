@@ -595,7 +595,7 @@
                     <div class="stat-info"><h3 id="total-mensagens">-</h3><p>Mensagens</p></div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon pink">📿</div>
+                    <div class="stat-icon pink">🌹</div>
                     <div class="stat-info"><h3 id="total-tercos">-</h3><p>Terços</p></div>
                 </div>
                 <div class="stat-card">
@@ -874,7 +874,7 @@
                     <div class="user-stats">
                         <div class="mini-stat fire"><div class="value">${s.streakAtual||0}</div><div class="label">🔥 Streak</div></div>
                         <div class="mini-stat msg"><div class="value">${s.mensagensEnviadas||0}</div><div class="label">💬 Msgs</div></div>
-                        <div class="mini-stat rosary"><div class="value">${s.tercosCompletos||0}</div><div class="label">📿 Terços</div></div>
+                        <div class="mini-stat rosary"><div class="value">${s.tercosCompletos||0}</div><div class="label">🌹 Terços</div></div>
                         <div class="mini-stat prayer"><div class="value">${s.intencoesPublicadas||0}</div><div class="label">🙏 Int</div></div>
                     </div>
                 </div>`;
@@ -2018,7 +2018,7 @@ Anexei o livro abaixo. Manda ver.`;
                         <div class="stat-item"><div class="icon">🔥</div><div class="number" style="color:#f97316">${s.streakAtual||0}</div><div class="text">Streak</div></div>
                         <div class="stat-item"><div class="icon">⚡</div><div class="number" style="color:var(--accent-gold)">${s.streakMaximo||0}</div><div class="text">Máximo</div></div>
                         <div class="stat-item"><div class="icon">💬</div><div class="number" style="color:var(--accent-blue)">${s.mensagensEnviadas||0}</div><div class="text">Msgs</div></div>
-                        <div class="stat-item"><div class="icon">📿</div><div class="number" style="color:var(--accent-purple)">${s.tercosCompletos||0}</div><div class="text">Terços</div></div>
+                        <div class="stat-item"><div class="icon">🌹</div><div class="number" style="color:var(--accent-purple)">${s.tercosCompletos||0}</div><div class="text">Terços</div></div>
                     </div>
                 </div>
                 
@@ -2062,7 +2062,7 @@ Anexei o livro abaixo. Manda ver.`;
                 <div class="detail-section">
                     <h3>🏆 Conquistas</h3>
                     <div class="conquistas-grid">
-                        ${[{id:'primeiraConversa',n:'1ª Conversa',i:'💬'},{id:'primeiroTerco',n:'1º Terço',i:'📿'},{id:'streak7',n:'7 Dias',i:'🔥'},{id:'streak30',n:'30 Dias',i:'⚡'},{id:'mensagens50',n:'50 Msgs',i:'💬'},{id:'mensagens100',n:'100 Msgs',i:'🗣️'},{id:'tercos5',n:'5 Terços',i:'📿'},{id:'tercos10',n:'10 Terços',i:'🌹'}].map(x => `<div class="conquista-badge ${c[x.id]?'desbloqueada':''}">${x.i} ${x.n}</div>`).join('')}
+                        ${[{id:'primeiraConversa',n:'1ª Conversa',i:'💬'},{id:'primeiroTerco',n:'1º Terço',i:'🌹'},{id:'streak7',n:'7 Dias',i:'🔥'},{id:'streak30',n:'30 Dias',i:'⚡'},{id:'mensagens50',n:'50 Msgs',i:'💬'},{id:'mensagens100',n:'100 Msgs',i:'🗣️'},{id:'tercos5',n:'5 Terços',i:'🌹'},{id:'tercos10',n:'10 Terços',i:'🌹'}].map(x => `<div class="conquista-badge ${c[x.id]?'desbloqueada':''}">${x.i} ${x.n}</div>`).join('')}
                     </div>
                     <button onclick="resetarEvolucao('${u.id}','${u.nome||u.email}')" style="margin-top:16px;width:100%;padding:14px;background:linear-gradient(135deg,#f97316,#ea580c);border:none;border-radius:12px;color:white;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
                         🔄 Resetar Toda Evolução

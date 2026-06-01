@@ -229,7 +229,7 @@ const EstatisticasOracao = {
             { nome: 'Semente de Fé', min: 0, icone: '🌱' },
             { nome: 'Peregrino', min: 100, icone: '🚶' },
             { nome: 'Devoto', min: 300, icone: '🙏' },
-            { nome: 'Fiel Orante', min: 600, icone: '📿' },
+            { nome: 'Fiel Orante', min: 600, icone: '🌹' },
             { nome: 'Servo de Maria', min: 1000, icone: '💙' },
             { nome: 'Filho(a) de Maria', min: 2000, icone: '👑' },
             { nome: 'Apóstolo Mariano', min: 4000, icone: '⭐' },
@@ -390,7 +390,7 @@ const EstatisticasOracao = {
                     <!-- Estatísticas do Terço -->
                     <div>
                         <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
-                            <span>📿</span> Terço e Orações
+                            <span>🌹</span> Terço e Orações
                         </h3>
                         <div class="bg-white/5  rounded-xl p-4 border border-white/10 space-y-4">
                             <div class="grid grid-cols-3 gap-3 text-center">
@@ -749,7 +749,7 @@ const EstatisticasOracao = {
         
         // Card 3: Terços
         const cardsY2 = cardsY + cardH + h * 0.02;
-        desenharCard(w/2 - cardW - cardGap/2, cardsY2, '📿', dados.tercosCompletos, 'terços completos', '#A78BFA');
+        desenharCard(w/2 - cardW - cardGap/2, cardsY2, '🌹', dados.tercosCompletos, 'terços completos', '#A78BFA');
         
         // Card 4: Velas
         desenharCard(w/2 + cardGap/2, cardsY2, '🕯️', dados.velasAcesas, 'velas acesas', '#FBBF24');
@@ -846,7 +846,7 @@ const EstatisticasOracao = {
 
 ${nivel.nivelAtual.icone} Nível: ${nivel.nivelAtual.nome}
 🔥 ${dados.streakAtual} dias seguidos
-📿 ${dados.tercosCompletos} terços completos
+🌹 ${dados.tercosCompletos} terços completos
 🕯️ ${dados.velasAcesas} velas acesas
 
 Baixe o app "Converse com Maria"! 💙
@@ -901,7 +901,7 @@ https://play.google.com/store/apps/details?id=com.conversemaria.app`;
 
 📊 Nível: ${nivel.nivelAtual.icone} ${nivel.nivelAtual.nome}
 🔥 ${dados.streakAtual} dias seguidos de oração
-📿 ${dados.tercosCompletos} terços completos
+🌹 ${dados.tercosCompletos} terços completos
 🕯️ ${dados.velasAcesas} velas acesas
 ⏱️ ${this.formatarTempo(dados.minutosEmOracao)} em oração
 
