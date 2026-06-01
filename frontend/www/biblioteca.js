@@ -1713,7 +1713,7 @@ const BibliotecaCrista = {
                 <div style="font-size:54px;line-height:1;margin-bottom:14px;">📿</div>
                 <div style="font-family:Georgia,serif;font-size:22px;font-weight:600;margin-bottom:10px;">Uma pausa antes do fim</div>
                 <div style="font-size:14.5px;opacity:0.85;line-height:1.55;max-width:420px;margin:0 auto;">
-                    Aproveite estes minutos pra apresentar o app Maria a alguém que talvez precise.
+                    Aproveite estes minutos pra apresentar o Converse com Maria a alguém que talvez precise.
                 </div>
             </div>
 
@@ -1723,7 +1723,7 @@ const BibliotecaCrista = {
 
             <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;animation:bibPauUp 0.5s ease-out 0.7s both;">
                 <button onclick="BibliotecaCrista.compartilharAppMaria()" style="padding:15px;background:linear-gradient(135deg,#d4a948,#c9a961);border:none;border-radius:14px;color:#1a1614;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 8px 24px rgba(201,169,97,0.35);">
-                    📤 Compartilhar o app Maria
+                    📤 Compartilhar o Converse com Maria
                 </button>
                 <button id="biblio-btn-continuar-ultimo" disabled style="padding:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:14px;color:#f5e8c8;font-weight:500;font-size:14px;cursor:not-allowed;opacity:0.5;transition:all 0.4s ease;">
                     Continuar para o último capítulo
@@ -1781,14 +1781,14 @@ const BibliotecaCrista = {
         this._pausaOnContinuar = null;
     },
 
-    // Card sobre o APP Maria (não sobre o livro). Logo, descrição, link de download.
+    // Card sobre o app "Converse com Maria" (não sobre o livro). Logo, descrição, link.
     async compartilharAppMaria() {
         if (this._compartilhando) return;
         this._compartilhando = true;
 
         const URL_APP = 'https://kennrick69.github.io/converse-com-maria-zip/frontend/www/';
-        const titulo = 'Conheça o app Maria';
-        const mensagem = `Conheça o app Maria 📿\n\nConverse com a Mãe de Jesus, reze o terço com áudio guiado, leia livros espirituais e mais — tudo gratuito.\n\n${URL_APP}`;
+        const titulo = 'Converse com Maria';
+        const mensagem = `Conheça o Converse com Maria 📿\n\nConverse com a Mãe de Jesus, reze o terço com áudio guiado, leia livros espirituais e mais — tudo gratuito.\n\n${URL_APP}`;
 
         if (typeof html2canvas === 'undefined') {
             if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
@@ -1807,12 +1807,12 @@ const BibliotecaCrista = {
         card.style.cssText = 'position:fixed;left:-99999px;top:0;width:540px;font-family:Georgia,serif;';
         card.innerHTML =
             '<div style="position:relative;width:540px;height:960px;background:linear-gradient(180deg,#3d2817 0%,#5b3a1a 50%,#8b6332 100%);overflow:hidden;">'
-            + '<div style="position:absolute;top:80px;left:0;right:0;text-align:center;">'
-            + '<div style="font-size:150px;line-height:1;margin-bottom:14px;">📿</div>'
-            + '<div style="color:#f5e8c8;font-family:Georgia,serif;font-size:58px;font-weight:700;letter-spacing:4px;margin-bottom:10px;">Maria</div>'
+            + '<div style="position:absolute;top:90px;left:0;right:0;text-align:center;">'
+            + '<div style="font-size:140px;line-height:1;margin-bottom:18px;">📿</div>'
+            + '<div style="color:#f5e8c8;font-family:Georgia,serif;font-size:38px;font-weight:700;letter-spacing:2px;line-height:1.2;margin-bottom:12px;">Converse com Maria</div>'
             + '<div style="color:#d4a948;font-size:16px;font-style:italic;letter-spacing:2px;">Sua Mãe está te esperando.</div>'
             + '</div>'
-            + '<div style="position:absolute;top:475px;left:50px;right:50px;color:#f5e8c8;font-size:16.5px;line-height:1.9;opacity:0.95;text-align:left;">'
+            + '<div style="position:absolute;top:495px;left:50px;right:50px;color:#f5e8c8;font-size:16.5px;line-height:1.9;opacity:0.95;text-align:left;">'
             + '<div style="margin-bottom:8px;">✦ Converse com Maria a qualquer hora</div>'
             + '<div style="margin-bottom:8px;">✦ Reze o Terço com áudio guiado</div>'
             + '<div style="margin-bottom:8px;">✦ Leia livros espirituais grátis</div>'
@@ -1830,17 +1830,7 @@ const BibliotecaCrista = {
             const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
             document.body.removeChild(card);
             document.getElementById('biblio-spinner')?.remove();
-
-            if (window.CompartilharService) {
-                await CompartilharService.compartilharComImagem(canvas, titulo, mensagem);
-            } else {
-                const url = canvas.toDataURL('image/png');
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'app-maria.png';
-                a.click();
-                this.toast('💾 Imagem baixada');
-            }
+            await this._enviarOuBaixarImagem(canvas, titulo, mensagem, 'converse-com-maria.png');
         } catch (e) {
             console.error('compartilharAppMaria:', e);
             try { document.body.removeChild(card); } catch (_) {}
@@ -1849,6 +1839,38 @@ const BibliotecaCrista = {
             if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
         } finally {
             this._compartilhando = false;
+        }
+    },
+
+    // Helper: tenta Web Share/plugin nativo; se falhar (desktop sem API ou cancelou)
+    // baixa a imagem direto no device. Resolve o "Compartilhamento não disponível"
+    // que aparecia em navegador desktop sem Web Share API.
+    async _enviarOuBaixarImagem(canvas, titulo, texto, nomeArquivo) {
+        let compartilhado = false;
+        if (window.CompartilharService) {
+            try {
+                const ret = await CompartilharService.compartilharComImagem(canvas, titulo, texto);
+                compartilhado = (ret === true);
+            } catch (_) { compartilhado = false; }
+        }
+        if (!compartilhado) {
+            try {
+                const url = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = nomeArquivo || ('maria-' + Date.now() + '.png');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                this.toast('💾 Imagem baixada — anexe no WhatsApp ou Instagram');
+            } catch (e) {
+                console.error('download imagem:', e);
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(texto).then(() => this.toast('🔗 Texto copiado pra área de transferência'));
+                } else {
+                    this.toast('Compartilhamento não disponível neste navegador');
+                }
+            }
         }
     },
 
@@ -1896,7 +1918,7 @@ const BibliotecaCrista = {
         if (!livro) { this._compartilhando = false; return; }
 
         const URL_APP = 'https://kennrick69.github.io/converse-com-maria-zip/frontend/www/';
-        const mensagem = `Acabei de ler "${livro.titulo}" no app Maria 💛\n\nLeia também, gratuitamente:\n${URL_APP}`;
+        const mensagem = `Acabei de ler "${livro.titulo}" no Converse com Maria 💛\n\nLeia também, gratuitamente:\n${URL_APP}`;
 
         if (typeof html2canvas === 'undefined') {
             if (navigator.share) navigator.share({ text: mensagem }).catch(() => {});
@@ -1933,7 +1955,7 @@ const BibliotecaCrista = {
             + '<div style="position:absolute;top:565px;left:50%;transform:translateX(-50%);width:80px;height:1px;background:rgba(201,169,97,0.7);"></div>'
             + (sobreTrunc ? '<div style="position:absolute;top:590px;left:50px;right:50px;text-align:center;color:#f5e8c8;font-size:13.5px;line-height:1.55;font-style:italic;opacity:0.92;">' + sobreTrunc.replace(/</g,'&lt;') + '</div>' : '')
             + '<div style="position:absolute;bottom:95px;left:30px;right:30px;text-align:center;">'
-            + '<div style="color:#f5e8c8;font-size:15px;font-weight:500;line-height:1.55;margin-bottom:12px;">Li este livro no app Maria.<br>Você também pode ler, gratuitamente.</div>'
+            + '<div style="color:#f5e8c8;font-size:15px;font-weight:500;line-height:1.55;margin-bottom:12px;">Li este livro no Converse com Maria.<br>Você também pode ler, gratuitamente.</div>'
             + '<div style="color:#d4a948;font-size:12px;letter-spacing:1px;">kennrick69.github.io/converse-com-maria-zip</div>'
             + '</div>'
             + '<div style="position:absolute;bottom:24px;left:0;right:0;text-align:center;font-size:22px;">📿</div>'
@@ -1944,17 +1966,7 @@ const BibliotecaCrista = {
             const canvas = await html2canvas(card, { scale: 2, backgroundColor: null, useCORS: true });
             document.body.removeChild(card);
             document.getElementById('biblio-spinner')?.remove();
-
-            if (window.CompartilharService) {
-                await CompartilharService.compartilharComImagem(canvas, livro.titulo || 'Livro', mensagem);
-            } else {
-                const url = canvas.toDataURL('image/png');
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'livro-maria.png';
-                a.click();
-                this.toast('💾 Imagem baixada');
-            }
+            await this._enviarOuBaixarImagem(canvas, livro.titulo || 'Livro', mensagem, 'livro-' + (livro.id || 'maria') + '.png');
         } catch (e) {
             console.error('compartilharLivroFinalizado:', e);
             try { document.body.removeChild(card); } catch (_) {}
