@@ -1297,10 +1297,15 @@ const BibliotecaCrista = {
         // BUG-FIX (JOs 2026-05-30): padding-bottom dinâmico pra última linha
         // alcançar a régua. Sem isso, conteúdo entre 28vh-100vh fica preso
         // debaixo do overlay sem nunca subir até a altura da linha amarela.
+        // BUG-FIX (JOs 2026-06-01): padding-top simétrico pras primeiras
+        // linhas começarem na régua (scroll=0). Sem isso, abre lendo da
+        // linha 4-5 e as primeiras quatro ficam acima da régua, perdidas.
         const scroll = document.getElementById('leitor-scroll');
         if (scroll) {
             scroll.dataset.paddingBottomOriginal = scroll.style.paddingBottom || '180px';
+            scroll.dataset.paddingTopOriginal = scroll.style.paddingTop || '';
             scroll.style.paddingBottom = 'calc(72vh + 20px)';
+            scroll.style.paddingTop = 'calc(28vh - 4px)';
         }
 
         this.toast('📏 Régua ligada — rola o texto pra ver o resto');
@@ -1314,6 +1319,10 @@ const BibliotecaCrista = {
         if (scroll && scroll.dataset.paddingBottomOriginal !== undefined) {
             scroll.style.paddingBottom = scroll.dataset.paddingBottomOriginal;
             delete scroll.dataset.paddingBottomOriginal;
+        }
+        if (scroll && scroll.dataset.paddingTopOriginal !== undefined) {
+            scroll.style.paddingTop = scroll.dataset.paddingTopOriginal;
+            delete scroll.dataset.paddingTopOriginal;
         }
     },
 
