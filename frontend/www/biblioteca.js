@@ -1734,10 +1734,21 @@ const BibliotecaCrista = {
 
     _concluirLeitura() {
         const livroId = this.livroAtual?.id;
-        if (livroId) this._marcarLivroFinalizado(livroId);
+        if (livroId) {
+            const jaFinalizadoAntes = !!this.config.livrosFinalizados?.[livroId];
+            this._marcarLivroFinalizado(livroId);
+            // Conta uma vez por livro (releituras não viram nova conquista)
+            if (!jaFinalizadoAntes && window.EstatisticasOracao) {
+                try { EstatisticasOracao.registrarLivroLido(); } catch (_) {}
+            }
+        }
         this._fecharModalFinalizacao();
         this.voltar();
         this.toast('✦ Livro concluído. Que esta leitura te acompanhe.');
+        // Dispara verificação de conquistas (Primeira Leitura, Leitor de Maria, etc)
+        if (window.SistemaConquistas) {
+            setTimeout(() => SistemaConquistas.verificarEMostrar(), 800);
+        }
     },
 
     _marcarLivroFinalizado(livroId) {

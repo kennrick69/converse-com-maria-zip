@@ -21,7 +21,8 @@ const EstatisticasOracao = {
         novenasIniciadas: 0,
         mensagensEnviadas: 0,
         versiculosLidos: 0,
-        
+        livrosLidos: 0,
+
         // Tempo
         minutosEmOracao: 0,
         
@@ -183,6 +184,13 @@ const EstatisticasOracao = {
     registrarVersiculo() {
         const dados = this.carregar();
         dados.versiculosLidos++;
+        this.salvar(dados);
+    },
+
+    // Registrar livro lido (biblioteca — disparado ao concluir o último cap)
+    registrarLivroLido() {
+        const dados = this.carregar();
+        dados.livrosLidos = (dados.livrosLidos || 0) + 1;
         this.salvar(dados);
     },
 

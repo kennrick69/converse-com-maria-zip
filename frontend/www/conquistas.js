@@ -276,6 +276,36 @@ const SistemaConquistas = {
             significado: 'O alvo representa a perseverança. Nove dias de oração contínua, como os Apóstolos com Maria no Cenáculo antes de Pentecostes. A novena é uma tradição poderosa que demonstra fé e dedicação.'
         },
         {
+            id: 'primeira_leitura',
+            nome: 'Primeira Leitura',
+            descricao: 'Concluiu seu primeiro livro na biblioteca',
+            icone: '📕',
+            categoria: 'especial',
+            condicao: (dados) => (dados.livrosLidos || 0) >= 1,
+            pontos: 50,
+            significado: 'O primeiro livro lido até o fim é como a primeira oração feita até o "amém". Você atravessou a leitura inteira, da capa à última página. Que essa semente plantada germine no silêncio dos seus dias.'
+        },
+        {
+            id: 'leitor_de_maria',
+            nome: 'Leitor de Maria',
+            descricao: 'Concluiu 5 livros na biblioteca',
+            icone: '📚',
+            categoria: 'especial',
+            condicao: (dados) => (dados.livrosLidos || 0) >= 5,
+            pontos: 150,
+            significado: 'Cinco livros lidos por inteiro. Como as cinco chagas de Cristo, cinco mistérios do Rosário, cinco pedras da funda de Davi. Cada livro concluído é uma conversa terminada, um silêncio compartilhado, uma palavra que ficou.'
+        },
+        {
+            id: 'biblioteca_da_alma',
+            nome: 'Biblioteca da Alma',
+            descricao: 'Concluiu 15 livros na biblioteca',
+            icone: '📖',
+            categoria: 'especial',
+            condicao: (dados) => (dados.livrosLidos || 0) >= 15,
+            pontos: 300,
+            significado: 'Quinze livros formam uma pequena biblioteca interior. Você não apenas leu — você habitou esses livros e deixou que eles habitassem você. Como Maria que "guardava todas estas coisas, ponderando-as em seu coração", você se tornou um lugar onde a leitura amadurece.'
+        },
+        {
             id: 'peregrino_digital',
             nome: 'Peregrino Digital',
             descricao: 'Conquistou 10 medalhas',
