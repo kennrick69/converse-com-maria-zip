@@ -853,7 +853,7 @@ const TercoGuiado = {
                 animation: slideUp 0.4s ease;
             ">
                 <!-- Ícone de sucesso -->
-                <div style="font-size: 60px; margin-bottom: 16px;">🙏</div>
+                <img src="icones/maos-rezando.png" alt="" style="width:88px;height:88px;margin:0 auto 16px;display:block;">
                 
                 <!-- Título -->
                 <h2 style="color: #FFD700; font-size: 22px; font-weight: bold; margin-bottom: 8px;">

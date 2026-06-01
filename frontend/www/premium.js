@@ -910,7 +910,7 @@ const TelaPremium = {
                     <div class="absolute inset-0 border-4 border-yellow-500/30 rounded-full"></div>
                     <div class="absolute inset-0 border-4 border-yellow-500 rounded-full border-t-transparent animate-spin"></div>
                     <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="text-3xl">🙏</span>
+                        <img src="icones/maos-rezando.png" alt="" style="width:48px;height:48px;">
                     </div>
                 </div>
                 <p class="text-white font-semibold">Processando pagamento...</p>

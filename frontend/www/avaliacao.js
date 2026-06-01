@@ -125,9 +125,7 @@ const AvaliacaoService = {
             <div class="bg-gradient-to-br from-purple-900/90 to-indigo-900/90 rounded-3xl p-6 max-w-sm w-full animate-scale-in border border-purple-500/30 shadow-2xl">
                 <!-- Header -->
                 <div class="text-center mb-4">
-                    <div class="w-20 h-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg">
-                        <span class="text-4xl">🙏</span>
-                    </div>
+                    <img src="icones/maos-rezando.png" alt="" class="w-20 h-20 mx-auto mb-3 shadow-lg rounded-full">
                     <h2 class="text-xl font-bold text-white mb-1">
                         Está gostando do app?
                     </h2>

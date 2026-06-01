@@ -1066,7 +1066,7 @@ const SistemaConquistas = {
                 <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin: 0 0 8px 0;">Baixe o app e comece sua jornada!</p>
                 
                 <!-- Logo -->
-                <p style="font-size: 32px; margin: 0 0 8px 0;">🙏</p>
+                <img src="icones/maos-rezando.png" alt="" style="width:44px;height:44px;margin:0 auto 8px;display:block;">
                 <p style="color: #a78bfa; font-weight: bold; font-size: 18px; margin: 0 0 4px 0;">Converse com Maria</p>
                 <p style="color: #c4b5fd; font-size: 14px; margin: 0;">▶ Disponível na Google Play</p>
             </div>

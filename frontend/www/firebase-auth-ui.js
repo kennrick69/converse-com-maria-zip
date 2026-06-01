@@ -20,7 +20,7 @@ const TelaAuth = {
             <div class="w-full max-w-md">
                 <!-- Logo e título -->
                 <div class="text-center mb-6">
-                    <div class="text-6xl mb-3">🙏</div>
+                    <img src="icones/maos-rezando.png" alt="" class="mx-auto mb-3" style="width:96px;height:96px;">
                     <h1 class="text-3xl font-bold text-white" style="font-family: 'Crimson Text', serif;">
                         Converse com Maria
                     </h1>
