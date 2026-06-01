@@ -482,7 +482,30 @@ const TercoGuiado = {
         this.estado.dezenaAtual = 0;
         this.estado.aveAtual = 0;
         this.pararAudio();
+        this._manterTelaAcesa();
         this.renderizar();
+    },
+
+    // Wake Lock — tela acesa durante o terço. Browser libera ao trocar
+    // de aba; visibilitychange pega de volta quando o usuário retorna.
+    async _manterTelaAcesa() {
+        if (!('wakeLock' in navigator)) return;
+        try {
+            this._telaSentinel = await navigator.wakeLock.request('screen');
+        } catch (_) {}
+        if (!this._telaListenerAtivo) {
+            this._telaListenerAtivo = true;
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState !== 'visible') return;
+                if (this.estado && this.estado.ativo) this._manterTelaAcesa();
+            });
+        }
+    },
+    async _liberarTela() {
+        if (this._telaSentinel) {
+            try { await this._telaSentinel.release(); } catch (_) {}
+            this._telaSentinel = null;
+        }
     },
 
     // Renderizar interface do terço
@@ -961,6 +984,7 @@ const TercoGuiado = {
         const modal = document.getElementById('modal-terco');
         if (modal) modal.remove();
         this.estado.ativo = false;
+        this._liberarTela();
     }
 };
 

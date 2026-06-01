@@ -484,6 +484,7 @@ const BibliotecaCrista = {
     renderLeitor() {
         document.getElementById('biblio-modal')?.remove();
         document.getElementById('leitor-modal')?.remove();
+        this._manterTelaAcesa();
         
         const livro = this.livroAtual;
         const cap = livro.capitulos[this.capituloAtual];
@@ -1559,7 +1560,31 @@ const BibliotecaCrista = {
     voltar() {
         this.guardarCaneta();
         document.getElementById('leitor-modal')?.remove();
+        this._liberarTela();
         this.abrir();
+    },
+
+    // Wake Lock — mantém tela acesa enquanto o leitor estiver aberto.
+    // O browser libera o lock automaticamente ao trocar de aba; o handler
+    // visibilitychange pega o lock de volta quando o usuário retorna.
+    async _manterTelaAcesa() {
+        if (!('wakeLock' in navigator)) return;
+        try {
+            this._telaSentinel = await navigator.wakeLock.request('screen');
+        } catch (e) { /* sem permissão / bateria baixa — sem fallback */ }
+        if (!this._telaListenerAtivo) {
+            this._telaListenerAtivo = true;
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState !== 'visible') return;
+                if (document.getElementById('leitor-modal')) this._manterTelaAcesa();
+            });
+        }
+    },
+    async _liberarTela() {
+        if (this._telaSentinel) {
+            try { await this._telaSentinel.release(); } catch (_) {}
+            this._telaSentinel = null;
+        }
     },
 
     async capAnt() {
