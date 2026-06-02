@@ -1,126 +1,125 @@
 /**
  * emoji-replacer.js — substitui emojis nativos por imagens personalizadas
- * em runtime, em todo o DOM do app Maria.
+ * em runtime no app Maria.
+ *
+ * ESCOPO ENXUTO (revisão da squad — Eduardo/Camila/Bruno/Patrícia):
+ * - Mantemos APENAS os emojis devocionais centrais (5 PNGs)
+ * - Utilitários (✅ ❌ 🔄 📋 🔒 etc) ficam emoji nativo
+ * - Sparkles/crown/brain/book/books grandes (>250KB) ficam nativos
+ * - Total de assets carregados: ~310KB (antes era 5.4MB)
  *
  * Como funciona:
- *   - Define um mapa Unicode → URL de PNG personalizado
- *   - Na carga: varre todos os textNodes do body e substitui os emojis
- *     mapeados por <img class="emo-img"> dimensionada em 1em
- *   - Via MutationObserver: cobre HTML adicionado dinamicamente
- *     (modais, innerHTML, append etc.)
+ *   - Carrega 1 vez no app, define o mapa emoji → URL_PNG
+ *   - 1ª passada (em requestIdleCallback): varre body e substitui textNodes
+ *     com emojis mapeados por <img class="emo-img"> (height: 1em)
+ *   - MutationObserver cobre HTML adicionado dinamicamente (modais, innerHTML)
  *
- * O que NÃO é tocado:
+ * O que NÃO é tocado (por design):
  *   - <script>, <style>, <textarea>, <input>, <code>, <pre>, <option>
- *   - Qualquer elemento com classe `no-emo` ou `contenteditable`
- *   - Atributos (alt, title, placeholder) — só textNodes
- *   - Texto enviado pra share/clipboard/canvas (não passa pelo DOM)
+ *   - Elementos com classe `no-emo` ou `contenteditable`
+ *   - Atributos (alt, title, placeholder)
+ *   - Texto que NÃO passa pelo DOM (canvas.fillText, navigator.share,
+ *     clipboard.writeText) — vai como emoji unicode pro destinatário
  *
- * Pra desligar em dev: localStorage.setItem('disable-emoji-img', '1')
+ * Killswitch dev: localStorage.setItem('disable-emoji-img', '1')
  */
 (function () {
     'use strict';
 
-    if (localStorage.getItem('disable-emoji-img') === '1') {
-        console.log('[emoji-replacer] desligado via localStorage');
-        return;
-    }
+    try {
+        if (localStorage.getItem('disable-emoji-img') === '1') {
+            console.log('[emoji-replacer] desligado via localStorage');
+            return;
+        }
+    } catch (_) { /* localStorage indisponível (modo privado iOS) — segue */ }
 
-    // Mapa emoji → asset. Inclui variantes com VS16 (U+FE0F).
+    // ESCOPO ENXUTO — só devocionais centrais. Os 5 maiores PNGs (crown,
+    // brain, book, sparkles, books) foram removidos do mapa porque pesam
+    // 4MB+ e cobrem casos utilitários sem ganho devocional.
     const MAP = {
-        '🙏': 'icones/emoji-pray.png',
-        '🌹': 'icones/emoji-rose.png',
-        '✅': 'icones/emoji-check-green.png',
-        '❌': 'icones/emoji-x-red.png',
-        '✓': 'icones/emoji-check-thin.png',
-        '✗': 'icones/emoji-x-thin.png',
-        '✨': 'icones/emoji-sparkles.png',
-        '★': 'icones/emoji-star.png',
-        '✦': 'icones/emoji-star4.png',
-        '🔔': 'icones/emoji-bell.png',
-        '👑': 'icones/emoji-crown.png',
-        '📱': 'icones/emoji-phone.png',
-        '🔥': 'icones/emoji-fire.png',
-        '⚠️': 'icones/emoji-warning.png',
-        '⚠': 'icones/emoji-warning.png',
-        '🕯️': 'icones/emoji-candle.png',
+        '🙏': 'icones/emoji-pray.png',       // 30KB — mãos rezando (mais usado)
+        '🌹': 'icones/emoji-rose.png',       // 38KB — rosa mariana
+        '🕯️': 'icones/emoji-candle.png',     // 71KB — vela acesa
         '🕯': 'icones/emoji-candle.png',
-        '📖': 'icones/emoji-book.png',
-        '📚': 'icones/emoji-books.png',
-        '🏅': 'icones/emoji-medal.png',
-        '💬': 'icones/emoji-speech.png',
-        '💭': 'icones/emoji-thought.png',
-        '🗑️': 'icones/emoji-trash.png',
-        '🗑': 'icones/emoji-trash.png',
-        '📤': 'icones/emoji-outbox.png',
-        '💾': 'icones/emoji-floppy.png',
-        '📋': 'icones/emoji-clipboard.png',
-        '🧠': 'icones/emoji-brain.png',
-        '📺': 'icones/emoji-tv.png',
-        '🔄': 'icones/emoji-refresh.png',
-        '🔒': 'icones/emoji-lock.png',
-        '🐑': 'icones/emoji-sheep.png'
+        '🏅': 'icones/emoji-medal.png',      // 27KB — medalha de conquista
+        '🐑': 'icones/emoji-sheep.png'       // 144KB — ovelha (Bom Pastor)
     };
 
-    // Chaves ordenadas pelo tamanho (variantes com VS16 primeiro pra match
-    // antes que a versão sem VS16 consuma o caractere base)
+    // Chaves ordenadas por tamanho desc (variantes com VS16 primeiro)
     const KEYS = Object.keys(MAP).sort((a, b) => b.length - a.length);
+
+    // Regex única (Bruno hotfix #4) pra substituir splits N-passes
+    const RE_EMOJI = new RegExp(
+        KEYS.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
+        'gu'
+    );
 
     const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'CODE', 'PRE', 'OPTION', 'NOSCRIPT']);
 
+    // Cache de "este parent deve ser pulado?" — Bruno hotfix #3
+    const skipCache = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+
     function deveSkiparNode(node) {
         let p = node.parentElement;
-        while (p) {
-            if (SKIP_TAGS.has(p.tagName)) return true;
-            if (p.classList && p.classList.contains('no-emo')) return true;
-            if (p.isContentEditable) return true;
-            p = p.parentElement;
-        }
-        return false;
-    }
+        if (!p) return false;
+        if (skipCache && skipCache.has(p)) return skipCache.get(p);
 
-    function textoTemEmoji(texto) {
-        for (let i = 0; i < KEYS.length; i++) {
-            if (texto.indexOf(KEYS[i]) !== -1) return true;
+        let cur = p, result = false;
+        while (cur) {
+            if (SKIP_TAGS.has(cur.tagName)) { result = true; break; }
+            if (cur.classList && cur.classList.contains('no-emo')) { result = true; break; }
+            if (cur.isContentEditable) { result = true; break; }
+            cur = cur.parentElement;
         }
-        return false;
+        if (skipCache) skipCache.set(p, result);
+        return result;
     }
 
     function processarTextNode(textNode) {
         const texto = textNode.nodeValue;
-        if (!texto || !textoTemEmoji(texto)) return;
-
-        // Split-by-emoji preservando ordem
-        let segs = [{ t: 't', v: texto }];
-        for (const chave of KEYS) {
-            const novos = [];
-            for (const s of segs) {
-                if (s.t === 'i') { novos.push(s); continue; }
-                if (s.v.indexOf(chave) === -1) { novos.push(s); continue; }
-                const partes = s.v.split(chave);
-                for (let i = 0; i < partes.length; i++) {
-                    if (i > 0) novos.push({ t: 'i', e: chave });
-                    if (partes[i]) novos.push({ t: 't', v: partes[i] });
-                }
-            }
-            segs = novos;
-        }
-
-        if (segs.length === 1 && segs[0].t === 't') return; // nenhuma substituição
+        if (!texto) return;
+        RE_EMOJI.lastIndex = 0;
+        if (!RE_EMOJI.test(texto)) return;
+        RE_EMOJI.lastIndex = 0;
 
         const frag = document.createDocumentFragment();
-        for (const s of segs) {
-            if (s.t === 'i') {
+        const parentEl = textNode.parentElement;
+        const fontSize = parentEl ? parseFloat(getComputedStyle(parentEl).fontSize) : 16;
+        const ehGrande = fontSize >= 36;  // Camila top #2 — header grande
+
+        let cursor = 0;
+        let m;
+        while ((m = RE_EMOJI.exec(texto)) !== null) {
+            if (m.index > cursor) {
+                frag.appendChild(document.createTextNode(texto.slice(cursor, m.index)));
+            }
+            const emo = m[0];
+            const url = MAP[emo];
+            if (url) {
                 const img = document.createElement('img');
-                img.src = MAP[s.e];
-                img.alt = s.e;
-                img.className = 'emo-img';
+                img.src = url;
+                img.alt = emo;
+                img.className = ehGrande ? 'emo-img emo-big' : 'emo-img';
                 img.draggable = false;
-                img.loading = 'lazy';
-                img.decoding = 'async';
+                if (ehGrande) {
+                    img.decoding = 'sync';  // header above-the-fold
+                } else {
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                }
+                // Sentry-like fallback se PNG quebrar
+                img.onerror = function () {
+                    const fallback = document.createTextNode(emo);
+                    if (img.parentNode) img.parentNode.replaceChild(fallback, img);
+                };
                 frag.appendChild(img);
             } else {
-                frag.appendChild(document.createTextNode(s.v));
+                frag.appendChild(document.createTextNode(emo));
             }
+            cursor = m.index + emo.length;
+        }
+        if (cursor < texto.length) {
+            frag.appendChild(document.createTextNode(texto.slice(cursor)));
         }
         if (textNode.parentNode) {
             textNode.parentNode.replaceChild(frag, textNode);
@@ -132,17 +131,16 @@
         const walker = document.createTreeWalker(
             raiz,
             NodeFilter.SHOW_TEXT,
-            {
-                acceptNode: function (n) {
-                    if (deveSkiparNode(n)) return NodeFilter.FILTER_REJECT;
-                    return NodeFilter.FILTER_ACCEPT;
-                }
-            }
+            { acceptNode: function (n) {
+                if (deveSkiparNode(n)) return NodeFilter.FILTER_REJECT;
+                return NodeFilter.FILTER_ACCEPT;
+            }}
         );
         const lote = [];
         let n;
         while ((n = walker.nextNode())) {
-            if (n.nodeValue && textoTemEmoji(n.nodeValue)) lote.push(n);
+            if (n.nodeValue && RE_EMOJI.test(n.nodeValue)) lote.push(n);
+            RE_EMOJI.lastIndex = 0;
         }
         for (let i = 0; i < lote.length; i++) processarTextNode(lote[i]);
     }
@@ -151,23 +149,34 @@
         if (document.getElementById('emo-img-style')) return;
         const style = document.createElement('style');
         style.id = 'emo-img-style';
+        // Camila top #3: REMOVIDO user-select:none — permite copy de texto com emoji
         style.textContent =
-            'img.emo-img{display:inline-block;height:1em;width:auto;vertical-align:-0.125em;margin:0 0.05em;user-select:none;-webkit-user-drag:none;pointer-events:none;object-fit:contain;}' +
-            'img.emo-img.emo-big{height:1.4em;}' +
+            'img.emo-img{display:inline-block;height:1em;width:auto;vertical-align:-0.125em;margin:0 0.05em;pointer-events:none;object-fit:contain;}' +
+            'img.emo-img.emo-big{vertical-align:baseline;margin:0;}' +
             '.no-emo img.emo-img{display:none;}';
         (document.head || document.documentElement).appendChild(style);
     }
 
+    // Bruno hotfix #2 — varredura inicial via requestIdleCallback (tira jank)
+    function agendarVarredura(cb) {
+        if (typeof requestIdleCallback === 'function') {
+            requestIdleCallback(cb, { timeout: 1500 });
+        } else {
+            setTimeout(cb, 0);
+        }
+    }
+
     function init() {
         injetarCSS();
-        if (document.body) varrer(document.body);
+        if (document.body) {
+            agendarVarredura(function () { varrer(document.body); });
+        }
 
-        // Observador pra DOM dinâmico (modais, innerHTML, append)
         const obs = new MutationObserver(function (muts) {
             for (let i = 0; i < muts.length; i++) {
                 const mut = muts[i];
                 if (mut.type === 'characterData') {
-                    if (mut.target.nodeType === 3 && !deveSkiparNode(mut.target)) {
+                    if (mut.target && mut.target.nodeType === 3 && mut.target.parentNode && !deveSkiparNode(mut.target)) {
                         processarTextNode(mut.target);
                     }
                     continue;
@@ -176,18 +185,20 @@
                 for (let j = 0; j < adicionados.length; j++) {
                     const node = adicionados[j];
                     if (node.nodeType === 3) {
-                        if (!deveSkiparNode(node)) processarTextNode(node);
+                        if (node.parentNode && !deveSkiparNode(node)) processarTextNode(node);
                     } else if (node.nodeType === 1) {
                         if (!deveSkiparNode(node)) varrer(node);
                     }
                 }
             }
         });
-        obs.observe(document.body, {
-            childList: true,
-            subtree: true,
-            characterData: true
-        });
+        if (document.body) {
+            obs.observe(document.body, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+        }
     }
 
     if (document.readyState === 'loading') {
