@@ -626,7 +626,7 @@ Pappelallee 78/79, 10437 Berlin, Germany`
                                                     ">
                                                 ${m.id === 'silencio'
                                                     ? `<img src="icones/emoji-mute.png" alt="" class="no-emo" style="width:28px;height:28px;object-fit:contain;display:block;flex-shrink:0;filter:brightness(0) invert(1);">`
-                                                    : `<img src="icones/emoji-instrumentos.png" alt="" class="no-emo" style="width:28px;height:28px;object-fit:contain;display:block;flex-shrink:0;filter:brightness(0) invert(1);">`}
+                                                    : `<img src="icones/emoji-instrumentos.png" alt="" class="no-emo" style="width:34px;height:34px;object-fit:contain;display:block;flex-shrink:0;filter:brightness(0) invert(1);">`}
                                                 <div style="flex: 1;">
                                                     <p style="color: white; font-weight: 600; font-size: 14px; margin: 0;">${m.nome}</p>
                                                     <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin: 0;">${m.descricao}</p>
