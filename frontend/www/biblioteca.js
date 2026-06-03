@@ -1342,10 +1342,11 @@ const BibliotecaCrista = {
         if (scroll) {
             scroll.dataset.paddingBottomOriginal = scroll.style.paddingBottom || '180px';
             scroll.dataset.paddingTopOriginal = scroll.style.paddingTop || '';
-            // JOs 2026-06-03: aumentado de 72vh+20px → 80vh+40px pra garantir
-            // que a ÚLTIMA linha do texto suba ACIMA da régua, não fique 1 linha
-            // presa debaixo do overlay escuro no fim do capítulo.
-            scroll.style.paddingBottom = 'calc(80vh + 40px)';
+            // JOs 2026-06-03 (segunda passada): 80vh+40px ainda deixava a última
+            // linha PRÓXIMA da régua brilhante (na zona escura ou bem encostada).
+            // Aumentado pra 95vh pra que ao rolar 100% a última linha suba bem
+            // acima da régua (na zona clara, claramente "passada" da régua).
+            scroll.style.paddingBottom = 'calc(95vh)';
             scroll.style.paddingTop = 'calc(28vh - 4px)';
         }
 
@@ -1732,7 +1733,8 @@ const BibliotecaCrista = {
             </style>
 
             <!-- JOs 2026-06-03: X de escape no topo direito pra não travar o app -->
-            <button onclick="BibliotecaCrista._fecharPausaConvite()" class="btn-modal-x" aria-label="Fechar" style="position:absolute;top:16px;right:16px;z-index:1;">
+            <!-- background reforçado pq o radial-gradient escuro do countdown tornava o X quase invisível -->
+            <button onclick="BibliotecaCrista._fecharPausaConvite()" class="btn-modal-x" aria-label="Fechar" style="position:absolute;top:16px;right:16px;z-index:10;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.25);">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
 
