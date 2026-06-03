@@ -87,6 +87,13 @@
         const fontSize = parentEl ? parseFloat(getComputedStyle(parentEl).fontSize) : 16;
         const ehGrande = fontSize >= 36;  // Camila top #2 — header grande
 
+        // "emo-solo" quando o texto inteiro é só whitespace + emojis.
+        // Caso típico: <div class="round bg-orange">🕯️</div> — sem essa
+        // detecção, o margin lateral desloca o emoji pra direita do centro.
+        const textoSemEmoji = texto.replace(RE_EMOJI, '').trim();
+        const ehSolo = textoSemEmoji.length === 0;
+        RE_EMOJI.lastIndex = 0;
+
         let cursor = 0;
         let m;
         while ((m = RE_EMOJI.exec(texto)) !== null) {
@@ -99,7 +106,10 @@
                 const img = document.createElement('img');
                 img.src = url;
                 img.alt = emo;
-                img.className = ehGrande ? 'emo-img emo-big' : 'emo-img';
+                let cls = 'emo-img';
+                if (ehGrande) cls += ' emo-big';
+                if (ehSolo) cls += ' emo-solo';
+                img.className = cls;
                 img.draggable = false;
                 if (ehGrande) {
                     img.decoding = 'sync';  // header above-the-fold
@@ -153,6 +163,10 @@
         style.textContent =
             'img.emo-img{display:inline-block;height:1em;width:auto;vertical-align:-0.125em;margin:0 0.05em;pointer-events:none;object-fit:contain;}' +
             'img.emo-img.emo-big{vertical-align:baseline;margin:0;}' +
+            // emo-solo: emoji é o único conteúdo do parent (ex: medalha redonda).
+            // Zera margin e centraliza verticalmente — evita deslocamento horizontal
+            // do ícone dentro de containers flex/grid centralizados.
+            'img.emo-img.emo-solo{margin:0;vertical-align:middle;}' +
             '.no-emo img.emo-img{display:none;}';
         (document.head || document.documentElement).appendChild(style);
     }
