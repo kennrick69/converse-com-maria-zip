@@ -312,11 +312,11 @@ const EstatisticasOracao = {
                 <!-- Header com safe-area para notch -->
                 <div class="sticky top-0 z-10 bg-gradient-to-b from-[#0f0c29] via-[#0f0c29] to-transparent p-4 pb-8" style="padding-top: calc(1rem + env(safe-area-inset-top, 0px));">
                     <div class="flex items-center justify-between mb-4">
-                        <button onclick="EstatisticasOracao.fechar()" class="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
+                        <div style="width:40px;height:40px;flex-shrink:0;"></div>
                         <h1 class="text-white text-xl font-bold">📊 Minha Jornada</h1>
-                        <div class="w-10"></div>
+                        <button onclick="EstatisticasOracao.fechar()" class="btn-modal-x" aria-label="Fechar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
                     
                     <!-- Card de Nível -->

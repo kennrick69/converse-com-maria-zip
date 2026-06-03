@@ -556,14 +556,14 @@ const TercoGuiado = {
                 <!-- Header com safe-area para notch -->
                 <div class="sticky top-0 z-10 bg-gradient-to-b from-black/90 to-transparent p-4 pb-8" style="padding-top: calc(1rem + env(safe-area-inset-top, 0px));">
                     <div class="flex items-center justify-between">
-                        <button onclick="TercoGuiado.fechar()" class="p-2 bg-white/10 rounded-full hover:bg-white/20">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
+                        <div style="width:40px;height:40px;flex-shrink:0;"></div>
                         <div class="text-center">
                             <h1 class="text-white font-bold">🌹 Santo Terço</h1>
                             <p class="text-yellow-400 text-sm">${misterios.nome}</p>
                         </div>
-                        <div class="w-10"></div>
+                        <button onclick="TercoGuiado.fechar()" class="btn-modal-x" aria-label="Fechar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
                 </div>
                 

@@ -1367,6 +1367,20 @@
   cursor: pointer;
 }
 
+/* JOs 2026-06-03: padronização universal do botão X de fechar modais.
+   SEMPRE no lado direito, mesmo tamanho 40×40, fundo translúcido. */
+.btn-modal-x {
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.1); border: none; border-radius: 50%;
+    cursor: pointer; color: #fff; padding: 0;
+    transition: background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+}
+.btn-modal-x:hover, .btn-modal-x:active { background: rgba(255,255,255,0.2); }
+.btn-modal-x svg { width: 22px; height: 22px; display: block; stroke: #fff; }
+
 .chat-messages{
   flex: 1;
   overflow-y: auto;
@@ -4849,12 +4863,8 @@ async function abrirConfigNotificacoes() {
                 <h2 class="text-xl font-bold text-white flex items-center gap-2">
                     <span>🔔</span> Lembretes de Oração
                 </h2>
-                <button onclick="document.getElementById('modal-lembretes').remove()" class="p-2 bg-white/10 rounded-full hover:bg-white/20 flex items-center justify-center" style="color:#fff;">
-                    <!-- JOs 2026-06-03: stroke="currentColor" não renderizava em alguns mobiles
-                         (X invisível dentro da bolinha). Stroke explícito #fff resolve. -->
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
-                        <path d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
+                <button onclick="document.getElementById('modal-lembretes').remove()" class="btn-modal-x" aria-label="Fechar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             

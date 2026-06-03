@@ -240,16 +240,16 @@ const SantuarioVelas = {
             <div class="relative h-full flex flex-col">
                 <!-- Header com safe-area para notch -->
                 <div class="flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent" style="padding-top: calc(1rem + env(safe-area-inset-top, 0px));">
-                    <button onclick="SantuarioVelas.fechar()" class="p-2 bg-white/10  rounded-full hover:bg-white/20 transition-all">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
+                    <div style="width:40px;height:40px;flex-shrink:0;"></div>
                     <div class="text-center">
                         <h1 class="text-white font-bold text-lg flex items-center gap-2">
                             <span class="text-2xl">🕯️</span> Santuário de Velas
                         </h1>
                         <p class="text-yellow-300/80 text-xs">Ilumine suas intenções</p>
                     </div>
-                    <div class="w-10"></div>
+                    <button onclick="SantuarioVelas.fechar()" class="btn-modal-x" aria-label="Fechar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
                 
                 <!-- Altar com velas acesas -->

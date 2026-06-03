@@ -199,13 +199,13 @@ const TelaPremium = {
                 
                 <!-- Header com botão fechar -->
                 <div class="sticky top-0 z-10 flex justify-between items-center p-4 bg-gradient-to-b from-black/80 to-transparent">
-                    <button onclick="TelaPremium.fechar()" class="p-2 bg-white/10 backdrop-blur rounded-full hover:bg-white/20 transition-all">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
+                    <div style="width:40px;height:40px;flex-shrink:0;"></div>
                     <div class="flex items-center gap-2">
                         <span class="text-yellow-400 text-sm font-semibold">🎁 Oferta Especial</span>
                     </div>
-                    <div class="w-10"></div>
+                    <button onclick="TelaPremium.fechar()" class="btn-modal-x" aria-label="Fechar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
                 
                 <!-- Conteúdo Principal -->
