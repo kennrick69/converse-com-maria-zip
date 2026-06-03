@@ -263,9 +263,12 @@ const BibliotecaCrista = {
         
         modal.innerHTML = `
             <div style="padding:16px;display:flex;justify-content:space-between;align-items:center;">
-                <button onclick="BibliotecaCrista.fechar()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:44px;height:44px;color:#fff;font-size:20px;">✕</button>
+                <!-- JOs 2026-06-03: lápis (grifos) à esquerda, X à direita conforme padronização -->
+                <button onclick="BibliotecaCrista.meusGrifos()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:40px;height:40px;font-size:20px;position:relative;color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;" aria-label="Meus grifos">🖍️${this.grifos.length > 0 ? `<span style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:11px;font-weight:bold;border-radius:10px;padding:2px 6px;min-width:20px;line-height:1;">${this.grifos.length}</span>` : ''}</button>
                 <span style="color:#fff;font-size:18px;font-weight:bold;">📚 Biblioteca</span>
-                <button onclick="BibliotecaCrista.meusGrifos()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:44px;height:44px;font-size:20px;position:relative;color:#fff;">🖍️${this.grifos.length > 0 ? `<span style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:11px;font-weight:bold;border-radius:10px;padding:2px 6px;min-width:20px;line-height:1;">${this.grifos.length}</span>` : ''}</button>
+                <button onclick="BibliotecaCrista.fechar()" class="btn-modal-x" aria-label="Fechar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
             <div id="biblio-lista" style="flex:1;overflow-y:auto;padding:16px;"></div>
         `;
