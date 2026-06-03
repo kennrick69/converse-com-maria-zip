@@ -1613,6 +1613,7 @@
     text-align: justify;
     hyphens: auto;
     margin-bottom: 10px;
+    text-indent: 1.5em;  /* JOs 2026-06-03: indent parágrafo (estilo livro) */
 }
 
 .privacy-modal-body ul li {
@@ -1630,8 +1631,9 @@
 }
 
 .privacy-modal-body ul {
-    margin-left: 20px;
-    margin-bottom: 12px;
+    /* JOs 2026-06-03: era margin-left:20px (desalinhava com <p>) — troca por padding pra bullet ficar na borda */
+    margin: 0 0 12px 0;
+    padding-left: 22px;
 }
 
 .privacy-modal-footer {
@@ -3337,7 +3339,7 @@ function abrirTermosUso() {
                 
                 <h3>🗑️ Exclusão de Dados</h3>
                 <p>Você tem o direito de solicitar a exclusão de todos os seus dados pessoais a qualquer momento. Para isso, envie um email para:</p>
-                <p style="text-align: center; margin: 12px 0; word-break: break-all;">
+                <p style="margin: 12px 0; word-break: break-all; text-indent: 0;">
                     <a href="mailto:contato@conversecommaria.com.br" style="color: #7c3aed; font-weight: bold; text-decoration: underline;">contato@conversecommaria.com.br</a>
                 </p>
                 <p>Sua solicitação será processada em até 15 dias úteis.</p>
