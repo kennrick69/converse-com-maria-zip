@@ -63,6 +63,8 @@
         '⚠️': 'icones/emoji-warning.png',      // 49KB — aviso
         '⚠': 'icones/emoji-warning.png',
         '🔒': 'icones/emoji-lock.png',         // 26KB — cadeado
+        '⚙️': 'icones/emoji-engrenagem.png',   // 2.6KB — engrenagem (JOs 2026-06-03)
+        '⚙': 'icones/emoji-engrenagem.png',
         // === Leitura / app ===
         '📖': 'icones/emoji-book.png',         // 979KB — livro aberto
         '📚': 'icones/emoji-books.png',        // 270KB — pilha livros
