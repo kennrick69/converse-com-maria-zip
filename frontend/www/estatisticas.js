@@ -313,7 +313,11 @@ const EstatisticasOracao = {
                 <div class="sticky top-0 z-10 bg-gradient-to-b from-[#0f0c29] via-[#0f0c29] to-transparent p-4 pb-8" style="padding-top: calc(1rem + env(safe-area-inset-top, 0px));">
                     <div class="flex items-center justify-between mb-4">
                         <div style="width:40px;height:40px;flex-shrink:0;"></div>
-                        <h1 class="text-white text-xl font-bold">📊 Minha Jornada</h1>
+                        <!-- JOs 2026-06-03: 📊 → emoji-estatisticas.png (mesmo do Mais Recursos) -->
+                        <h1 class="text-white text-xl font-bold inline-flex items-center gap-2">
+                            <img src="icones/emoji-estatisticas.png" alt="" class="no-emo" style="width:24px;height:24px;object-fit:contain;display:inline-block;vertical-align:middle;filter:brightness(0) invert(1);">
+                            Minha Jornada
+                        </h1>
                         <button onclick="EstatisticasOracao.fechar()" class="btn-modal-x" aria-label="Fechar">
                             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>

@@ -3338,7 +3338,11 @@ function abrirTermosUso() {
     modal.innerHTML = `
         <div class="privacy-modal-content">
             <div class="privacy-modal-header">
-                <h2 style="font-size: 24px; font-weight: 700; color: #6b2d06; margin: 0;">📖 Termos de Uso</h2>
+                <!-- JOs 2026-06-03: 📖 → emoji-termos.png (mesmo do Mais Recursos); SEM filter pq fundo é claro -->
+                <h2 style="font-size: 24px; font-weight: 700; color: #6b2d06; margin: 0; display:inline-flex; align-items:center; gap:8px;">
+                    <img src="icones/emoji-termos.png" alt="" class="no-emo" style="width:24px;height:24px;object-fit:contain;display:inline-block;vertical-align:middle;">
+                    Termos de Uso
+                </h2>
                 <p style="color: #7a3a0a; margin-top: 8px;">Última atualização: Maio 2026</p>
             </div>
             <div class="privacy-modal-body">
