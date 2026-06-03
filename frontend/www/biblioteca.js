@@ -510,11 +510,14 @@ const BibliotecaCrista = {
                     <div style="font-weight:bold;font-size:14px;">${livro.titulo}</div>
                     <div style="font-size:11px;opacity:0.6;">Cap ${cap.numero}/${livro.capitulos.length} <span id="biblio-progresso-pct" style="margin-left:4px;color:#b8860b;font-weight:600;">0%</span></div>
                 </div>
-                <div style="display:flex;gap:4px;">
+                <!-- JOs 2026-06-03: engrenagem agora é <img> explícito (= régua) pra mesma altura + gap maior -->
+                <div style="display:flex;gap:14px;align-items:center;">
                     <button id="biblio-btn-regua" onclick="BibliotecaCrista.toggleRegua()" title="Régua de leitura — escurece embaixo, libera ao rolar" style="background:none;border:none;cursor:pointer;opacity:${this._reguaAtiva ? '1' : '0.6'};padding:0;display:flex;align-items:center;">
-                        <img src="icones/emoji-regua.png" alt="Régua" style="width:24px;height:24px;display:block;">
+                        <img src="icones/emoji-regua.png" alt="Régua" style="width:24px;height:24px;object-fit:contain;display:block;">
                     </button>
-                    <button onclick="BibliotecaCrista.config()" style="background:none;border:none;font-size:20px;">⚙️</button>
+                    <button onclick="BibliotecaCrista.config()" title="Configurações" style="background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;">
+                        <img src="icones/emoji-engrenagem.png" alt="Config" class="no-emo" style="width:24px;height:24px;object-fit:contain;display:block;">
+                    </button>
                 </div>
             </div>
 
@@ -1761,12 +1764,8 @@ const BibliotecaCrista = {
         `;
         document.body.appendChild(overlay);
 
-        document.getElementById('biblio-btn-continuar-ultimo').onclick = () => {
-            const cb = this._pausaOnContinuar;
-            if (this.livroAtual) this._marcarPausouAntesUltimo(this.livroAtual.id);
-            this._fecharPausaConvite();
-            cb?.();
-        };
+        // JOs 2026-06-03: usa _irDiretoParaUltimoCap pra centralizar a lógica (auto-trigger + clique manual)
+        document.getElementById('biblio-btn-continuar-ultimo').onclick = () => this._irDiretoParaUltimoCap();
 
         this._pausaCountdownInterval = setInterval(() => {
             restante--;
@@ -1777,26 +1776,21 @@ const BibliotecaCrista = {
             if (restante <= 0) {
                 clearInterval(this._pausaCountdownInterval);
                 this._pausaCountdownInterval = null;
-                this._liberarBtnContinuarUltimo();
+                // JOs 2026-06-03: ao zerar o countdown, ir DIRETO pro último capítulo
+                // (antes trocava o display por '✦' e ficava esperando clique manual no botão verde —
+                // JOs achou que a estrela aparecendo não fazia sentido).
+                this._irDiretoParaUltimoCap();
             }
         }, 1000);
 
         if (navigator.vibrate) { try { navigator.vibrate(40); } catch (_) {} }
     },
 
-    _liberarBtnContinuarUltimo() {
-        const btn = document.getElementById('biblio-btn-continuar-ultimo');
-        if (btn) {
-            btn.disabled = false;
-            btn.style.cursor = 'pointer';
-            btn.style.opacity = '1';
-            btn.style.background = 'linear-gradient(135deg,#4ade80,#22c55e)';
-            btn.style.color = '#fff';
-            btn.style.border = 'none';
-            btn.textContent = '✓ Continuar para o último capítulo';
-        }
-        const el = document.getElementById('biblio-pausa-countdown');
-        if (el) el.textContent = '✦';
+    _irDiretoParaUltimoCap() {
+        const cb = this._pausaOnContinuar;
+        if (this.livroAtual) this._marcarPausouAntesUltimo(this.livroAtual.id);
+        this._fecharPausaConvite();
+        cb?.();
         if (navigator.vibrate) { try { navigator.vibrate([40, 80, 40]); } catch (_) {} }
     },
 
