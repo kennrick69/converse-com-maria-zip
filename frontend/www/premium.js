@@ -116,52 +116,62 @@ const TelaPremium = {
         }
     ],
 
-    // Depoimentos específicos sobre a MEDALHA
+    // Depoimentos da MEDALHA — JOs (2026-06-03): manter textos, trocar
+    // só as fotos pelas reais de amigos/parentes conforme forem chegando.
+    // Renderer aceita foto como emoji OU URL/caminho (img/depoimentos/xxx.jpg).
+    // Pra adicionar foto real: salvar em frontend/www/img/depoimentos/<id>.jpg
+    // (640×640px JPEG, ~80% qualidade) e trocar o campo `foto` pelo caminho.
     depoimentosMedalha: [
         {
+            id: 'aparecida',
             nome: 'Dona Aparecida',
             cidade: 'Aparecida, SP',
-            foto: '👵🏻',
+            foto: '👵🏻', // → 'img/depoimentos/aparecida.jpg' quando tiver foto real
             texto: 'Quando a medalha chegou, coloquei na porta de casa. No mesmo dia, meu filho que estava afastado há 3 anos me ligou pedindo perdão. Nossa Senhora é poderosa!',
             estrelas: 5,
             tempo: '2 semanas atrás'
         },
         {
+            id: 'roberto-familia',
             nome: 'Roberto e Família',
             cidade: 'Goiânia, GO',
-            foto: '👨‍👩‍👧‍👦',
+            foto: '👨‍👩‍👧‍👦', // → 'img/depoimentos/roberto-familia.jpg'
             texto: 'Nossa casa vivia em brigas constantes. Depois que colocamos a medalha na sala, a paz voltou ao nosso lar. Meus filhos pararam de brigar e meu casamento melhorou muito.',
             estrelas: 5,
             tempo: '1 mês atrás'
         },
         {
+            id: 'tereza',
             nome: 'Tereza Cristina',
             cidade: 'Recife, PE',
-            foto: '👩🏽',
+            foto: '👩🏽', // → 'img/depoimentos/tereza.jpg'
             texto: 'A medalha veio numa embalagem linda, com uma oração. Chorei quando recebi. Coloquei no quarto do meu pai que estava doente, e ele teve uma melhora que os médicos não explicam.',
             estrelas: 5,
             tempo: '3 semanas atrás'
         },
         {
+            id: 'santos',
             nome: 'Família Santos',
             cidade: 'Porto Alegre, RS',
-            foto: '👨🏻',
+            foto: '👨🏻', // → 'img/depoimentos/santos.jpg'
             texto: 'Estávamos com dívidas enormes e muita angústia. Após pendurar a medalha benta, em 2 meses minha esposa conseguiu um emprego e começamos a nos reerguer. Fé em Maria!',
             estrelas: 5,
             tempo: '1 mês atrás'
         },
         {
+            id: 'lucia',
             nome: 'Irmã Lúcia',
             cidade: 'Salvador, BA',
-            foto: '👩🏾',
+            foto: '👩🏾', // → 'img/depoimentos/lucia.jpg'
             texto: 'Sou catequista e indico o app para todos. A medalha que recebi está no nosso grupo de oração. Várias pessoas relataram graças alcançadas depois que começamos a rezar com ela presente.',
             estrelas: 5,
             tempo: '2 meses atrás'
         },
         {
+            id: 'jose-carlos',
             nome: 'José Carlos',
             cidade: 'Manaus, AM',
-            foto: '👴🏽',
+            foto: '👴🏽', // → 'img/depoimentos/jose-carlos.jpg'
             texto: 'Minha neta de 4 anos tinha pesadelos toda noite. Colocamos a medalha de Nossa Senhora no quarto dela. Desde então, dorme em paz a noite toda. Milagre da Mãezinha!',
             estrelas: 5,
             tempo: '3 semanas atrás'
@@ -333,12 +343,17 @@ const TelaPremium = {
                         </div>
                         
                         <div class="space-y-3">
-                            ${this.depoimentosMedalha.map(d => `
+                            ${this.depoimentosMedalha.map(d => {
+                                // d.foto pode ser: emoji (1-3 chars), URL absoluta, ou caminho
+                                // relativo tipo "img/depoimentos/xxx.jpg" — autodetecta.
+                                const ehImagem = d.foto && (d.foto.includes('/') || d.foto.startsWith('data:'));
+                                const avatar = ehImagem
+                                    ? `<img src="${d.foto}" alt="${d.nome}" class="w-12 h-12 rounded-full object-cover flex-shrink-0 border border-yellow-500/40" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500/30 to-orange-500/30 flex items-center justify-center text-2xl flex-shrink-0\\'>👤</div>'">`
+                                    : `<div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500/30 to-orange-500/30 flex items-center justify-center text-2xl flex-shrink-0 no-emo">${d.foto || '👤'}</div>`;
+                                return `
                                 <div class="bg-gradient-to-br from-yellow-900/20 to-amber-900/10 backdrop-blur rounded-2xl p-4 border border-yellow-500/20">
                                     <div class="flex items-start gap-3">
-                                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500/30 to-orange-500/30 flex items-center justify-center text-2xl flex-shrink-0">
-                                            ${d.foto}
-                                        </div>
+                                        ${avatar}
                                         <div class="flex-1">
                                             <div class="flex items-center justify-between mb-1">
                                                 <p class="text-white font-semibold text-sm">${d.nome}</p>
@@ -351,9 +366,10 @@ const TelaPremium = {
                                         </div>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `;
+                            }).join('')}
                         </div>
-                        
+
                         <div class="mt-4 text-center">
                             <p class="text-yellow-400/80 text-xs">
                                 ✨ Mais de 2.000 medalhas já abençoaram lares brasileiros
