@@ -258,6 +258,15 @@ const MemoriaMaria = {
         } else if (sentimento === 'feliz' || sentimento === 'grato') {
             sentimentoTexto = 'feliz com';
         }
+
+        // JOs 2026-06-03: quando o extrator de tema cai no fallback genérico
+        // ('sua conversa anterior'), a frase ficava redundante e sem sentido:
+        // "conversando sobre sua conversa anterior". Detectamos esse caso e
+        // usamos uma frase neutra que faz sentido sem precisar do tema.
+        const temaEhFallback = !tema || /^sua conversa anterior$/i.test(String(tema).trim());
+        const fraseMemoria = temaEhFallback
+            ? `Vamos retomar nossa conversa de onde paramos?`
+            : `Em nossa última conversa, você estava ${sentimentoTexto} <strong class="text-yellow-400">${tema}</strong>.`;
         
         const modal = document.createElement('div');
         modal.id = 'modal-memoria';
@@ -273,7 +282,7 @@ const MemoriaMaria = {
                 
                 <div class="bg-black/30 rounded-xl p-4 mb-5">
                     <p class="text-white/90 text-center leading-relaxed">
-                        Em nossa última conversa, você estava ${sentimentoTexto} <strong class="text-yellow-400">${tema}</strong>.
+                        ${fraseMemoria}
                     </p>
                 </div>
                 
