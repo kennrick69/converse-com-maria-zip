@@ -171,10 +171,32 @@ const AdMobService = {
         }
     },
     
+    // Bloqueia anúncio durante o terço — JOs (2026-06-02): não pode aparecer
+    // propaganda em cima do santo terço sob nenhuma hipótese.
+    _ehMomentoSagrado() {
+        if (window.TercoGuiado && window.TercoGuiado.estado && window.TercoGuiado.estado.ativo) return true;
+        if (document.getElementById('modal-terco')) return true;
+        if (document.getElementById('modal-terco-guiado')) return true;
+        // Também bloqueia se a régua/leitor de livro espiritual estiver aberto
+        if (document.getElementById('leitor-modal')) return true;
+        // E se o modal de finalização/pausa de livro está aberto
+        if (document.getElementById('biblio-modal-finalizacao')) return true;
+        if (document.getElementById('biblio-modal-pausa')) return true;
+        return false;
+    },
+
     async showInterstitial() {
         if (!this.initialized) return false;
         if (await this.isPremium()) return false;
-        
+
+        // Guard sagrado: não interrompe terço/leitura espiritual
+        if (this._ehMomentoSagrado()) {
+            console.log('🌹 AdMob: momento sagrado em curso, anúncio adiado');
+            // Devolve a mensagem ao contador pra disparar na próxima
+            this.messageCount = this.config.interstitialInterval;
+            return false;
+        }
+
         // Mock - mostrar modal simulado
         if (this.isMock) {
             return this.showMockInterstitial();
