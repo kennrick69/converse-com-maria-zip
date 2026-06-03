@@ -47,6 +47,8 @@
         '👑': 'icones/emoji-crown.png',        // 1.5MB — coroa Maria
         '✨': 'icones/emoji-sparkles.png',     // 463KB — brilho
         '🐑': 'icones/emoji-sheep.png',        // 144KB — Bom Pastor
+        '✝️': 'icones/emoji-cruz.png',         // 3KB  — Cruz com coração (JOs 2026-06-03)
+        '✝': 'icones/emoji-cruz.png',
         // === Conquistas / status ===
         '🏅': 'icones/emoji-medal.png',        // 26KB — medalha
         '⭐': 'icones/emoji-star.png',          // 94KB — estrela
