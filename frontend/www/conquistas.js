@@ -540,7 +540,7 @@ const SistemaConquistas = {
                             <!-- Streak (JOs 2026-06-03: cordeirinho dobrado de tamanho + fonte maior pra dar ênfase) -->
                             <div class="inline-flex items-center gap-3 bg-orange-500/20 px-4 py-2 rounded-full mb-4">
                                 <img src="icones/emoji-sheep.png" alt="" style="width:44px;height:44px;display:inline-block;vertical-align:middle;flex-shrink:0;">
-                                <span class="text-orange-300 text-base font-bold">Este cordeirinho está há ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração</span>
+                                <span class="text-orange-300 text-base font-bold">Este cordeirinho está há ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em Oração</span>
                             </div>
                             
                             <!-- Texto e site -->
@@ -753,7 +753,7 @@ const SistemaConquistas = {
         // Streak
         ctx.fillStyle = '#FF6B35';
         ctx.font = 'bold 30px Arial';
-        ctx.fillText(`🐑 ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração`, 300, 470);
+        ctx.fillText(`🐑 ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em Oração`, 300, 470);
         
         // Linha decorativa
         ctx.strokeStyle = '#FFD700';
@@ -899,7 +899,7 @@ const SistemaConquistas = {
         
         ctx.fillStyle = '#FF6B35';
         ctx.font = 'bold 48px Arial';
-        ctx.fillText(`🐑 ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração`, 540, 850);
+        ctx.fillText(`🐑 ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em Oração`, 540, 850);
         
         // ========== BARRA DE PROGRESSO ==========
         const progresso = (conquistadas.length / this.conquistas.length) * 100;
@@ -1050,7 +1050,7 @@ const SistemaConquistas = {
                 <!-- Streak (JOs 2026-06-03: cordeirinho + cópia consistente com badge do modal) -->
                 <div style="background: rgba(249, 115, 22, 0.25); border-radius: 50px; padding: 8px 20px; margin-bottom: 20px; display: inline-block; text-align: center;">
                     <img src="icones/emoji-sheep.png" alt="" style="width:24px;height:24px;display:block;margin:0 auto 4px;">
-                    <span style="color: #fdba74; font-size: 16px; font-weight: 600; display: block;">Este cordeirinho está há ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração</span>
+                    <span style="color: #fdba74; font-size: 16px; font-weight: 600; display: block;">Este cordeirinho está há ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em Oração</span>
                 </div>
                 
                 <!-- Barra de progresso -->
@@ -1119,7 +1119,7 @@ const SistemaConquistas = {
 
 ✨ ${conquistadas.length} conquistas
 ⭐ ${totalPontos} pontos de fé
-🐑 Este cordeirinho está há ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração — junte-se a ${pronome}!
+🐑 Este cordeirinho está há ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em Oração — junte-se a ${pronome}!
 
 Baixe o app e comece sua jornada!
 🙏 https://play.google.com/store/apps/details?id=com.conversemaria.app`;
