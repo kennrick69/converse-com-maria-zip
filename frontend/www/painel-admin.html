@@ -573,6 +573,7 @@
             <button class="tab-btn" onclick="trocarTab('livros')">📚 Livros</button>
             <button class="tab-btn" onclick="trocarTab('musicas')">🎵 Músicas</button>
             <button class="tab-btn" onclick="trocarTab('frases')">💭 Frases</button>
+            <button class="tab-btn" onclick="trocarTab('anuncios')">📺 Anúncios</button>
         </nav>
         
         <!-- Dashboard -->
@@ -680,6 +681,151 @@
             <h2 class="section-title">💭 Frases <span id="conteudo-frases-count" style="color: var(--text-secondary); font-weight: 400;"></span></h2>
             <div class="intencoes-grid" id="conteudo-frases-grid"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
         </div>
+
+        <!-- ===================== ABA ANÚNCIOS ===================== -->
+        <div class="tab-content" id="tab-anuncios">
+            <h2 class="section-title">📺 Gestão de Anúncios</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 24px;">Configure as propagandas do app Android (AdMob) e do site web (AdSense). As configurações são salvas no Firestore em <code style="background:#1a1a25;padding:2px 6px;border-radius:4px;">config/ads</code> e lidas pelo app em runtime.</p>
+
+            <!-- Switch master -->
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+                <div>
+                    <h3 style="font-size:16px;margin-bottom:4px;">Ativar anúncios globalmente</h3>
+                    <p style="color:var(--text-secondary);font-size:13px;">Desligar aqui faz o app inteiro virar premium-like (sem ads em lugar nenhum).</p>
+                </div>
+                <label class="switch-wrap">
+                    <input type="checkbox" id="ads-master-enabled" checked>
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="grid-2col">
+
+                <!-- ============= AdMob (Mobile) ============= -->
+                <div class="card-config">
+                    <div class="card-header">
+                        <h3>📱 AdMob (App Android)</h3>
+                        <span class="badge" id="status-admob">verificando…</span>
+                    </div>
+                    <p class="card-subtitle">Anúncios no app nativo da Play Store. Funciona via plugin <code>@capacitor-community/admob</code>.</p>
+
+                    <label>App ID
+                        <input type="text" id="admob-app-id" placeholder="ca-app-pub-XXXX~YYYY" value="ca-app-pub-4489113682448462~4292303415">
+                        <small>Esse mesmo ID precisa estar no AndroidManifest.xml (já foi configurado).</small>
+                    </label>
+
+                    <label>Banner ID
+                        <input type="text" id="admob-banner-id" placeholder="ca-app-pub-XXXX/YYYY" value="ca-app-pub-4489113682448462/7521101982">
+                        <small>Banner está desativado no código atual — modelo é só interstitial.</small>
+                    </label>
+
+                    <label>Interstitial ID
+                        <input type="text" id="admob-interstitial-id" placeholder="ca-app-pub-XXXX/YYYY" value="ca-app-pub-4489113682448462/3865778066">
+                    </label>
+
+                    <div class="grid-2col" style="gap:12px;margin:14px 0;">
+                        <label>Cada N msg
+                            <input type="number" id="admob-interval" min="1" max="20" value="3">
+                        </label>
+                        <label>Cooldown (s)
+                            <input type="number" id="admob-cooldown" min="10" max="600" value="120">
+                        </label>
+                    </div>
+
+                    <label class="check-line">
+                        <input type="checkbox" id="admob-test-mode">
+                        <span>Modo teste (usa ad units de teste do Google — sem receita real)</span>
+                    </label>
+
+                    <div class="card-footer">
+                        <button class="btn-action blue" onclick="salvarConfigAds()">💾 Salvar</button>
+                        <a href="https://admob.google.com/home" target="_blank" class="btn-link">↗ Abrir AdMob</a>
+                    </div>
+                </div>
+
+                <!-- ============= AdSense (Web) ============= -->
+                <div class="card-config">
+                    <div class="card-header">
+                        <h3>🌐 AdSense (Site Web)</h3>
+                        <span class="badge red" id="status-adsense">não configurado</span>
+                    </div>
+                    <p class="card-subtitle">Anúncios no site web (kennrick69.github.io). Aprovação Google leva de 24h a algumas semanas.</p>
+
+                    <label>Publisher ID
+                        <input type="text" id="adsense-client" placeholder="ca-pub-XXXXXXXXXXXXXXXX">
+                        <small>Encontra em <code>adsense.google.com → Conta → Informações da conta</code>.</small>
+                    </label>
+
+                    <label>Banner Slot ID
+                        <input type="text" id="adsense-slot-banner" placeholder="XXXXXXXXXX (10 dígitos)">
+                        <small>Slot de banner responsivo. Aparece no rodapé das telas web.</small>
+                    </label>
+
+                    <label>Interstitial Slot ID
+                        <input type="text" id="adsense-slot-inter" placeholder="XXXXXXXXXX (opcional)">
+                        <small>Anúncio em tela cheia entre mensagens (Web Interstitial).</small>
+                    </label>
+
+                    <label class="check-line">
+                        <input type="checkbox" id="adsense-test-mode" checked>
+                        <span>Modo teste (substitui anúncios reais por placeholders do Google)</span>
+                    </label>
+
+                    <label class="check-line">
+                        <input type="checkbox" id="adsense-enabled">
+                        <span><b>Ativar AdSense no site</b> (deixe desligado até ter Publisher ID aprovado)</span>
+                    </label>
+
+                    <div class="card-footer">
+                        <button class="btn-action blue" onclick="salvarConfigAds()">💾 Salvar</button>
+                        <a href="https://adsense.google.com" target="_blank" class="btn-link">↗ Abrir AdSense</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Telemetria simples -->
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:24px;">
+                <h3 style="font-size:16px;margin-bottom:14px;">📊 Métricas (últimos 7 dias)</h3>
+                <div class="stats-bar" style="margin:0;">
+                    <div class="stat-card"><div class="stat-icon orange">🎯</div><div class="stat-info"><h3 id="m-admob-shown">—</h3><p>Interstitial AdMob</p></div></div>
+                    <div class="stat-card"><div class="stat-icon blue">🌐</div><div class="stat-info"><h3 id="m-adsense-shown">—</h3><p>Impressões AdSense</p></div></div>
+                    <div class="stat-card"><div class="stat-icon green">🌹</div><div class="stat-info"><h3 id="m-sagrado-block">—</h3><p>Bloqueio sagrado</p></div></div>
+                    <div class="stat-card"><div class="stat-icon gold">👑</div><div class="stat-info"><h3 id="m-premium-skip">—</h3><p>Skip por premium</p></div></div>
+                </div>
+                <p style="margin-top:14px;color:var(--text-secondary);font-size:12px;">Métricas detalhadas estão no painel do AdMob/AdSense (receita, eCPM, fill rate). Aqui mostramos só o que o app faz internamente.</p>
+            </div>
+
+        </div>
+
+        <style>
+            .grid-2col { display:grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap:20px; }
+            .card-config { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:22px; }
+            .card-config .card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+            .card-config h3 { font-size:17px; }
+            .card-config .card-subtitle { color:var(--text-secondary); font-size:13px; margin-bottom:18px; }
+            .card-config label { display:block; font-size:13px; color:var(--text-secondary); margin-bottom:14px; }
+            .card-config label input[type=text], .card-config label input[type=number] {
+                display:block; width:100%; margin-top:5px; padding:9px 12px;
+                background:#1a1a25; color:var(--text-primary); border:1px solid var(--border);
+                border-radius:8px; font-family:monospace; font-size:13px;
+            }
+            .card-config label small { color:#666; font-size:11px; display:block; margin-top:4px; }
+            .card-config .check-line { display:flex; gap:10px; align-items:flex-start; cursor:pointer; }
+            .card-config .check-line input { margin-top:2px; }
+            .card-config .card-footer { display:flex; gap:10px; align-items:center; margin-top:8px; padding-top:14px; border-top:1px solid var(--border); }
+            .card-config .btn-link { color:var(--accent-blue); text-decoration:none; font-size:13px; margin-left:auto; }
+            .badge { background:var(--accent-green); color:#000; font-size:11px; font-weight:600; padding:4px 10px; border-radius:12px; }
+            .badge.red { background:var(--accent-red); color:#fff; }
+            .badge.gray { background:#3a3a4a; color:#aaa; }
+            /* Switch */
+            .switch-wrap { position:relative; display:inline-block; width:52px; height:28px; }
+            .switch-wrap input { opacity:0; width:0; height:0; }
+            .switch-slider { position:absolute; cursor:pointer; inset:0; background:#3a3a4a; border-radius:28px; transition:0.2s; }
+            .switch-slider::before { content:""; position:absolute; height:22px; width:22px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:0.2s; }
+            .switch-wrap input:checked + .switch-slider { background:var(--accent-green); }
+            .switch-wrap input:checked + .switch-slider::before { transform:translateX(24px); }
+        </style>
     </div>
     
     <!-- Modal -->
@@ -773,6 +919,92 @@
             if (tabId === 'velas' && todasVelas.length === 0) carregarVelas();
             if (tabId === 'livros') { if (typeof LivrosAdmin !== 'undefined') LivrosAdmin.carregar(); return; }
             if (['musicas','frases'].includes(tabId) && todoConteudo[tabId].length === 0) carregarConteudo(tabId);
+            if (tabId === 'anuncios') carregarConfigAds();
+        }
+
+        // ================= GESTÃO DE ANÚNCIOS =================
+        async function carregarConfigAds() {
+            try {
+                const doc = await db.collection('config').doc('ads').get();
+                const c = doc.exists ? doc.data() : {};
+                // Master
+                document.getElementById('ads-master-enabled').checked = c.enabled !== false;
+                // AdMob
+                if (c.admob) {
+                    document.getElementById('admob-app-id').value = c.admob.appId || 'ca-app-pub-4489113682448462~4292303415';
+                    document.getElementById('admob-banner-id').value = c.admob.bannerId || 'ca-app-pub-4489113682448462/7521101982';
+                    document.getElementById('admob-interstitial-id').value = c.admob.interstitialId || 'ca-app-pub-4489113682448462/3865778066';
+                    document.getElementById('admob-interval').value = c.admob.interstitialInterval || 3;
+                    document.getElementById('admob-cooldown').value = c.admob.cooldownSec || 120;
+                    document.getElementById('admob-test-mode').checked = !!c.admob.testMode;
+                }
+                // AdSense
+                if (c.adsense) {
+                    document.getElementById('adsense-client').value = c.adsense.client || '';
+                    document.getElementById('adsense-slot-banner').value = c.adsense.slotBanner || '';
+                    document.getElementById('adsense-slot-inter').value = c.adsense.slotInterstitial || '';
+                    document.getElementById('adsense-test-mode').checked = c.adsense.testMode !== false;
+                    document.getElementById('adsense-enabled').checked = !!c.adsense.enabled;
+                }
+                // Badges de status
+                atualizarStatusAds(c);
+                // Métricas
+                const m = c.metricas || {};
+                document.getElementById('m-admob-shown').textContent = m.admobShown || 0;
+                document.getElementById('m-adsense-shown').textContent = m.adsenseShown || 0;
+                document.getElementById('m-sagrado-block').textContent = m.sagradoBlocked || 0;
+                document.getElementById('m-premium-skip').textContent = m.premiumSkipped || 0;
+            } catch (e) {
+                console.error('carregarConfigAds:', e);
+                toast('❌ Erro ao carregar config: ' + e.message, 'error');
+            }
+        }
+
+        function atualizarStatusAds(c) {
+            const admobOk = c.admob && c.admob.appId && c.admob.appId.startsWith('ca-app-pub-');
+            const elAdmob = document.getElementById('status-admob');
+            elAdmob.textContent = admobOk ? 'configurado' : 'sem ID';
+            elAdmob.className = admobOk ? 'badge' : 'badge red';
+
+            const adsenseOk = c.adsense && c.adsense.enabled && c.adsense.client && c.adsense.client.startsWith('ca-pub-');
+            const elAdsense = document.getElementById('status-adsense');
+            elAdsense.textContent = adsenseOk ? 'ativo' : (c.adsense?.client ? 'desligado' : 'não configurado');
+            elAdsense.className = adsenseOk ? 'badge' : (c.adsense?.client ? 'badge gray' : 'badge red');
+        }
+
+        async function salvarConfigAds() {
+            try {
+                const cfg = {
+                    enabled: document.getElementById('ads-master-enabled').checked,
+                    admob: {
+                        appId: document.getElementById('admob-app-id').value.trim(),
+                        bannerId: document.getElementById('admob-banner-id').value.trim(),
+                        interstitialId: document.getElementById('admob-interstitial-id').value.trim(),
+                        interstitialInterval: parseInt(document.getElementById('admob-interval').value, 10) || 3,
+                        cooldownSec: parseInt(document.getElementById('admob-cooldown').value, 10) || 120,
+                        testMode: document.getElementById('admob-test-mode').checked
+                    },
+                    adsense: {
+                        client: document.getElementById('adsense-client').value.trim(),
+                        slotBanner: document.getElementById('adsense-slot-banner').value.trim(),
+                        slotInterstitial: document.getElementById('adsense-slot-inter').value.trim(),
+                        testMode: document.getElementById('adsense-test-mode').checked,
+                        enabled: document.getElementById('adsense-enabled').checked
+                    },
+                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+                    atualizadoPor: auth.currentUser?.email || 'admin'
+                };
+                // Valida AdSense client se enabled
+                if (cfg.adsense.enabled && !cfg.adsense.client.startsWith('ca-pub-')) {
+                    return toast('⚠️ Publisher ID AdSense inválido (deve começar com ca-pub-)', 'error');
+                }
+                await db.collection('config').doc('ads').set(cfg, { merge: true });
+                atualizarStatusAds(cfg);
+                toast('✅ Configuração salva — vai refletir no app no próximo boot', 'success');
+            } catch (e) {
+                console.error('salvarConfigAds:', e);
+                toast('❌ Erro ao salvar: ' + e.message, 'error');
+            }
         }
         
         // Carregar

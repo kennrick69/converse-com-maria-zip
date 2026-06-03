@@ -93,6 +93,13 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // CONFIG do app (anúncios, feature flags etc). Read público pra o app
+    // carregar config no boot; write só admin (painel).
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // DEFAULT DENY — qualquer collection futura sem regra fica BLOQUEADA
     match /{document=**} {
       allow read, write: if false;
