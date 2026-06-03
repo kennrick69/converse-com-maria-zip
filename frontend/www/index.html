@@ -1371,7 +1371,24 @@
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
+  /* Fundo personalizado da conversa (JOs 2026-06-02) */
+  background-image: url('icones/bg-conversa.png');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: local;
+  background-repeat: no-repeat;
+  position: relative;
 }
+.chat-messages::before {
+  /* Overlay escuro pra contraste das bolhas de mensagem em cima do fundo */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(20,12,30,0.35) 0%, rgba(20,12,30,0.55) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.chat-messages-inner { position: relative; z-index: 1; }
 .chat-messages-inner{
   max-width: 980px;
   margin: 0 auto;

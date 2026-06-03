@@ -33,16 +33,50 @@
         }
     } catch (_) { /* localStorage indisponível (modo privado iOS) — segue */ }
 
-    // ESCOPO ENXUTO — só devocionais centrais. Os 5 maiores PNGs (crown,
-    // brain, book, sparkles, books) foram removidos do mapa porque pesam
-    // 4MB+ e cobrem casos utilitários sem ganho devocional.
+    // MAP COMPLETO — JOs (2026-06-02): "mapeie todos sem exceção"
+    // Bundle total ~7MB. Eduardo já alertou sobre tamanho: idealmente
+    // crown/brain/book/sparkles deveriam ser resize pra 128×128 (de
+    // 2480×3508 etc), mas WSL não tem ferramenta de imagem. Por ora,
+    // service worker cacheia pós-1ª carga.
     const MAP = {
-        '🙏': 'icones/emoji-pray.png',       // 30KB — mãos rezando (mais usado)
-        '🌹': 'icones/emoji-rose.png',       // 38KB — rosa mariana
-        '🕯️': 'icones/emoji-candle.png',     // 71KB — vela acesa
+        // === Devocional ===
+        '🙏': 'icones/emoji-pray.png',         // 30KB — mãos rezando
+        '🌹': 'icones/emoji-rose.png',         // 37KB — rosa mariana
+        '🕯️': 'icones/emoji-candle.png',       // 70KB — vela acesa
         '🕯': 'icones/emoji-candle.png',
-        '🏅': 'icones/emoji-medal.png',      // 27KB — medalha de conquista
-        '🐑': 'icones/emoji-sheep.png'       // 144KB — ovelha (Bom Pastor)
+        '👑': 'icones/emoji-crown.png',        // 1.5MB — coroa Maria
+        '✨': 'icones/emoji-sparkles.png',     // 463KB — brilho
+        '🐑': 'icones/emoji-sheep.png',        // 144KB — Bom Pastor
+        // === Conquistas / status ===
+        '🏅': 'icones/emoji-medal.png',        // 26KB — medalha
+        '⭐': 'icones/emoji-star.png',          // 94KB — estrela
+        '★': 'icones/emoji-star.png',
+        '✦': 'icones/emoji-star4.png',         // 24KB — estrela 4 pontas
+        '🔥': 'icones/emoji-fire.png',         // 128KB — streak
+        // === Marcações / status ===
+        '✅': 'icones/emoji-check-green.png',  // 75KB — check verde
+        '✓': 'icones/emoji-check-thin.png',    // 13KB — check fino
+        '❌': 'icones/emoji-x-red.png',         // 64KB — X vermelho
+        '✗': 'icones/emoji-x-thin.png',        // 25KB — X fino
+        '⚠️': 'icones/emoji-warning.png',      // 49KB — aviso
+        '⚠': 'icones/emoji-warning.png',
+        '🔒': 'icones/emoji-lock.png',         // 26KB — cadeado
+        // === Leitura / app ===
+        '📖': 'icones/emoji-book.png',         // 979KB — livro aberto
+        '📚': 'icones/emoji-books.png',        // 270KB — pilha livros
+        '🧠': 'icones/emoji-brain.png',        // 962KB — cérebro
+        '💬': 'icones/emoji-speech.png',       // 18KB — balão fala
+        '💭': 'icones/emoji-thought.png',      // 49KB — balão pensamento
+        // === UI ===
+        '🔔': 'icones/emoji-bell.png',         // 15KB — sino
+        '📱': 'icones/emoji-phone.png',        // 13KB — celular
+        '📤': 'icones/emoji-outbox.png',       // 48KB — caixa de saída
+        '💾': 'icones/emoji-floppy.png',       // 8KB  — disquete
+        '📋': 'icones/emoji-clipboard.png',    // 45KB — clipboard
+        '📺': 'icones/emoji-tv.png',           // 40KB — TV (anúncios)
+        '🔄': 'icones/emoji-refresh.png',      // 6KB  — refresh
+        '🗑️': 'icones/emoji-trash.png',        // 11KB — lixeira
+        '🗑': 'icones/emoji-trash.png'
     };
 
     // Chaves ordenadas por tamanho desc (variantes com VS16 primeiro)
