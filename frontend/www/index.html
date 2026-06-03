@@ -4852,9 +4852,12 @@ async function abrirConfigNotificacoes() {
     modal.innerHTML = `
         <div class="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-3xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
             <!-- Header -->
+            <!-- JOs 2026-06-03: título centralizado + sino dourado ao lado -->
             <div class="p-4 border-b border-white/10 flex items-center justify-between flex-shrink-0">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <span>🔔</span> Lembretes de Oração
+                <div style="width:40px;height:40px;flex-shrink:0;"></div>
+                <h2 class="text-xl font-bold text-white" style="flex:1;text-align:center;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
+                    <img src="icones/emoji-bell.png" alt="" style="width:20px;height:20px;display:inline-block;vertical-align:middle;filter:brightness(0) saturate(100%) invert(81%) sepia(56%) saturate(2447%) hue-rotate(8deg) brightness(102%) contrast(102%);">
+                    Lembretes de Oração
                 </h2>
                 <button onclick="document.getElementById('modal-lembretes').remove()" class="btn-modal-x" aria-label="Fechar">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
