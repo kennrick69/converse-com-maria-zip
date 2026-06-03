@@ -543,17 +543,17 @@ const BibliotecaCrista = {
                 </div>
             </div>
             
-            <!-- BARRA INFERIOR -->
-            <div style="position:fixed;bottom:0;left:0;right:0;background:${tema.header};padding:12px 16px;box-shadow:0 -4px 20px rgba(0,0,0,0.15);">
+            <!-- BARRA INFERIOR (JOs 2026-06-03: padding e gaps reduzidos pra liberar área de leitura) -->
+            <div style="position:fixed;bottom:0;left:0;right:0;background:${tema.header};padding:8px 14px;box-shadow:0 -4px 20px rgba(0,0,0,0.15);">
 
                 <!-- CANETAS (2 cores) + GUARDAR + SALVAR ONDE PAREI -->
-                <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+                <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
                     ${this.cores.map((c, i) => `
                         <button id="caneta-${i}" onclick="BibliotecaCrista.pegarCaneta(${i})" style="
-                            width:46px;
-                            height:46px;
+                            width:36px;
+                            height:36px;
                             border-radius:50%;
-                            border:4px solid ${this.canetaAtiva?.nome === c.nome ? '#000' : 'transparent'};
+                            border:3px solid ${this.canetaAtiva?.nome === c.nome ? '#000' : 'transparent'};
                             background:${c.bg};
                             box-shadow:0 4px 12px rgba(0,0,0,0.25);
                             cursor:pointer;
@@ -564,14 +564,14 @@ const BibliotecaCrista = {
 
                     <!-- BOTÃO GUARDAR caneta -->
                     <button id="btn-guardar" onclick="BibliotecaCrista.guardarCaneta()" style="
-                        width:46px;
-                        height:46px;
+                        width:36px;
+                        height:36px;
                         border-radius:50%;
                         border:none;
                         background:${this.canetaAtiva ? '#ef4444' : '#e5e5e5'};
                         box-shadow:0 4px 12px rgba(0,0,0,0.15);
                         cursor:pointer;
-                        font-size:18px;
+                        font-size:16px;
                         display:${this.canetaAtiva ? 'flex' : 'none'};
                         align-items:center;
                         justify-content:center;
@@ -580,10 +580,10 @@ const BibliotecaCrista = {
 
                     <!-- SALVAR ONDE PAREI (abre modo lápis pra apontar) -->
                     <button onclick="BibliotecaCrista.ativarModoMarcador()" style="
-                        padding:10px 14px;
+                        padding:7px 12px;
                         background:linear-gradient(135deg,#ef4444,#dc2626);
                         border:none;
-                        border-radius:22px;
+                        border-radius:18px;
                         color:#fff;
                         font-size:12px;
                         font-weight:600;
@@ -596,8 +596,8 @@ const BibliotecaCrista = {
                 </div>
 
                 <!-- INSTRUÇÃO (JOs 2026-06-03: agora fica ABAIXO das cores) -->
-                <div id="instrucao" style="text-align:center;margin-bottom:10px;font-size:13px;color:${tema.cor};display:flex;align-items:center;justify-content:center;gap:6px;">
-                    <img src="icones/emoji-apontar.png" alt="" style="width:18px;height:18px;display:inline-block;vertical-align:middle;">
+                <div id="instrucao" style="text-align:center;margin-bottom:4px;font-size:13px;color:${tema.cor};display:flex;align-items:center;justify-content:center;gap:6px;">
+                    <img src="icones/emoji-apontar.png" alt="" style="width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;">
                     <span>Toque numa cor para pegar a caneta</span>
                 </div>
 
@@ -711,7 +711,7 @@ const BibliotecaCrista = {
         const instrucao = document.getElementById('instrucao');
         if (instrucao) {
             // PNG da mão azul + texto (atualiza só com .innerHTML pra preservar a tag <img>)
-            const imgApontar = '<img src="icones/emoji-apontar.png" alt="" style="width:18px;height:18px;display:inline-block;vertical-align:middle;">';
+            const imgApontar = '<img src="icones/emoji-apontar.png" alt="" style="width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;">';
             instrucao.innerHTML = this.canetaAtiva
                 ? imgApontar + ' <span>Selecione o texto para marcar</span>'
                 : imgApontar + ' <span>Toque numa cor para pegar a caneta</span>';
