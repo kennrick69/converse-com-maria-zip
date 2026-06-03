@@ -537,10 +537,10 @@ const SistemaConquistas = {
                             <p class="text-yellow-400 font-bold text-lg mb-1">${conquistadas.length} conquistas</p>
                             <p class="text-white/70 text-sm mb-1">${totalPontos} pontos de fé</p>
                             
-                            <!-- Streak (JOs 2026-06-02: trocou 🔥 por ovelha do Bom Pastor; 2026-06-03: copy 'cordeirinho') -->
-                            <div class="inline-flex items-center gap-2 bg-orange-500/20 px-3 py-1.5 rounded-full mb-4">
-                                <img src="icones/emoji-sheep.png" alt="" style="width:22px;height:22px;display:inline-block;vertical-align:middle;">
-                                <span class="text-orange-300 text-sm font-semibold">Este cordeirinho está há ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração</span>
+                            <!-- Streak (JOs 2026-06-03: cordeirinho dobrado de tamanho + fonte maior pra dar ênfase) -->
+                            <div class="inline-flex items-center gap-3 bg-orange-500/20 px-4 py-2 rounded-full mb-4">
+                                <img src="icones/emoji-sheep.png" alt="" style="width:44px;height:44px;display:inline-block;vertical-align:middle;flex-shrink:0;">
+                                <span class="text-orange-300 text-base font-bold">Este cordeirinho está há ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração</span>
                             </div>
                             
                             <!-- Texto e site -->
