@@ -790,10 +790,12 @@ const TercoGuiado = {
         let html = '<div class="flex items-center gap-1">';
         
         // Cruz: destaca quando clicou pelo menos uma vez (dezenaAtual >= 1 ou misterioAtual > 0)
-        // JOs 2026-06-03: cruz dourada própria (PNG) na barra de progresso,
+        // JOs 2026-06-03: cruz preta vazada (minimal) na barra de progresso,
         // distinta da cruz com coração do header. no-emo bloqueia replacer.
+        // Tamanho casa com o emoji nativo original (text-lg ≈ 18px) + object-fit
+        // pra garantir que mantenha proporção sem distorcer.
         const cruzAtiva = this.estado.dezenaAtual >= 1 || this.estado.misterioAtual > 0;
-        html += `<span class="no-emo" style="display:inline-flex;opacity:${cruzAtiva ? 1 : 0.3};"><img src="icones/emoji-cruz-dourada.png" alt="" style="width:22px;height:22px;display:block;"></span>`;
+        html += `<span class="no-emo" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;opacity:${cruzAtiva ? 1 : 0.3};"><img src="icones/emoji-cruz-progresso.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block;"></span>`;
         
         for (let i = 1; i <= 5; i++) {
             const completo = this.estado.misterioAtual > i || this.estado.misterioAtual === 6;
