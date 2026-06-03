@@ -576,11 +576,14 @@
             gap: 2px;
             margin-bottom: 10px;
         }
-        
+
         .star-icon {
-            color: #f59e0b;
+            color: #fbbf24;
             font-size: 1.4rem;
+            text-shadow: 0 1px 4px rgba(251,191,36,0.35);
         }
+        /* Bloqueia emoji-replacer de trocar ⭐ pelo PNG azul */
+        .testimonial-stars { /* no-emo será aplicado via JS no init */ }
         
         .testimonial-text {
             color: #d1d5db;
@@ -1372,20 +1375,21 @@
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
-  /* Fundo personalizado da conversa (JOs 2026-06-02) */
-  background-image: url('icones/bg-conversa.png');
-  background-size: cover;
-  background-position: center top;
-  background-attachment: local;
-  background-repeat: no-repeat;
   position: relative;
+  background: #0f0c1c;
 }
 .chat-messages::before {
-  /* Overlay escuro pra contraste das bolhas de mensagem em cima do fundo */
+  /* Papel de parede com opacidade 65% (JOs 2026-06-03).
+     Como pseudo-elemento independente pra controlar opacidade só do
+     background, sem afetar texto das bolhas. */
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(20,12,30,0.35) 0%, rgba(20,12,30,0.55) 100%);
+  background-image: url('icones/bg-papel-parede.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.65;
   pointer-events: none;
   z-index: 0;
 }
@@ -1980,7 +1984,7 @@
                 <!-- Depoimento 1 -->
                 <div class="testimonial-card">
                     <div class="testimonial-name">Ana Clara</div>
-                    <div class="testimonial-stars">
+                    <div class="testimonial-stars no-emo">
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
@@ -1993,7 +1997,7 @@
                 <!-- Depoimento 2 -->
                 <div class="testimonial-card">
                     <div class="testimonial-name">Pedro Henrique</div>
-                    <div class="testimonial-stars">
+                    <div class="testimonial-stars no-emo">
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
@@ -2006,7 +2010,7 @@
                 <!-- Depoimento 3 -->
                 <div class="testimonial-card">
                     <div class="testimonial-name">Maria José</div>
-                    <div class="testimonial-stars">
+                    <div class="testimonial-stars no-emo">
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
@@ -2019,7 +2023,7 @@
                 <!-- Depoimento 4 -->
                 <div class="testimonial-card">
                     <div class="testimonial-name">Lucas Santos</div>
-                    <div class="testimonial-stars">
+                    <div class="testimonial-stars no-emo">
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
@@ -2032,7 +2036,7 @@
                 <!-- Depoimento 5 -->
                 <div class="testimonial-card">
                     <div class="testimonial-name">Francisca Lima</div>
-                    <div class="testimonial-stars">
+                    <div class="testimonial-stars no-emo">
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
@@ -2045,7 +2049,7 @@
                 <!-- Depoimento 6 -->
                 <div class="testimonial-card">
                     <div class="testimonial-name">João Paulo</div>
-                    <div class="testimonial-stars">
+                    <div class="testimonial-stars no-emo">
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
@@ -2058,7 +2062,7 @@
                 <!-- Depoimento 7 -->
                 <div class="testimonial-card">
                     <div class="testimonial-name">Beatriz Oliveira</div>
-                    <div class="testimonial-stars">
+                    <div class="testimonial-stars no-emo">
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
@@ -2071,7 +2075,7 @@
                 <!-- Depoimento 8 -->
                 <div class="testimonial-card">
                     <div class="testimonial-name">Rafael Costa</div>
-                    <div class="testimonial-stars">
+                    <div class="testimonial-stars no-emo">
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
@@ -2084,7 +2088,7 @@
                 <!-- Depoimento 9 -->
                 <div class="testimonial-card">
                     <div class="testimonial-name">Tereza Souza</div>
-                    <div class="testimonial-stars">
+                    <div class="testimonial-stars no-emo">
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
@@ -2097,7 +2101,7 @@
                 <!-- Depoimento 10 -->
                 <div class="testimonial-card">
                     <div class="testimonial-name">Gabriel Ferreira</div>
-                    <div class="testimonial-stars">
+                    <div class="testimonial-stars no-emo">
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
                         <span class="star-icon">★</span>
@@ -2514,18 +2518,9 @@
                         <span>Lembretes</span>
                     </button>
 
-                    <!-- STREAK / DIAS -->
-                    <button onclick="abrirConquistas()" style="display: flex; align-items: center; gap: 3px; padding: 6px 10px; background: rgba(249, 115, 22, 0.35); border: 1px solid rgba(249, 115, 22, 0.4); border-radius: 20px; color: #FDBA74; font-size: 11px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent;">
-                        <svg style="width: 12px; height: 12px;" viewBox="0 0 24 24" fill="none">
-                            <path d="M12 2C14 6 16 8 16 12C16 16 14 20 12 22C10 20 8 16 8 12C8 8 10 6 12 2Z" fill="url(#flameGradHeader)"/>
-                            <defs>
-                                <linearGradient id="flameGradHeader" x1="12" y1="22" x2="12" y2="2">
-                                    <stop offset="0%" stop-color="#FF4500"/>
-                                    <stop offset="50%" stop-color="#FF6B00"/>
-                                    <stop offset="100%" stop-color="#FFD700"/>
-                                </linearGradient>
-                            </defs>
-                        </svg>
+                    <!-- STREAK / DIAS (JOs 2026-06-03: 🔥 → ovelha do Bom Pastor) -->
+                    <button onclick="abrirConquistas()" style="display: flex; align-items: center; gap: 4px; padding: 6px 10px; background: rgba(249, 115, 22, 0.35); border: 1px solid rgba(249, 115, 22, 0.4); border-radius: 20px; color: #FDBA74; font-size: 11px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent;">
+                        <img src="icones/emoji-sheep.png" alt="" style="width:16px;height:16px;display:inline-block;vertical-align:middle;">
                         <span id="streak-count">0</span>
                         <span style="opacity: 0.7;">dias</span>
                     </button>
@@ -4854,9 +4849,11 @@ async function abrirConfigNotificacoes() {
                 <h2 class="text-xl font-bold text-white flex items-center gap-2">
                     <span>🔔</span> Lembretes de Oração
                 </h2>
-                <button onclick="document.getElementById('modal-lembretes').remove()" class="p-2 bg-white/10 rounded-full hover:bg-white/20">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                <button onclick="document.getElementById('modal-lembretes').remove()" class="p-2 bg-white/10 rounded-full hover:bg-white/20 flex items-center justify-center" style="color:#fff;">
+                    <!-- JOs 2026-06-03: stroke="currentColor" não renderizava em alguns mobiles
+                         (X invisível dentro da bolinha). Stroke explícito #fff resolve. -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
+                        <path d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>

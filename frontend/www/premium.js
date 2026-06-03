@@ -175,7 +175,12 @@ const TelaPremium = {
     abrir(motivo = null) {
         const modal = document.createElement('div');
         modal.id = 'tela-premium';
+        // overflow-x:hidden defensivo — JOs (2026-06-03) reportou a medalha
+        // de "BRINDE EXCLUSIVO" vazando pra fora da página à direita em mobile.
+        // Provável causa: blur-xl no fundo da seção (ext. ~24px do bounding box)
+        // ou particles-gold sem clip — overflow-x:hidden no root corta tudo.
         modal.className = 'fixed inset-0 z-[100] overflow-y-auto';
+        modal.style.overflowX = 'hidden';
         
         modal.innerHTML = `
             <div class="min-h-screen premium-bg">
@@ -337,7 +342,7 @@ const TelaPremium = {
                                         <div class="flex-1">
                                             <div class="flex items-center justify-between mb-1">
                                                 <p class="text-white font-semibold text-sm">${d.nome}</p>
-                                                <div class="flex text-xs">
+                                                <div class="flex text-xs no-emo" style="color:#fbbf24;text-shadow:0 1px 4px rgba(251,191,36,0.35);">
                                                     ${Array(d.estrelas).fill('⭐').join('')}
                                                 </div>
                                             </div>
