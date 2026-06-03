@@ -28,11 +28,28 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Google AdMob — APPLICATION_ID obrigatório pro SDK inicializar.
+             Sem esta tag, o app NÃO mostra anúncios (e pode até crashar).
+             ID real do Maria (ca-app-pub-4489113682448462). -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-4489113682448462~4292303415"/>
+
+        <!-- AdMob recomenda delegar inicialização SDK pra reduzir lentidão
+             no boot do app. A inicialização é feita explicitamente pelo
+             plugin @capacitor-community/admob via JS. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
+            android:value="true"/>
     </application>
 
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- AdMob precisa de ACCESS_NETWORK_STATE pra checar conectividade
+         antes de pedir anúncio (senão dá erro silencioso ERROR_CODE_NETWORK_ERROR). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Android 13+ (SDK 33+): runtime permission obrigatória pra notificações -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>
