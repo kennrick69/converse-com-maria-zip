@@ -508,7 +508,9 @@ const BibliotecaCrista = {
                     <div style="font-size:11px;opacity:0.6;">Cap ${cap.numero}/${livro.capitulos.length} <span id="biblio-progresso-pct" style="margin-left:4px;color:#b8860b;font-weight:600;">0%</span></div>
                 </div>
                 <div style="display:flex;gap:4px;">
-                    <button id="biblio-btn-regua" onclick="BibliotecaCrista.toggleRegua()" title="Régua de leitura — escurece embaixo, libera ao rolar" style="background:none;border:none;font-size:20px;cursor:pointer;opacity:${this._reguaAtiva ? '1' : '0.6'};">📏</button>
+                    <button id="biblio-btn-regua" onclick="BibliotecaCrista.toggleRegua()" title="Régua de leitura — escurece embaixo, libera ao rolar" style="background:none;border:none;cursor:pointer;opacity:${this._reguaAtiva ? '1' : '0.6'};padding:0;display:flex;align-items:center;">
+                        <img src="icones/emoji-regua.png" alt="Régua" style="width:24px;height:24px;display:block;">
+                    </button>
                     <button onclick="BibliotecaCrista.config()" style="background:none;border:none;font-size:20px;">⚙️</button>
                 </div>
             </div>
@@ -540,14 +542,9 @@ const BibliotecaCrista = {
             
             <!-- BARRA INFERIOR -->
             <div style="position:fixed;bottom:0;left:0;right:0;background:${tema.header};padding:12px 16px;box-shadow:0 -4px 20px rgba(0,0,0,0.15);">
-                
-                <!-- INSTRUÇÃO -->
-                <div id="instrucao" style="text-align:center;margin-bottom:10px;font-size:13px;color:${tema.cor};">
-                    👆 Toque numa cor para pegar a caneta
-                </div>
 
                 <!-- CANETAS (2 cores) + GUARDAR + SALVAR ONDE PAREI -->
-                <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+                <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
                     ${this.cores.map((c, i) => `
                         <button id="caneta-${i}" onclick="BibliotecaCrista.pegarCaneta(${i})" style="
                             width:46px;
@@ -594,7 +591,13 @@ const BibliotecaCrista = {
                         gap:5px;
                     ">📍 Salvar onde parei</button>
                 </div>
-                
+
+                <!-- INSTRUÇÃO (JOs 2026-06-03: agora fica ABAIXO das cores) -->
+                <div id="instrucao" style="text-align:center;margin-bottom:10px;font-size:13px;color:${tema.cor};display:flex;align-items:center;justify-content:center;gap:6px;">
+                    <img src="icones/emoji-apontar.png" alt="" style="width:18px;height:18px;display:inline-block;vertical-align:middle;">
+                    <span>Toque numa cor para pegar a caneta</span>
+                </div>
+
                 <!-- NAVEGAÇÃO -->
                 <div style="display:flex;justify-content:space-between;">
                     <button onclick="BibliotecaCrista.capAnt()" style="padding:8px 16px;background:rgba(0,0,0,0.1);border:none;border-radius:16px;opacity:${this.capituloAtual===0?'0.3':'1'};" ${this.capituloAtual===0?'disabled':''}>← Ant</button>
@@ -704,9 +707,15 @@ const BibliotecaCrista = {
         // Instrução
         const instrucao = document.getElementById('instrucao');
         if (instrucao) {
-            instrucao.textContent = this.canetaAtiva 
-                ? '👆 Selecione o texto para marcar' 
-                : '👆 Toque numa cor para pegar a caneta';
+            // PNG da mão azul + texto (atualiza só com .innerHTML pra preservar a tag <img>)
+            const imgApontar = '<img src="icones/emoji-apontar.png" alt="" style="width:18px;height:18px;display:inline-block;vertical-align:middle;">';
+            instrucao.innerHTML = this.canetaAtiva
+                ? imgApontar + ' <span>Selecione o texto para marcar</span>'
+                : imgApontar + ' <span>Toque numa cor para pegar a caneta</span>';
+            instrucao.style.display = 'flex';
+            instrucao.style.alignItems = 'center';
+            instrucao.style.justifyContent = 'center';
+            instrucao.style.gap = '6px';
         }
     },
 
@@ -1330,11 +1339,14 @@ const BibliotecaCrista = {
         if (scroll) {
             scroll.dataset.paddingBottomOriginal = scroll.style.paddingBottom || '180px';
             scroll.dataset.paddingTopOriginal = scroll.style.paddingTop || '';
-            scroll.style.paddingBottom = 'calc(72vh + 20px)';
+            // JOs 2026-06-03: aumentado de 72vh+20px → 80vh+40px pra garantir
+            // que a ÚLTIMA linha do texto suba ACIMA da régua, não fique 1 linha
+            // presa debaixo do overlay escuro no fim do capítulo.
+            scroll.style.paddingBottom = 'calc(80vh + 40px)';
             scroll.style.paddingTop = 'calc(28vh - 4px)';
         }
 
-        this.toast('📏 Régua ligada — rola o texto pra ver o resto');
+        this.toast('Régua ligada — rola o texto pra ver o resto');
     },
 
     _esconderRegua() {
