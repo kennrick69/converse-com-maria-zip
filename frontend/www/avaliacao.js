@@ -145,14 +145,15 @@ const AvaliacaoService = {
                                 🎁 PRESENTE ESPECIAL
                             </p>
                             <p class="text-white text-sm">
-                                Avalie com ⭐⭐⭐⭐⭐ e ganhe <strong>1 mês Premium GRÁTIS!</strong>
+                                Avalie com <span class="no-emo">⭐⭐⭐⭐⭐</span> e ganhe <strong>1 mês Premium GRÁTIS!</strong>
                             </p>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Estrelas animadas -->
-                <div class="flex justify-center gap-1 mb-5">
+                <!-- Estrelas animadas (no-emo: força emoji ⭐ nativo amarelo,
+                     em vez do PNG azul-vazado do replacer dos testemunhos) -->
+                <div class="flex justify-center gap-1 mb-5 no-emo" style="color:#fbbf24;">
                     ${[1,2,3,4,5].map(i => `
                         <span class="text-3xl animate-bounce" style="animation-delay: ${i * 0.1}s">⭐</span>
                     `).join('')}

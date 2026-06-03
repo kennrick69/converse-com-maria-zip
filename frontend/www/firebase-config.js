@@ -207,7 +207,8 @@ const AuthService = {
         }
     },
     
-    // Traduzir erros
+    // Traduzir erros — Firebase Auth v9+ unificou wrong-password/user-not-found
+    // em INVALID_LOGIN_CREDENTIALS por segurança (evita enumeração de emails).
     getErrorMessage(code) {
         const errors = {
             'auth/email-already-in-use': 'Este email já está cadastrado',
@@ -215,10 +216,18 @@ const AuthService = {
             'auth/operation-not-allowed': 'Operação não permitida',
             'auth/weak-password': 'Senha muito fraca (mínimo 6 caracteres)',
             'auth/user-disabled': 'Usuário desativado',
-            'auth/user-not-found': 'Usuário não encontrado',
-            'auth/wrong-password': 'Senha incorreta',
+            'auth/user-not-found': 'Email ou senha incorretos',
+            'auth/wrong-password': 'Email ou senha incorretos',
+            // Firebase v9+ unificou os dois acima neste código:
+            'auth/invalid-credential': 'Email ou senha incorretos',
+            'auth/invalid-login-credentials': 'Email ou senha incorretos',
+            'auth/missing-password': 'Senha não preenchida',
             'auth/too-many-requests': 'Muitas tentativas. Aguarde alguns minutos',
-            'auth/popup-closed-by-user': 'Login cancelado'
+            'auth/network-request-failed': 'Sem conexão com a internet',
+            'auth/popup-closed-by-user': 'Login cancelado',
+            'auth/popup-blocked': 'Popup bloqueado pelo navegador',
+            'auth/account-exists-with-different-credential': 'Conta já existe com outro método de login',
+            'auth/requires-recent-login': 'Faça login novamente para continuar'
         };
         return errors[code] || 'Erro desconhecido. Tente novamente.';
     }

@@ -2939,12 +2939,29 @@ async function fazerLogin() {
     btnLogin.disabled = true;
     btnLogin.textContent = 'Entrando...';
     
+    // Watchdog: se o login passar de 15s, força reset do botão pra não
+    // travar o usuário em "Entrando..." infinito (caso Firebase/Firestore
+    // não responda — rede ruim, regra do Firestore travada, etc).
+    const watchdog = setTimeout(() => {
+        if (btnLogin.disabled) {
+            console.error('[Login] watchdog 15s — algo travou no auth ou Firestore');
+            btnLogin.disabled = false;
+            btnLogin.textContent = 'Entrar';
+            erroEl.textContent = 'Conexão lenta — verifique sua internet e tente de novo';
+            erroEl.classList.add('show');
+        }
+    }, 15000);
+
     try {
+        console.log('[Login] iniciando…');
         if (!FirebaseService.initialized) {
+            console.log('[Login] FirebaseService não inicializado, init…');
             await FirebaseService.init();
         }
-        
+
+        console.log('[Login] chamando signInWithEmailAndPassword…');
         const result = await AuthService.loginWithEmail(email, senha);
+        console.log('[Login] resultado auth:', result.success ? 'OK' : 'falhou:', result.error || '');
         
         if (result.success) {
             // 🛡️ Resetar proteção no sucesso
@@ -3073,6 +3090,7 @@ async function fazerLogin() {
         erroEl.classList.add('show');
     }
     
+    clearTimeout(watchdog);
     btnLogin.disabled = false;
     btnLogin.textContent = 'Entrar';
 }
