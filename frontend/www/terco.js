@@ -807,7 +807,11 @@ const TercoGuiado = {
             }">${i}</div>`;
         }
         
-        html += `<span class="text-lg ${this.estado.misterioAtual === 6 ? 'opacity-100' : 'opacity-30'}">👑</span>`;
+        // JOs 2026-06-03: coroa com MESMO wrapper da cruz (20×20 inline-flex centered)
+        // pra alinhar verticalmente. Sem isso, a coroa renderizada pelo replacer
+        // com vertical-align: -0.125em ficava ~2px abaixo da cruz.
+        const coroaAtiva = this.estado.misterioAtual === 6;
+        html += `<span class="no-emo" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;opacity:${coroaAtiva ? 1 : 0.3};"><img src="icones/emoji-crown.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block;"></span>`;
         html += '</div>';
         return html;
     },
