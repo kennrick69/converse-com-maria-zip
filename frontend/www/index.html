@@ -5120,7 +5120,9 @@ function mostrarCalendario() {
             <!-- Festas do mês -->
             <div class="bg-white/10 rounded-xl p-4 mb-4">
                 <h3 class="text-white font-bold mb-3 flex items-center gap-2">
-                    <span>📅</span> Festas de ${meses[mesAtualCalendario - 1]}
+                    <!-- JOs 2026-06-03: 📅 → emoji-calendario.png -->
+                    <img src="icones/emoji-calendario.png" alt="" class="no-emo" style="width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;filter:brightness(0) invert(1);">
+                    Festas de ${meses[mesAtualCalendario - 1]}
                 </h3>
                 <div class="space-y-2 max-h-40 overflow-y-auto">
                     ${festasDoMes.length > 0 ? festasDoMes.map(f => `
