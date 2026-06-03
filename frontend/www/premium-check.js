@@ -94,21 +94,21 @@ const TelaPremium = {
     // Depoimentos Premium
     depoimentos: [
         {
-            nome: 'Maria Fernanda',
+            nome: 'Maria F.',
             cidade: 'São Paulo, SP',
             foto: '👩🏻',
             texto: 'O Premium mudou minha vida de oração. Agora consigo rezar o terço todos os dias com Maria me guiando. Sinto uma paz que não tinha antes.',
             estrelas: 5
         },
         {
-            nome: 'João Carlos',
+            nome: 'João C.',
             cidade: 'Belo Horizonte, MG',
             foto: '👨🏽',
             texto: 'Valia cada centavo. As meditações para dormir são maravilhosas e as velas especiais me ajudam a focar nas minhas intenções.',
             estrelas: 5
         },
         {
-            nome: 'Ana Beatriz',
+            nome: 'Ana B.',
             cidade: 'Curitiba, PR',
             foto: '👩🏼',
             texto: 'Estava passando por um momento muito difícil. As conversas ilimitadas com Maria me trouxeram conforto quando mais precisei.',
@@ -119,7 +119,7 @@ const TelaPremium = {
     // Depoimentos específicos sobre a MEDALHA
     depoimentosMedalha: [
         {
-            nome: 'Dona Aparecida',
+            nome: 'Dona A.',
             cidade: 'Aparecida, SP',
             foto: '👵🏻',
             texto: 'Quando a medalha chegou, coloquei na porta de casa. No mesmo dia, meu filho que estava afastado há 3 anos me ligou pedindo perdão. Nossa Senhora é poderosa!',
@@ -127,7 +127,7 @@ const TelaPremium = {
             tempo: '2 semanas atrás'
         },
         {
-            nome: 'Roberto e Família',
+            nome: 'Roberto F.',
             cidade: 'Goiânia, GO',
             foto: '👨‍👩‍👧‍👦',
             texto: 'Nossa casa vivia em brigas constantes. Depois que colocamos a medalha na sala, a paz voltou ao nosso lar. Meus filhos pararam de brigar e meu casamento melhorou muito.',
@@ -135,7 +135,7 @@ const TelaPremium = {
             tempo: '1 mês atrás'
         },
         {
-            nome: 'Tereza Cristina',
+            nome: 'Tereza C.',
             cidade: 'Recife, PE',
             foto: '👩🏽',
             texto: 'A medalha veio numa embalagem linda, com uma oração. Chorei quando recebi. Coloquei no quarto do meu pai que estava doente, e ele teve uma melhora que os médicos não explicam.',
@@ -143,7 +143,7 @@ const TelaPremium = {
             tempo: '3 semanas atrás'
         },
         {
-            nome: 'Família Santos',
+            nome: 'Família S.',
             cidade: 'Porto Alegre, RS',
             foto: '👨🏻',
             texto: 'Estávamos com dívidas enormes e muita angústia. Após pendurar a medalha benta, em 2 meses minha esposa conseguiu um emprego e começamos a nos reerguer. Fé em Maria!',
@@ -151,7 +151,7 @@ const TelaPremium = {
             tempo: '1 mês atrás'
         },
         {
-            nome: 'Irmã Lúcia',
+            nome: 'Irmã L.',
             cidade: 'Salvador, BA',
             foto: '👩🏾',
             texto: 'Sou catequista e indico o app para todos. A medalha que recebi está no nosso grupo de oração. Várias pessoas relataram graças alcançadas depois que começamos a rezar com ela presente.',
@@ -159,7 +159,7 @@ const TelaPremium = {
             tempo: '2 meses atrás'
         },
         {
-            nome: 'José Carlos',
+            nome: 'José C.',
             cidade: 'Manaus, AM',
             foto: '👴🏽',
             texto: 'Minha neta de 4 anos tinha pesadelos toda noite. Colocamos a medalha de Nossa Senhora no quarto dela. Desde então, dorme em paz a noite toda. Milagre da Mãezinha!',
