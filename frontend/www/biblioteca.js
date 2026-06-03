@@ -1731,6 +1731,11 @@ const BibliotecaCrista = {
                 @keyframes bibPauUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
             </style>
 
+            <!-- JOs 2026-06-03: X de escape no topo direito pra não travar o app -->
+            <button onclick="BibliotecaCrista._fecharPausaConvite()" class="btn-modal-x" aria-label="Fechar" style="position:absolute;top:16px;right:16px;z-index:1;">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
             <div style="text-align:center;color:#f5e8c8;margin-bottom:24px;animation:bibPauUp 0.5s ease-out 0.2s both;">
                 <img src="icones/rosario.png" alt="" style="display:block;width:144px;height:144px;margin:0 auto 18px;filter:invert(1) brightness(1.2);opacity:0.9;">
                 <div style="font-family:Georgia,serif;font-size:22px;font-weight:600;margin-bottom:10px;">Uma pausa antes do fim</div>
