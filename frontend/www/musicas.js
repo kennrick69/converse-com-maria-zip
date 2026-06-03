@@ -575,7 +575,7 @@ Pappelallee 78/79, 10437 Berlin, Germany`
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                         <div style="width:40px;height:40px;flex-shrink:0;"></div>
                         <h2 style="color: white; font-size: 18px; font-weight: bold; flex:1; text-align:center; display: inline-flex; align-items: center; justify-content:center; gap: 8px; margin: 0;">
-                            <img src="icones/emoji-nota-angel.png" alt="" class="no-emo" style="width:24px;height:24px;object-fit:contain;display:inline-block;vertical-align:middle;">
+                            <img src="icones/emoji-nota-angel.png" alt="" class="no-emo" style="width:34px;height:34px;object-fit:contain;display:inline-block;vertical-align:middle;filter:brightness(0) invert(1);">
                             <span>Música de Fundo</span>
                         </h2>
                         <button onclick="document.getElementById('modal-musicas').remove()" class="btn-modal-x" aria-label="Fechar">
@@ -625,8 +625,8 @@ Pappelallee 78/79, 10437 Berlin, Germany`
                                                         transition: all 0.2s;
                                                     ">
                                                 ${m.id === 'silencio'
-                                                    ? `<span style="font-size: 24px;">${m.icone}</span>`
-                                                    : `<img src="icones/emoji-instrumentos.png" alt="" class="no-emo" style="width:28px;height:28px;object-fit:contain;display:block;flex-shrink:0;">`}
+                                                    ? `<img src="icones/emoji-mute.png" alt="" class="no-emo" style="width:28px;height:28px;object-fit:contain;display:block;flex-shrink:0;filter:brightness(0) invert(1);">`
+                                                    : `<img src="icones/emoji-instrumentos.png" alt="" class="no-emo" style="width:28px;height:28px;object-fit:contain;display:block;flex-shrink:0;filter:brightness(0) invert(1);">`}
                                                 <div style="flex: 1;">
                                                     <p style="color: white; font-weight: 600; font-size: 14px; margin: 0;">${m.nome}</p>
                                                     <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin: 0;">${m.descricao}</p>
