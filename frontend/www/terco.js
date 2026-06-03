@@ -603,7 +603,8 @@ const TercoGuiado = {
         if (this.estado.misterioAtual === 0 && this.estado.dezenaAtual === 0) {
             return `
                 <div class="text-center mb-6">
-                    <div class="text-5xl mb-3">✝️</div>
+                    <!-- Cruz com coração (JOs 2026-06-03: maior — text-5xl → 88px direto) -->
+                    <div class="mb-3" style="font-size:88px;line-height:1;">✝️</div>
                     <h2 class="text-xl font-bold text-white">Início do Terço</h2>
                     <p class="text-white/60 text-sm mt-2">Segure o crucifixo do terço</p>
                 </div>
@@ -789,8 +790,10 @@ const TercoGuiado = {
         let html = '<div class="flex items-center gap-1">';
         
         // Cruz: destaca quando clicou pelo menos uma vez (dezenaAtual >= 1 ou misterioAtual > 0)
+        // JOs 2026-06-03: cruz dourada própria (PNG) na barra de progresso,
+        // distinta da cruz com coração do header. no-emo bloqueia replacer.
         const cruzAtiva = this.estado.dezenaAtual >= 1 || this.estado.misterioAtual > 0;
-        html += `<span class="text-lg ${cruzAtiva ? 'opacity-100' : 'opacity-30'}">✝️</span>`;
+        html += `<span class="no-emo" style="display:inline-flex;opacity:${cruzAtiva ? 1 : 0.3};"><img src="icones/emoji-cruz-dourada.png" alt="" style="width:22px;height:22px;display:block;"></span>`;
         
         for (let i = 1; i <= 5; i++) {
             const completo = this.estado.misterioAtual > i || this.estado.misterioAtual === 6;
