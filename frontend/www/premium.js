@@ -324,7 +324,7 @@ const TelaPremium = {
                                             <p class="text-white font-semibold">${d.nome}</p>
                                             <p class="text-white/50 text-xs">${d.cidade}</p>
                                         </div>
-                                        <div class="ml-auto flex">
+                                        <div class="ml-auto flex no-emo" style="color:#fbbf24;text-shadow:0 1px 4px rgba(251,191,36,0.35);">
                                             ${Array(d.estrelas).fill('⭐').join('')}
                                         </div>
                                     </div>
