@@ -840,17 +840,23 @@ const SantuarioVelas = {
                     Acenda velas por até <strong class="text-yellow-400">${tipoVela.duracao}</strong> e tenha suas intenções elevadas a Nossa Senhora!
                 </p>
                 
-                <!-- Benefícios rápidos -->
+                <!-- Benefícios rápidos (JOs 2026-06-03: wrapper de largura fixa
+                     pra alinhar verticalmente Conversas / Terço / Sem — os
+                     ícones tinham larguras intrínsecas diferentes (PNG vs emoji
+                     nativo) e desalinhavam o texto) -->
                 <div class="bg-white/5 rounded-xl p-4 mb-6 text-left">
                     <p class="text-white/60 text-xs mb-2">Com o Premium você também ganha:</p>
                     <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
-                        <span>💬</span> Conversas ilimitadas com Maria
+                        <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;">💬</span>
+                        <span>Conversas ilimitadas com Maria</span>
                     </div>
                     <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
-                        <span>🌹</span> Terço guiado completo
+                        <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;">🌹</span>
+                        <span>Terço guiado completo</span>
                     </div>
                     <div class="flex items-center gap-2 text-white/80 text-sm">
-                        <span>🚫</span> Sem anúncios
+                        <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;">🚫</span>
+                        <span>Sem anúncios</span>
                     </div>
                 </div>
                 
