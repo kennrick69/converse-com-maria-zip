@@ -1256,6 +1256,21 @@
   max-height: 300px;
   overflow: hidden;
   padding-top: env(safe-area-inset-top, 0px);
+  /* JOs 2026-06-03: coroa-rosa como marca d'água atrás do conteúdo */
+  position: relative;
+}
+.chat-header::before{
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('icones/emoji-coroa-rosa.png');
+  background-repeat: no-repeat;
+  background-position: center 18px;
+  background-size: 240px auto;
+  opacity: 0.14;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(.3px);
 }
 .chat-header.modo-foco{
   max-height: 0;
@@ -1268,6 +1283,9 @@
   margin: 0 auto;
   padding: 18px 16px 14px;
   transition: padding 0.3s ease;
+  /* JOs 2026-06-03: fica acima da marca d'água da coroa-rosa */
+  position: relative;
+  z-index: 1;
 }
 .chat-header.modo-foco .chat-header-inner{
   padding: 0;
@@ -1308,10 +1326,12 @@
 }
 .chat-title{
   font-family: ui-serif, Georgia, "Times New Roman", serif;
-  font-size: 26px;
-  letter-spacing: .3px;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
   color: rgba(255, 242, 224, .95);
   margin:0;
+  text-shadow: 0 2px 12px rgba(0,0,0,.35);
 }
 .chat-crown-icon{
   width: 22px; height: 22px;
@@ -2524,10 +2544,9 @@
         
         <div class="chat-header">
             <div class="chat-header-inner">
+                <!-- JOs 2026-06-03: 2 coroas SVG laterais removidas; agora a coroa-rosa fica como marca d'água atrás (CSS .chat-header::before) -->
                 <div class="chat-title-row">
-                    <svg class="chat-crown-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
                     <h1 class="chat-title">Converse com Maria</h1>
-                    <svg class="chat-crown-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
                 </div>
                 <p class="chat-subtitle">Mãe de Jesus Cristo • Rainha dos Céus</p>
                 
