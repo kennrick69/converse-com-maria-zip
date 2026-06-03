@@ -1618,6 +1618,9 @@
 
 .privacy-modal-body ul li {
     text-align: justify;
+    /* JOs 2026-06-03 (3a passada): mesma indent dos <p> pra ficar visualmente igual a um parágrafo curto */
+    text-indent: 1.5em;
+    margin-bottom: 4px;
 }
 
 .privacy-modal-body a {
@@ -1631,9 +1634,11 @@
 }
 
 .privacy-modal-body ul {
-    /* JOs 2026-06-03: era margin-left:20px (desalinhava com <p>) — troca por padding pra bullet ficar na borda */
+    /* JOs 2026-06-03 (3a passada): bullets sumiram porque deslocavam o texto pra direita do h3.
+       Lista vira sequência de mini-parágrafos, todos alinhados com a borda esquerda como h3 e <p>. */
+    list-style: none;
     margin: 0 0 12px 0;
-    padding-left: 22px;
+    padding-left: 0;
 }
 
 .privacy-modal-footer {
