@@ -570,15 +570,16 @@ Pappelallee 78/79, 10437 Berlin, Germany`
                 flex-direction: column;
                 animation: slideUp 0.3s ease;
             ">
-                <!-- Header -->
+                <!-- Header (JOs 2026-06-03: título centralizado + nota-angel + X padrão btn-modal-x) -->
                 <div style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                        <h2 style="color: white; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px; margin: 0;">
-                            <span>🎵</span>
+                        <div style="width:40px;height:40px;flex-shrink:0;"></div>
+                        <h2 style="color: white; font-size: 18px; font-weight: bold; flex:1; text-align:center; display: inline-flex; align-items: center; justify-content:center; gap: 8px; margin: 0;">
+                            <img src="icones/emoji-nota-angel.png" alt="" class="no-emo" style="width:24px;height:24px;object-fit:contain;display:inline-block;vertical-align:middle;">
                             <span>Música de Fundo</span>
                         </h2>
-                        <button onclick="document.getElementById('modal-musicas').remove()" style="padding: 8px; background: rgba(255,255,255,0.1); border-radius: 50%; border: none; cursor: pointer;">
-                            <svg style="width: 20px; height: 20px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <button onclick="document.getElementById('modal-musicas').remove()" class="btn-modal-x" aria-label="Fechar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>
                     
@@ -623,7 +624,9 @@ Pappelallee 78/79, 10437 Berlin, Germany`
                                                         text-align: left;
                                                         transition: all 0.2s;
                                                     ">
-                                                <span style="font-size: 24px;">${m.icone}</span>
+                                                ${m.id === 'silencio'
+                                                    ? `<span style="font-size: 24px;">${m.icone}</span>`
+                                                    : `<img src="icones/emoji-instrumentos.png" alt="" class="no-emo" style="width:28px;height:28px;object-fit:contain;display:block;flex-shrink:0;">`}
                                                 <div style="flex: 1;">
                                                     <p style="color: white; font-weight: 600; font-size: 14px; margin: 0;">${m.nome}</p>
                                                     <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin: 0;">${m.descricao}</p>

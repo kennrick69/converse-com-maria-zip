@@ -537,10 +537,10 @@ const SistemaConquistas = {
                             <p class="text-yellow-400 font-bold text-lg mb-1">${conquistadas.length} conquistas</p>
                             <p class="text-white/70 text-sm mb-1">${totalPontos} pontos de fé</p>
                             
-                            <!-- Streak (JOs 2026-06-02: trocou 🔥 por ovelha do Bom Pastor) -->
+                            <!-- Streak (JOs 2026-06-02: trocou 🔥 por ovelha do Bom Pastor; 2026-06-03: copy 'cordeirinho') -->
                             <div class="inline-flex items-center gap-2 bg-orange-500/20 px-3 py-1.5 rounded-full mb-4">
                                 <img src="icones/emoji-sheep.png" alt="" style="width:22px;height:22px;display:inline-block;vertical-align:middle;">
-                                <span class="text-orange-300 text-sm font-semibold">${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração</span>
+                                <span class="text-orange-300 text-sm font-semibold">Este cordeirinho está há ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração</span>
                             </div>
                             
                             <!-- Texto e site -->
@@ -753,7 +753,7 @@ const SistemaConquistas = {
         // Streak
         ctx.fillStyle = '#FF6B35';
         ctx.font = 'bold 30px Arial';
-        ctx.fillText(`🔥 ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração`, 300, 470);
+        ctx.fillText(`🐑 ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração`, 300, 470);
         
         // Linha decorativa
         ctx.strokeStyle = '#FFD700';
@@ -899,7 +899,7 @@ const SistemaConquistas = {
         
         ctx.fillStyle = '#FF6B35';
         ctx.font = 'bold 48px Arial';
-        ctx.fillText(`🔥 ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração`, 540, 850);
+        ctx.fillText(`🐑 ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração`, 540, 850);
         
         // ========== BARRA DE PROGRESSO ==========
         const progresso = (conquistadas.length / this.conquistas.length) * 100;
@@ -1047,10 +1047,10 @@ const SistemaConquistas = {
                 <p style="color: #fbbf24; font-weight: bold; font-size: 24px; margin: 0 0 4px 0;">${conquistadas.length} conquistas</p>
                 <p style="color: rgba(255,255,255,0.7); font-size: 16px; margin: 0 0 12px 0;">${totalPontos} pontos de fé</p>
                 
-                <!-- Streak -->
+                <!-- Streak (JOs 2026-06-03: cordeirinho + cópia consistente com badge do modal) -->
                 <div style="background: rgba(249, 115, 22, 0.25); border-radius: 50px; padding: 8px 20px; margin-bottom: 20px; display: inline-block; text-align: center;">
-                    <span style="font-size: 18px; display: block; line-height: 1.2;">🔥</span>
-                    <span style="color: #fdba74; font-size: 16px; font-weight: 600; display: block;">${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração</span>
+                    <img src="icones/emoji-sheep.png" alt="" style="width:24px;height:24px;display:block;margin:0 auto 4px;">
+                    <span style="color: #fdba74; font-size: 16px; font-weight: 600; display: block;">Este cordeirinho está há ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração</span>
                 </div>
                 
                 <!-- Barra de progresso -->
@@ -1105,11 +1105,21 @@ const SistemaConquistas = {
                 .filter(c => conquistadas.includes(c.id))
                 .reduce((sum, c) => sum + c.pontos, 0);
             
+            // JOs 2026-06-03: cordeirinho + 'junte-se a ele/ela' conforme gênero da triagem
+            let pronome = 'ele';
+            try {
+                const raw = localStorage.getItem('maria_user_profile');
+                if (raw) {
+                    const p = JSON.parse(raw);
+                    if (p && p.genero === 'feminino') pronome = 'ela';
+                }
+            } catch (_) { /* fallback fica 'ele' */ }
+
             const texto = `🏅 Minhas conquistas no Converse com Maria!
 
 ✨ ${conquistadas.length} conquistas
 ⭐ ${totalPontos} pontos de fé
-🔥 ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração
+🐑 Este cordeirinho está há ${dados.streakAtual || 0} ${(dados.streakAtual || 0) === 1 ? 'dia' : 'dias'} em oração — junte-se a ${pronome}!
 
 Baixe o app e comece sua jornada!
 🙏 https://play.google.com/store/apps/details?id=com.conversemaria.app`;

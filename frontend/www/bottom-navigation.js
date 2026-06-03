@@ -280,33 +280,34 @@ function abrirModalMaisRecursos() {
                         <span class="modal-mais-item-label">Biblioteca</span>
                     </button>
 
+                    <!-- JOs 2026-06-03: Conquistas vira cordeirinho (ovelha) — mesmo tamanho dos outros -->
                     <button class="modal-mais-item" onclick="fecharModalMais(); if(window.abrirConquistas) abrirConquistas();">
-                        <div class="modal-mais-item-icon">🏅</div>
+                        <div class="modal-mais-item-icon"><img src="icones/emoji-sheep.png" alt="" class="no-emo" style="width:1em;height:1em;object-fit:contain;display:inline-block;vertical-align:middle;"></div>
                         <span class="modal-mais-item-label">Conquistas</span>
                     </button>
-                    
+
                     <button class="modal-mais-item" onclick="fecharModalMais(); if(window.abrirEstatisticas) abrirEstatisticas();">
-                        <div class="modal-mais-item-icon">📊</div>
+                        <div class="modal-mais-item-icon"><img src="icones/emoji-estatisticas.png" alt="" class="no-emo" style="width:1em;height:1em;object-fit:contain;display:inline-block;vertical-align:middle;"></div>
                         <span class="modal-mais-item-label">Estatísticas</span>
                     </button>
-                    
+
                     <button class="modal-mais-item" onclick="fecharModalMais(); if(window.abrirAparicoes) abrirAparicoes();">
                         <div class="modal-mais-item-icon">🌟</div>
                         <span class="modal-mais-item-label">Aparições</span>
                     </button>
-                    
+
                     <button class="modal-mais-item" onclick="fecharModalMais(); if(window.abrirTemas) abrirTemas();">
-                        <div class="modal-mais-item-icon">🎨</div>
+                        <div class="modal-mais-item-icon"><img src="icones/emoji-paleta.png" alt="" class="no-emo" style="width:1em;height:1em;object-fit:contain;display:inline-block;vertical-align:middle;"></div>
                         <span class="modal-mais-item-label">Temas</span>
                     </button>
-                    
+
                     <button class="modal-mais-item" onclick="fecharModalMais(); if(window.mostrarCalendario) mostrarCalendario();">
-                        <div class="modal-mais-item-icon">📅</div>
+                        <div class="modal-mais-item-icon"><img src="icones/emoji-calendario.png" alt="" class="no-emo" style="width:1em;height:1em;object-fit:contain;display:inline-block;vertical-align:middle;"></div>
                         <span class="modal-mais-item-label">Calendário</span>
                     </button>
-                    
+
                     <button class="modal-mais-item" onclick="fecharModalMais(); if(window.abrirTermosUso) abrirTermosUso();">
-                        <div class="modal-mais-item-icon">📜</div>
+                        <div class="modal-mais-item-icon"><img src="icones/emoji-termos.png" alt="" class="no-emo" style="width:1em;height:1em;object-fit:contain;display:inline-block;vertical-align:middle;"></div>
                         <span class="modal-mais-item-label">Termos</span>
                     </button>
                 </div>
