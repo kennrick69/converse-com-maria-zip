@@ -660,8 +660,8 @@ const TercoGuiado = {
                 ${this.renderizarOracaoComAudio('salveRainha', 'audio-salve')}
                 ${this.renderizarOracaoComAudio('sinalCruz', 'audio-sinal-final')}
                 <div class="bg-gradient-to-r from-yellow-600/30 to-orange-600/30 rounded-2xl p-6 text-center mt-6 border border-yellow-500/30">
-                    <!-- JOs 2026-06-03: 🎉 → maria-abencoa -->
-                    <img src="icones/emoji-maria-abencoa.png" alt="" class="no-emo" style="width:64px;height:64px;object-fit:contain;display:block;margin:0 auto 12px;">
+                    <!-- JOs 2026-06-03: 🎉 → maria-abencoa (dobrada de 64 → 128) -->
+                    <img src="icones/emoji-maria-abencoa.png" alt="" class="no-emo" style="width:128px;height:128px;object-fit:contain;display:block;margin:0 auto 16px;">
                     <p class="text-yellow-400 font-bold text-xl mb-2">Terço Concluído!</p>
                     <p class="text-white/80">Que Nossa Senhora interceda por todas as suas intenções.</p>
                 </div>
