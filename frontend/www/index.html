@@ -5777,14 +5777,16 @@ function showToast(message) {
     if (existing) existing.remove();
     
     const toast = document.createElement('div');
-    // JOs 2026-06-03: whitespace-nowrap pra mensagens curtas (tipo 'Obrigada pelo feedback!')
-    // não quebrarem em 2 linhas. max-w-[90vw] como fallback se o texto for muito grande.
-    toast.className = 'toast-notification fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg z-50 animate-fade-in whitespace-nowrap max-w-[90vw] overflow-hidden text-ellipsis';
-    // JOs 2026-06-04: forçar nowrap via style inline tb — o Tailwind Play CDN gera
-    // a classe whitespace-nowrap com atraso (MutationObserver), e o toast dinâmico
-    // renderizava quebrado em 2 linhas antes do CSS chegar (ex: mural 'oração registrada').
-    toast.style.whiteSpace = 'nowrap';
-    toast.style.maxWidth = '90vw';
+    // JOs 2026-06-04: container cresce com o conteúdo (fit-content) e só quebra em 2 linhas
+    // quando o texto realmente passa de 92vw — em vez de CORTAR com "..." (bug do mural
+    // 'Sua oração foi regis...'). Mensagens curtas continuam em 1 linha por causa do
+    // fit-content (shrink-to-fit), então a regra antiga de "curta não quebra" segue valendo.
+    // Tudo via style inline pra não depender do Tailwind Play CDN (que gera classe com atraso).
+    toast.className = 'toast-notification fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 shadow-lg z-50 animate-fade-in rounded-full';
+    toast.style.whiteSpace = 'normal';
+    toast.style.width = 'fit-content';
+    toast.style.maxWidth = '92vw';
+    toast.style.textAlign = 'center';
     toast.textContent = message;
     document.body.appendChild(toast);
     
