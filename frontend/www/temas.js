@@ -331,7 +331,7 @@ const SistemaTemas = {
                         <div style="width:40px;height:40px;flex-shrink:0;"></div>
                         <!-- JOs 2026-06-03: 🎨 → emoji-paleta.png (mesmo do Mais Recursos) -->
                         <h1 class="text-white text-xl font-bold inline-flex items-center gap-2">
-                            <img src="icones/emoji-paleta.png" alt="" class="no-emo" style="width:24px;height:24px;object-fit:contain;display:inline-block;vertical-align:middle;filter:brightness(0) invert(1);">
+                            <img src="icones/emoji-paleta.png" alt="" class="no-emo" style="width:26px;height:26px;object-fit:contain;display:inline-block;vertical-align:middle;">
                             Temas
                         </h1>
                         <button onclick="document.getElementById('modal-temas').remove(); document.body.style.overflow='';" class="btn-modal-x" aria-label="Fechar">
