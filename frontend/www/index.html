@@ -5777,7 +5777,9 @@ function showToast(message) {
     if (existing) existing.remove();
     
     const toast = document.createElement('div');
-    toast.className = 'toast-notification fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg z-50 animate-fade-in';
+    // JOs 2026-06-03: whitespace-nowrap pra mensagens curtas (tipo 'Obrigada pelo feedback!')
+    // não quebrarem em 2 linhas. max-w-[90vw] como fallback se o texto for muito grande.
+    toast.className = 'toast-notification fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg z-50 animate-fade-in whitespace-nowrap max-w-[90vw] overflow-hidden text-ellipsis';
     toast.textContent = message;
     document.body.appendChild(toast);
     
