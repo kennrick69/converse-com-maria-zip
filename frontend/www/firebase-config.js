@@ -119,24 +119,42 @@ const FirebaseService = {
 // ========================================
 
 const AuthService = {
-    
+
+    // 📧 Dispara o e-mail de boas-vindas (fire-and-forget).
+    // Não bloqueia nem quebra o cadastro se o backend estiver fora/sem SMTP.
+    // Portado de fase-old-base — antes era no-op em `main`, por isso usuários
+    // novos cadastrados não recebiam o e-mail.
+    _enviarBoasVindas(email, nome) {
+        try {
+            if (!email) return;
+            fetch('https://converse-com-maria-production.up.railway.app/api/boas-vindas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, nome: nome || '' })
+            }).catch(() => {});
+        } catch (_) {}
+    },
+
     // Registrar com email e senha
     async registerWithEmail(email, password, nome) {
         try {
             const result = await auth.createUserWithEmailAndPassword(email, password);
-            
+
             // Atualizar perfil com nome
             await result.user.updateProfile({
                 displayName: nome
             });
-            
+
             // Criar documento do usuário no Firestore
             await UserDataService.createUserDocument(result.user.uid, {
                 nome: nome,
                 email: email,
                 criadoEm: firebase.firestore.FieldValue.serverTimestamp()
             });
-            
+
+            // E-mail de boas-vindas (não espera a resposta)
+            this._enviarBoasVindas(email, nome);
+
             return { success: true, user: result.user };
         } catch (error) {
             console.error('Erro no registro:', error);
@@ -169,8 +187,10 @@ const AuthService = {
                     foto: result.user.photoURL,
                     criadoEm: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                // E-mail de boas-vindas também pra quem entra pela 1ª vez via Google
+                this._enviarBoasVindas(result.user.email, result.user.displayName);
             }
-            
+
             return { success: true, user: result.user };
         } catch (error) {
             console.error('Erro no login Google:', error);
