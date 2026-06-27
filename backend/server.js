@@ -1794,13 +1794,13 @@ app.post('/api/webhook/stripe', async (req, res) => {
         case 'checkout.session.completed':
             const session = event.data.object;
             console.log('✅ Checkout completado:', session.id);
-            
-            if (session.mode === 'subscription') {
+
+            if (session.mode === 'subscription' && session.payment_status === 'paid') {
                 await ativarPremiumUsuario(
-                    session.metadata?.userId || session.subscription_data?.metadata?.userId,
+                    session.metadata?.userId,
                     session.metadata?.plano || 'mensal',
                     'stripe',
-                    session.subscription
+                    session.subscription || session.payment_intent || session.id
                 );
             }
             break;
@@ -1816,7 +1816,7 @@ app.post('/api/webhook/stripe', async (req, res) => {
                 const plano = subscription.metadata?.plano || 'mensal';
                 
                 if (userId) {
-                    await renovarPremiumUsuario(userId, plano);
+                    await renovarPremiumUsuario(userId, plano, invoice.id);
                 }
             }
             break;
@@ -1843,13 +1843,13 @@ app.post('/api/webhook/stripe', async (req, res) => {
 });
 
 // Renovar premium (para pagamentos recorrentes)
-async function renovarPremiumUsuario(userId, plano) {
+async function renovarPremiumUsuario(userId, plano, invoiceId) {
     if (!userId) return false;
-    
+
     try {
         if (process.env.FIREBASE_ADMIN_KEY) {
             const admin = require('firebase-admin');
-            
+
             if (!admin.apps.length) {
                 admin.initializeApp({
                     credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_ADMIN_KEY))
@@ -1857,18 +1857,46 @@ async function renovarPremiumUsuario(userId, plano) {
             }
 
             const db = admin.firestore();
-            
+
             let duracaoDias = plano === 'anual' ? 365 : 30;
             const expiraEm = new Date();
             expiraEm.setDate(expiraEm.getDate() + duracaoDias);
 
-            await db.collection('usuarios').doc(userId).update({
-                'premium.expiraEm': expiraEm,
-                'premium.ultimaRenovacao': admin.firestore.FieldValue.serverTimestamp()
-            });
+            if (invoiceId) {
+                // Idempotência: transação atômica — só renova se invoiceId ainda não existir.
+                // Previne replay/retry de webhook invoice.paid do Stripe.
+                const txRef = db.collection('pagamentos_processados').doc(invoiceId);
+                const userRef = db.collection('usuarios').doc(userId);
+                let jaProcessado = false;
+
+                await db.runTransaction(async (t) => {
+                    const txDoc = await t.get(txRef);
+                    if (txDoc.exists) { jaProcessado = true; return; }
+                    t.set(txRef, { userId, plano, provider: 'stripe', tipo: 'renovacao', processadoEm: admin.firestore.FieldValue.serverTimestamp() });
+                    t.update(userRef, {
+                        'premium.ativo': true,
+                        'premium.expiraEm': expiraEm,
+                        'premium.ultimaRenovacao': admin.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+
+                if (jaProcessado) {
+                    console.log(`[idempotencia] invoiceId já processado: ${invoiceId}`);
+                    return true;
+                }
+            } else {
+                await db.collection('usuarios').doc(userId).update({
+                    'premium.ativo': true,
+                    'premium.expiraEm': expiraEm,
+                    'premium.ultimaRenovacao': admin.firestore.FieldValue.serverTimestamp()
+                });
+            }
 
             console.log(`🔄 Premium renovado: ${userId} - ${plano}`);
             return true;
+        } else {
+            console.log(`📝 Renovação pendente (sem Firebase Admin): ${userId} - ${plano}`);
+            return false;
         }
     } catch (error) {
         console.error('Erro renovar premium:', error);
@@ -1899,6 +1927,9 @@ async function desativarPremiumUsuario(userId) {
 
             console.log(`🚫 Premium desativado: ${userId}`);
             return true;
+        } else {
+            console.log(`📝 Desativação pendente (sem Firebase Admin): ${userId}`);
+            return false;
         }
     } catch (error) {
         console.error('Erro desativar premium:', error);
@@ -2058,6 +2089,28 @@ app.get('/api/pagamento/pix/status/:paymentId', async (req, res) => {
 // Webhook Mercado Pago
 app.post('/api/webhook/mercadopago', async (req, res) => {
     try {
+        // Validação de assinatura HMAC SHA256 (x-signature do MercadoPago)
+        // Configure MERCADOPAGO_WEBHOOK_SECRET no Railway com o secret do painel MP
+        const mpWebhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+        if (mpWebhookSecret) {
+            const xSig = req.headers['x-signature'] || '';
+            const xRequestId = req.headers['x-request-id'] || '';
+            const tsMatch = xSig.match(/ts=([^,]+)/);
+            const v1Match = xSig.match(/v1=([a-f0-9]+)/);
+            if (!tsMatch || !v1Match) {
+                console.warn('[seguranca] Webhook MP sem x-signature válido');
+                return res.status(401).send('Assinatura ausente');
+            }
+            const manifest = `id:${req.body?.data?.id};request-id:${xRequestId};ts:${tsMatch[1]}`;
+            const expected = require('crypto').createHmac('sha256', mpWebhookSecret).update(manifest).digest('hex');
+            if (expected !== v1Match[1]) {
+                console.warn('[seguranca] Webhook MP com assinatura inválida');
+                return res.status(401).send('Assinatura inválida');
+            }
+        } else {
+            console.warn('[seguranca] MERCADOPAGO_WEBHOOK_SECRET não configurado — adicione no Railway para validação HMAC');
+        }
+
         const { type, data } = req.body;
 
         if (type === 'payment') {
@@ -2069,7 +2122,7 @@ app.post('/api/webhook/mercadopago', async (req, res) => {
 
             if (pagamento.status === 'approved') {
                 console.log('✅ PIX aprovado:', pagamento.id);
-                
+
                 await ativarPremiumUsuario(
                     pagamento.metadata?.userId,
                     pagamento.metadata?.plano,
@@ -2083,29 +2136,18 @@ app.post('/api/webhook/mercadopago', async (req, res) => {
 
     } catch (error) {
         console.error('Erro webhook MP:', error);
-        res.status(500).json({ error: error.message });
+        res.status(200).send('OK'); // sempre 200 para o MP não retentar indefinidamente
     }
 });
 
 // ========================================
-// ⭐ AVALIAÇÃO PLAY STORE - PREMIUM GRÁTIS
+// ⭐ AVALIAÇÃO PLAY STORE
+// Endpoint removido: conceder premium por avaliação viola a política do Google Play
+// (seção "Incentivized ratings and reviews"). Mantido como 410 Gone para não
+// quebrar clientes antigos silenciosamente.
 // ========================================
-
-app.post('/api/avaliacao/verificar', async (req, res) => {
-    try {
-        const { userId } = req.body;
-
-        console.log('⭐ Avaliação registrada para:', userId);
-
-        // Conceder 30 dias de premium
-        await ativarPremiumUsuario(userId, 'avaliacao', 'playstore_review', `review-${Date.now()}`);
-
-        res.json({ success: true, message: 'Premium de 30 dias ativado!' });
-
-    } catch (error) {
-        console.error('Erro avaliação:', error);
-        res.status(500).json({ error: 'Erro ao processar avaliação' });
-    }
+app.post('/api/avaliacao/verificar', (req, res) => {
+    res.status(410).json({ error: 'Funcionalidade descontinuada.' });
 });
 
 // ========================================
@@ -2121,7 +2163,7 @@ async function ativarPremiumUsuario(userId, plano, provider, transactionId) {
     try {
         if (process.env.FIREBASE_ADMIN_KEY) {
             const admin = require('firebase-admin');
-            
+
             if (!admin.apps.length) {
                 admin.initializeApp({
                     credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_ADMIN_KEY))
@@ -2129,21 +2171,45 @@ async function ativarPremiumUsuario(userId, plano, provider, transactionId) {
             }
 
             const db = admin.firestore();
-            
-            let duracaoDias = 30;
-            if (plano === 'anual') duracaoDias = 365;
-
+            const duracaoDias = plano === 'anual' ? 365 : 30;
             const expiraEm = new Date();
             expiraEm.setDate(expiraEm.getDate() + duracaoDias);
 
-            await db.collection('usuarios').doc(userId).update({
-                'premium.ativo': true,
-                'premium.plano': plano,
-                'premium.provider': provider,
-                'premium.transactionId': transactionId,
-                'premium.ativadoEm': admin.firestore.FieldValue.serverTimestamp(),
-                'premium.expiraEm': expiraEm
-            });
+            if (transactionId) {
+                // Idempotência: transação atômica — só ativa se transactionId ainda não existir.
+                // Previne replay de webhook e processamento duplo por retry do MP/Stripe.
+                const txRef = db.collection('pagamentos_processados').doc(transactionId);
+                const userRef = db.collection('usuarios').doc(userId);
+                let jaProcessado = false;
+
+                await db.runTransaction(async (t) => {
+                    const txDoc = await t.get(txRef);
+                    if (txDoc.exists) { jaProcessado = true; return; }
+                    t.set(txRef, { userId, plano, provider, processadoEm: admin.firestore.FieldValue.serverTimestamp() });
+                    t.update(userRef, {
+                        'premium.ativo': true,
+                        'premium.plano': plano,
+                        'premium.provider': provider,
+                        'premium.transactionId': transactionId,
+                        'premium.ativadoEm': admin.firestore.FieldValue.serverTimestamp(),
+                        'premium.expiraEm': expiraEm
+                    });
+                });
+
+                if (jaProcessado) {
+                    console.log(`[idempotencia] transactionId já processado: ${transactionId}`);
+                    return true;
+                }
+            } else {
+                await db.collection('usuarios').doc(userId).update({
+                    'premium.ativo': true,
+                    'premium.plano': plano,
+                    'premium.provider': provider,
+                    'premium.transactionId': transactionId,
+                    'premium.ativadoEm': admin.firestore.FieldValue.serverTimestamp(),
+                    'premium.expiraEm': expiraEm
+                });
+            }
 
             console.log(`✅ Premium ativado: ${userId} - ${plano} via ${provider}`);
             return true;
