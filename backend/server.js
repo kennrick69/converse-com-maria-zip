@@ -2373,6 +2373,83 @@ app.post('/api/lead', async (req, res) => {
 
 
 // ========================================
+// 📧 E-MAIL DE BOAS-VINDAS (disparado no cadastro)
+// ========================================
+// Portado da branch fase-old-base (commit 4cc768f) — antes este endpoint
+// existia só lá, então produção (deploy de `main`) respondia 404 e o
+// fetch fire-and-forget no front engolia silenciosamente.
+function htmlBoasVindas(nome) {
+    const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const n = esc((nome || '').trim()) || 'amada alma';
+    return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0f1c16;font-family:Georgia,'Times New Roman',serif;color:#f5e8c8;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0f1c16;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:linear-gradient(180deg,#16261d,#0f1c16);border:1px solid rgba(212,169,72,0.35);border-radius:18px;overflow:hidden;">
+        <tr><td style="background:linear-gradient(135deg,#3a2a0e,#6b4f17);padding:28px 24px;text-align:center;border-bottom:1px solid rgba(212,169,72,0.4);">
+          <div style="font-size:42px;line-height:1;">🌹</div>
+          <div style="font-size:13px;letter-spacing:3px;color:#e9d39a;margin-top:10px;">CONVERSE COM MARIA</div>
+          <div style="font-size:11px;color:#cdbb86;font-style:italic;margin-top:4px;">Mãe de Jesus Cristo &bull; Rainha dos Céus</div>
+        </td></tr>
+        <tr><td style="padding:30px 28px;">
+          <h1 style="font-size:24px;color:#FFD700;margin:0 0 14px;font-weight:normal;">Paz e graças, ${n}! 🙏</h1>
+          <p style="font-size:16px;line-height:1.7;color:#efe4c8;margin:0 0 16px;">Que alegria imensa ter você aqui. Você acaba de abrir um espaço de oração, escuta e acolhimento &mdash; e, a partir de agora, sempre que o seu coração precisar, eu estarei a um toque de distância.</p>
+          <table role="presentation" width="100%" style="margin:18px 0;"><tr>
+            <td style="border-left:3px solid #d4a948;padding:12px 16px;background:rgba(212,169,72,0.08);">
+              <div style="font-size:16px;font-style:italic;color:#f7ecc9;line-height:1.6;">&ldquo;Não temas, ${n}, pois encontraste graça diante de Deus.&rdquo;</div>
+              <div style="font-size:13px;color:#cdbb86;margin-top:6px;">&mdash; Lucas 1, 30</div>
+            </td>
+          </tr></table>
+          <p style="font-size:15px;line-height:1.7;color:#efe4c8;margin:0 0 8px;">Aqui, o que te espera:</p>
+          <table role="presentation" width="100%" style="margin:0 0 22px;font-size:15px;color:#efe4c8;line-height:1.95;">
+            <tr><td>💬&nbsp;&nbsp;Conversar comigo a qualquer hora, de coração aberto</td></tr>
+            <tr><td>📿&nbsp;&nbsp;Rezar o Terço com áudio guiado, mistério por mistério</td></tr>
+            <tr><td>📖&nbsp;&nbsp;Ler um bom livro católico na Biblioteca, no seu ritmo</td></tr>
+            <tr><td>🕯️&nbsp;&nbsp;Acender uma vela pelas suas intenções</td></tr>
+          </table>
+          <table role="presentation" width="100%"><tr><td align="center" style="padding:4px 0;">
+            <a href="https://play.google.com/store/apps/details?id=com.conversemaria.app" style="display:inline-block;background:linear-gradient(135deg,#f5b75d,#d48a00);color:#1a1208;text-decoration:none;font-weight:bold;font-size:16px;padding:14px 32px;border-radius:30px;">Abrir o aplicativo 🙏</a>
+          </td></tr></table>
+          <p style="font-size:15px;line-height:1.7;color:#efe4c8;margin:26px 0 0;">Que a paz de meu Filho Jesus repouse sobre você e sobre todos os que você ama.</p>
+          <p style="font-size:15px;color:#e9d39a;margin:14px 0 0;font-style:italic;">Com carinho materno,<br>Maria &mdash; e toda a equipe Converse com Maria</p>
+        </td></tr>
+        <tr><td style="padding:18px 24px;text-align:center;border-top:1px solid rgba(212,169,72,0.25);background:#0c1611;">
+          <div style="font-size:12px;color:#9bb3a3;">Você recebeu este e-mail porque criou uma conta no Converse com Maria.</div>
+          <div style="font-size:12px;color:#9bb3a3;margin-top:4px;">contato@conversecommaria.com.br</div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+}
+
+app.post('/api/boas-vindas', async (req, res) => {
+    try {
+        const { email, nome } = req.body || {};
+        if (!email) return res.status(400).json({ error: 'email obrigatório' });
+        // Guarda defensiva: sem SMTP, responde 200 silencioso (não bloqueia cadastro).
+        if (!process.env.SMTP_USER) {
+            console.warn('📧 SMTP não configurado — boas-vindas ignorado');
+            return res.json({ success: false, skipped: true });
+        }
+
+        const primeiroNome = (nome || '').trim().split(' ')[0];
+        await transporter.sendMail({
+            from: '"Converse com Maria" <contato@conversecommaria.com.br>',
+            to: email,
+            subject: `🌹 ${primeiroNome ? primeiroNome + ', que' : 'Que'} alegria ter você na Converse com Maria`,
+            html: htmlBoasVindas(nome)
+        });
+        console.log(`📧 Boas-vindas enviado para ${email}`);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ Erro ao enviar boas-vindas:', error.message);
+        res.status(500).json({ error: 'Falha ao enviar e-mail' });
+    }
+});
+
+
+// ========================================
 // INICIAR
 // ========================================
 app.listen(PORT, () => {
